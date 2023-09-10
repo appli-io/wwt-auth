@@ -1,41 +1,42 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { BlacklistedTokenEntity }                                 from '@/modules/auth/entities/blacklisted-token.entity';
-import { InjectRepository }       from '@mikro-orm/nestjs';
-import { EntityRepository }       from '@mikro-orm/core';
-import { CommonService }          from '@common/common.service';
-import { UsersService }           from '@/modules/users/users.service';
-import { JwtService }             from '@/modules/jwt/jwt.service';
-import { MailerService }          from '@/modules/mailer/mailer.service';
-import { UserEntity }             from '@/modules/users/entities/user.entity';
-import { TokenTypeEnum }          from '@/modules/jwt/enums/token-type.enum';
-import { SignUpDto }              from '@/modules/auth/dtos/sign-up.dto';
-import { IMessage }                        from '@common/interfaces/message.interface';
-import { SignInDto }                       from '@/modules/auth/dtos/sign-in.dto';
-import { IAuthResult } from '@/modules/auth/interfaces/auth-result.interface';
-import dayjs from 'dayjs';
-import { ICredentials } from '@/modules/users/interfaces/credentials.interface';
-import { SLUG_REGEX } from '@common/consts/regex.const';
-import { compare } from 'bcrypt';
+import { CACHE_MANAGER }                                                  from '@nestjs/cache-manager';
+import { isUndefined }                                                    from '@nestjs/common/utils/shared.utils';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+
+import { Cache }   from 'cache-manager';
 import { isEmail } from 'class-validator';
-import { IRefreshToken } from '@/modules/jwt/enums/refresh-token.interface';
-import { EmailDto } from '@/modules/auth/dtos/email.dto';
-import { isNull } from '@common/utils/validation.util';
-import { isUndefined }                     from '@nestjs/common/utils/shared.utils';
-import { ResetPasswordDto }                from '@/modules/auth/dtos/reset-password.dto';
-import { IEmailToken } from '@/modules/jwt/enums/email-token.interface';
+import dayjs       from 'dayjs';
+import { compare } from 'bcrypt';
+
+import { CommonService }    from '@common/common.service';
+import { SLUG_REGEX }       from '@common/consts/regex.const';
+import { IMessage }         from '@common/interfaces/message.interface';
+import { isNull }           from '@common/utils/validation.util';
+import { UsersService }     from '@/modules/users/users.service';
+import { JwtService }       from '@/modules/jwt/jwt.service';
+import { MailerService }    from '@/modules/mailer/mailer.service';
+import { UserEntity }       from '@/modules/users/entities/user.entity';
+import { TokenTypeEnum }    from '@/modules/jwt/enums/token-type.enum';
+import { SignUpDto }        from '@/modules/auth/dtos/sign-up.dto';
+import { SignInDto }        from '@/modules/auth/dtos/sign-in.dto';
+import { IAuthResult }      from '@/modules/auth/interfaces/auth-result.interface';
+import { ICredentials }     from '@/modules/users/interfaces/credentials.interface';
+import { IRefreshToken }    from '@/modules/jwt/enums/refresh-token.interface';
+import { EmailDto }         from '@/modules/auth/dtos/email.dto';
+import { ResetPasswordDto } from '@/modules/auth/dtos/reset-password.dto';
+import { IEmailToken }      from '@/modules/jwt/enums/email-token.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(BlacklistedTokenEntity)
-    private readonly blacklistedTokensRepository: EntityRepository<BlacklistedTokenEntity>,
+    // @InjectRepository(BlacklistedTokenEntity) private readonly blacklistedTokensRepository: EntityRepository<BlacklistedTokenEntity>,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly commonService: CommonService,
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService,
   ) {}
 
-  public async signUp(dto: SignUpDto, domain?: string): Promise<IMessage> {
+  public async signUp( dto: SignUpDto, domain?: string ): Promise<IMessage> {
     const { name, email, password1, password2 } = dto;
     this.comparePasswords(password1, password2);
     const user = await this.usersService.create(email, name, password1);
@@ -59,7 +60,7 @@ export class AuthService {
       );
     await this.checkIfTokenIsBlacklisted(id, tokenId);
     const user = await this.usersService.findOneByCredentials(id, version);
-    const [accessToken, newRefreshToken] = await this.generateAuthTokens(
+    const [ accessToken, newRefreshToken ] = await this.generateAuthTokens(
       user,
       domain,
       tokenId,
@@ -67,12 +68,13 @@ export class AuthService {
     return { user, accessToken, refreshToken: newRefreshToken };
   }
 
-  public async logout(refreshToken: string): Promise<IMessage> {
-    const { id, tokenId } = await this.jwtService.verifyToken<IRefreshToken>(
-      refreshToken,
-      TokenTypeEnum.REFRESH,
-    );
-    await this.blacklistToken(id, tokenId);
+  public async logout( refreshToken: string ): Promise<IMessage> {
+    const { id, tokenId, exp } =
+      await this.jwtService.verifyToken<IRefreshToken>(
+        refreshToken,
+        TokenTypeEnum.REFRESH,
+      );
+    await this.blacklistToken(id, tokenId, exp);
     return this.commonService.generateMessage('Logout successful');
   }
 
@@ -82,7 +84,7 @@ export class AuthService {
   ): Promise<IMessage> {
     const user = await this.usersService.uncheckedUserByEmail(dto.email);
 
-    if (!isUndefined(user) && !isNull(user)) {
+    if ( !isUndefined(user) && !isNull(user) ) {
       const resetToken = await this.jwtService.generateToken(
         user,
         TokenTypeEnum.RESET_PASSWORD,
@@ -94,7 +96,7 @@ export class AuthService {
     return this.commonService.generateMessage('Reset password email sent');
   }
 
-  public async resetPassword(dto: ResetPasswordDto): Promise<IMessage> {
+  public async resetPassword( dto: ResetPasswordDto ): Promise<IMessage> {
     const { password1, password2, resetToken } = dto;
     const { id, version } = await this.jwtService.verifyToken<IEmailToken>(
       resetToken,
@@ -106,48 +108,15 @@ export class AuthService {
   }
 
   // creates a new blacklisted token in the database with the
-  // ID of the refresh token that was removed with the logout
-  private async blacklistToken(userId: number, tokenId: string): Promise<void> {
-    const blacklistedToken = this.blacklistedTokensRepository.create({
-      user: userId,
-      tokenId,
-    });
-    await this.commonService.saveEntity(
-      this.blacklistedTokensRepository,
-      blacklistedToken,
-      true,
-    );
-  }
 
-  // checks if a token given the ID of the user and ID of token exists on the database
-  private async checkIfTokenIsBlacklisted(
-    userId: number,
-    tokenId: string,
-  ): Promise<void> {
-    const count = await this.blacklistedTokensRepository.count({
-      user: userId,
-      tokenId,
-    });
-
-    if (count > 0) {
-      throw new UnauthorizedException('Token is invalid');
-    }
-  }
-
-  private comparePasswords(password1: string, password2: string): void {
-    if (password1 !== password2) {
-      throw new BadRequestException('Passwords do not match');
-    }
-  }
-
-  public async singIn(dto: SignInDto, domain?: string): Promise<IAuthResult> {
+  public async singIn( dto: SignInDto, domain?: string ): Promise<IAuthResult> {
     const { emailOrUsername, password } = dto;
     const user = await this.userByEmailOrUsername(emailOrUsername);
 
-    if (!(await compare(password, user.password))) {
+    if ( !( await compare(password, user.password) ) ) {
       await this.checkLastPassword(user.credentials, password);
     }
-    if (!user.confirmed) {
+    if ( !user.confirmed ) {
       const confirmationToken = await this.jwtService.generateToken(
         user,
         TokenTypeEnum.CONFIRMATION,
@@ -159,19 +128,55 @@ export class AuthService {
       );
     }
 
-    const [accessToken, refreshToken] = await this.generateAuthTokens(
+    const [ accessToken, refreshToken ] = await this.generateAuthTokens(
       user,
       domain,
     );
     return { user, accessToken, refreshToken };
   }
 
+  // ID of the refresh token that was removed with the logout
+  private async blacklistToken(
+    userId: number,
+    tokenId: string,
+    exp: number,
+  ): Promise<void> {
+    const now = dayjs().unix();
+    const ttl = ( exp - now ) * 1000;
+
+    if ( ttl > 0 ) {
+      await this.commonService.throwInternalError(
+        this.cacheManager.set(`blacklist:${ userId }:${ tokenId }`, now, ttl),
+      );
+    }
+  }
+
+  // checks if a token given the ID of the user and ID of token exists on the database
+  private async checkIfTokenIsBlacklisted(
+    userId: number,
+    tokenId: string,
+  ): Promise<void> {
+    const time = await this.cacheManager.get<number>(
+      `blacklist:${ userId }:${ tokenId }`,
+    );
+
+    if ( !isUndefined(time) && !isNull(time) ) {
+      throw new UnauthorizedException('Invalid token');
+    }
+  }
+
+  private comparePasswords( password1: string, password2: string ): void {
+    if ( password1 !== password2 ) {
+      throw new BadRequestException('Passwords do not match');
+    }
+  }
+
   // validates the input and fetches the user by email or username
   private async userByEmailOrUsername(
     emailOrUsername: string,
   ): Promise<UserEntity> {
-    if (emailOrUsername.includes('@')) {
-      if (!isEmail(emailOrUsername)) {
+    if ( emailOrUsername.includes('@') ) {
+      if ( !isEmail(emailOrUsername) ) {
         throw new BadRequestException('Invalid email');
       }
 
@@ -179,10 +184,10 @@ export class AuthService {
     }
 
     if (
-       emailOrUsername.length < 3 ||
-       emailOrUsername.length > 106 ||
-       !SLUG_REGEX.test(emailOrUsername)
-     ) {
+      emailOrUsername.length < 3 ||
+      emailOrUsername.length > 106 ||
+      !SLUG_REGEX.test(emailOrUsername)
+    ) {
       throw new BadRequestException('Invalid username');
     }
 
@@ -196,7 +201,7 @@ export class AuthService {
   ): Promise<void> {
     const { lastPassword, passwordUpdatedAt } = credentials;
 
-    if (lastPassword.length === 0 || !(await compare(password, lastPassword))) {
+    if ( lastPassword.length === 0 || !( await compare(password, lastPassword) ) ) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -205,25 +210,25 @@ export class AuthService {
     const months = now.diff(time, 'month');
     const message = 'You changed your password ';
 
-    if (months > 0) {
+    if ( months > 0 ) {
       throw new UnauthorizedException(
-        message + months + (months > 1 ? ' months ago' : ' month ago'),
+        message + months + ( months > 1 ? ' months ago' : ' month ago' ),
       );
     }
 
     const days = now.diff(time, 'day');
 
-    if (days > 0) {
+    if ( days > 0 ) {
       throw new UnauthorizedException(
-        message + days + (days > 1 ? ' days ago' : ' day ago'),
+        message + days + ( days > 1 ? ' days ago' : ' day ago' ),
       );
     }
 
     const hours = now.diff(time, 'hour');
 
-    if (hours > 0) {
+    if ( hours > 0 ) {
       throw new UnauthorizedException(
-        message + hours + (hours > 1 ? ' hours ago' : ' hour ago'),
+        message + hours + ( hours > 1 ? ' hours ago' : ' hour ago' ),
       );
     }
 
