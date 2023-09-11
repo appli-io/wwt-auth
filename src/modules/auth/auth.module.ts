@@ -1,20 +1,26 @@
-import { Module }         from '@nestjs/common';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { Module }          from '@nestjs/common';
+import { ConfigModule }    from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 
-import { BlacklistedTokenEntity } from '@/modules/auth/entities/blacklisted-token.entity';
-import { JwtModule }              from '@/modules/jwt/jwt.module';
-import { MailerModule }           from '@/modules/mailer/mailer.module';
-import { UsersModule }            from '@/modules/users/users.module';
+import { ThrottlerConfig } from '@config/throttler.config';
 
-import { AuthService } from './auth.service';
+import { JwtModule }      from '../jwt/jwt.module';
+import { MailerModule }   from '../mailer/mailer.module';
+import { UsersModule }    from '../users/users.module';
+import { AuthController } from './auth.controller';
+import { AuthService }    from './auth.service';
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature([ BlacklistedTokenEntity ]),
     UsersModule,
     JwtModule,
     MailerModule,
+    ThrottlerModule.forRootAsync({
+      imports: [ ConfigModule ],
+      useClass: ThrottlerConfig,
+    }),
   ],
-  providers: [ AuthService ]
+  providers: [ AuthService ],
+  controllers: [ AuthController ],
 })
 export class AuthModule {}

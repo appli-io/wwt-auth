@@ -1,16 +1,17 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService }                                                 from '@nestjs/config';
+import { BadRequestException, Injectable, InternalServerErrorException, } from '@nestjs/common';
+import { ConfigService }                                                  from '@nestjs/config';
 
 import * as jwt from 'jsonwebtoken';
 import { v4 }   from 'uuid';
 
-import { CommonService }                  from '@common/common.service';
-import { IJwt }                           from '@config/interfaces/jwt.interface';
-import { IAccessPayload, IAccessToken }   from '@/modules/jwt/enums/access-token.interface';
-import { IEmailPayload, IEmailToken }     from '@/modules/jwt/enums/email-token.interface';
-import { IRefreshPayload, IRefreshToken } from '@/modules/jwt/enums/refresh-token.interface';
-import { TokenTypeEnum }                  from '@/modules/jwt/enums/token-type.enum';
-import { IUser }                          from '@/modules/users/interfaces/user.interface';
+import { CommonService } from '@common/common.service';
+import { IJwt }          from '@config/interfaces/jwt.interface';
+
+import { IUser }                           from '../users/interfaces/user.interface';
+import { TokenTypeEnum }                   from './enums/token-type.enum';
+import { IAccessPayload, IAccessToken, }   from './interfaces/access-token.interface';
+import { IEmailPayload, IEmailToken }      from './interfaces/email-token.interface';
+import { IRefreshPayload, IRefreshToken, } from './interfaces/refresh-token.interface';
 
 @Injectable()
 export class JwtService {
@@ -37,7 +38,7 @@ export class JwtService {
       issuer: this.issuer,
       subject: user.email,
       audience: domain ?? this.domain,
-      algorithm: 'HS256', // only needs a secret
+      algorithm: 'HS256',
     };
 
     switch ( tokenType ) {
@@ -47,7 +48,7 @@ export class JwtService {
           JwtService.generateTokenAsync({ id: user.id }, privateKey, {
             ...jwtOptions,
             expiresIn: accessTime,
-            algorithm: 'RS256', // to use public and private key
+            algorithm: 'RS256',
           }),
         );
       case TokenTypeEnum.REFRESH:
@@ -83,7 +84,9 @@ export class JwtService {
     }
   }
 
-  public async verifyToken<T extends IAccessToken | IRefreshToken | IEmailToken, >( token: string, tokenType: TokenTypeEnum ): Promise<T> {
+  public async verifyToken<
+    T extends IAccessToken | IRefreshToken | IEmailToken,
+  >( token: string, tokenType: TokenTypeEnum ): Promise<T> {
     const jwtOptions: jwt.VerifyOptions = {
       issuer: this.issuer,
       audience: new RegExp(this.domain),
@@ -145,7 +148,9 @@ export class JwtService {
     });
   }
 
-  private static async throwBadRequest<T extends IAccessToken | IRefreshToken | IEmailToken, >( promise: Promise<T> ): Promise<T> {
+  private static async throwBadRequest<
+    T extends IAccessToken | IRefreshToken | IEmailToken,
+  >( promise: Promise<T> ): Promise<T> {
     try {
       return await promise;
     } catch ( error ) {

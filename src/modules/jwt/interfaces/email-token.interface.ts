@@ -1,5 +1,5 @@
 import { IAccessPayload } from './access-token.interface';
-import { ITokenBase } from './token-base.interface';
+import { ITokenBase }     from './token-base.interface';
 
 export interface IEmailPayload extends IAccessPayload {
   version: number;

@@ -1,6 +1,6 @@
 import { Embeddable, Property } from '@mikro-orm/core';
-import dayjs from 'dayjs';
-import { ICredentials } from '../interfaces/credentials.interface';
+import dayjs                    from 'dayjs';
+import { ICredentials }         from '../interfaces/credentials.interface';
 
 @Embeddable()
 export class CredentialsEmbeddable implements ICredentials {

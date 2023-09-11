@@ -2,8 +2,10 @@ import { LoadStrategy } from '@mikro-orm/core';
 import { defineConfig } from '@mikro-orm/postgresql';
 import { readFileSync } from 'fs';
 import { join }         from 'path';
-import { IConfig }      from './interfaces/config.interface';
+
 import { redisUrlParser } from '@common/utils/redis-url-parser.util';
+
+import { IConfig } from './interfaces/config.interface';
 
 export function config(): IConfig {
   const publicKey = readFileSync(
@@ -55,5 +57,13 @@ export function config(): IConfig {
       allowGlobalContext: true
     }),
     redis: redisUrlParser(process.env.REDIS_URL),
+    throttler: {
+      throttlers: [
+        {
+          ttl: parseInt(process.env.THROTTLE_TTL, 10),
+          limit: parseInt(process.env.THROTTLE_LIMIT, 10),
+        }
+      ]
+    },
   };
 }

@@ -1,4 +1,4 @@
-import { ICredentials } from '@/modules/users/interfaces/credentials.interface';
+import { ICredentials } from './credentials.interface';
 
 export interface IUser {
   id: number;
@@ -7,8 +7,7 @@ export interface IUser {
   email: string;
   password: string;
   confirmed: boolean;
+  credentials: ICredentials;
   createdAt: Date;
   updatedAt: Date;
-
-  credentials: ICredentials;
 }

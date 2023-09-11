@@ -7,9 +7,9 @@ import SMTPTransport                    from 'nodemailer/lib/smtp-transport';
 import { join }                         from 'path';
 
 import { IEmailConfig }   from '@config/interfaces/email-config.interface';
-import { ITemplatedData } from '@/modules/mailer/interfaces/template-data.interface';
-import { ITemplates }     from '@/modules/mailer/interfaces/templates.interface';
-import { IUser }          from '@/modules/users/interfaces/user.interface';
+import { ITemplatedData } from '@modules/mailer/interfaces/template-data.interface';
+import { ITemplates }     from '@modules/mailer/interfaces/templates.interface';
+import { IUser }          from '@modules/users/interfaces/user.interface';
 
 @Injectable()
 export class MailerService {

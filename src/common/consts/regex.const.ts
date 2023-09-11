@@ -4,9 +4,5 @@ export const PASSWORD_REGEX =
 
 // checks if a string has only letters, numbers, spaces, apostrophes, dots and dashes
 export const NAME_REGEX = /(^[\p{L}\d'\.\s\-]*$)/u;
-
-// checks if a string is a valid slug, useful for usernames
 export const SLUG_REGEX = /^[a-z\d]+(?:(\.|-|_)[a-z\d]+)*$/;
-
-// validates if passwords are valid bcrypt hashes
 export const BCRYPT_HASH = /\$2[abxy]?\$\d{1,2}\$[A-Za-z\d\./]{53}/;

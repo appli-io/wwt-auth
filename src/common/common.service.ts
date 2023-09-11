@@ -1,13 +1,12 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, Logger, LoggerService, NotFoundException } from '@nestjs/common';
-import { isUndefined }                                                                                                                from '@nestjs/common/utils/shared.utils';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, Logger, LoggerService, NotFoundException, } from '@nestjs/common';
 
-import { Dictionary, EntityRepository } from '@mikro-orm/core';
-import { validate }                     from 'class-validator';
-import slugify                          from 'slugify';
-import { v4 }                           from 'uuid';
+import { EntityRepository } from '@mikro-orm/postgresql';
+import { Dictionary }       from '@mikro-orm/core';
+import { validate }         from 'class-validator';
+import slugify              from 'slugify';
 
-import { isNull }   from './utils/validation.util';
-import { IMessage } from './interfaces/message.interface';
+import { MessageMapper }       from './mappers/message.mapper';
+import { isNull, isUndefined } from './utils/validation.util';
 
 @Injectable()
 export class CommonService {
@@ -15,32 +14,6 @@ export class CommonService {
 
   constructor() {
     this.loggerService = new Logger(CommonService.name);
-  }
-
-  public generateMessage( message: string ): IMessage {
-    return { id: v4(), message };
-  }
-
-  /**
-   * Format Name
-   *
-   * Takes a string trims it and capitalizes every word
-   */
-  public formatName( title: string ): string {
-    return title
-      .trim()
-      .replace(/\n/g, ' ')
-      .replace(/\s\s+/g, ' ')
-      .replace(/\w\S*/g, ( w ) => w.replace(/^\w/, ( l ) => l.toUpperCase()));
-  }
-
-  /**
-   * Generate Point Slug
-   *
-   * Takes a string and generates a slug with dtos as word separators
-   */
-  public generatePointSlug( str: string ): string {
-    return slugify(str, { lower: true, replacement: '.', remove: /['_\.\-]/g });
   }
 
   /**
@@ -58,26 +31,6 @@ export class CommonService {
 
     if ( errors.length > 0 ) {
       throw new BadRequestException(messages.join(',\n'));
-    }
-  }
-
-  /**
-   * Throw Duplicate Error
-   *
-   * Checks is an error is of the code 23505, PostgreSQL's duplicate value error,
-   * and throws a conflict exception
-   */
-  public async throwDuplicateError<T>( promise: Promise<T>, message?: string ) {
-    try {
-      return await promise;
-    } catch ( error ) {
-      this.loggerService.error(error);
-
-      if ( error.code === '23505' ) {
-        throw new ConflictException(message ?? 'Duplicated value in database');
-      }
-
-      throw new BadRequestException(error.message);
     }
   }
 
@@ -108,7 +61,6 @@ export class CommonService {
     await this.validateEntity(entity);
 
     if ( isNew ) {
-      // TODO: update this to use entity manager in v6 of mikro-orm
       repo.persist(entity);
     }
 
@@ -128,6 +80,26 @@ export class CommonService {
   }
 
   /**
+   * Throw Duplicate Error
+   *
+   * Checks is an error is of the code 23505, PostgreSQL's duplicate value error,
+   * and throws a conflict exception
+   */
+  public async throwDuplicateError<T>( promise: Promise<T>, message?: string ) {
+    try {
+      return await promise;
+    } catch ( error ) {
+      this.loggerService.error(error);
+
+      if ( error.code === '23505' ) {
+        throw new ConflictException(message ?? 'Duplicated value in database');
+      }
+
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  /**
    * Throw Internal Error
    *
    * Function to abstract throwing internal server exception
@@ -139,5 +111,31 @@ export class CommonService {
       this.loggerService.error(error);
       throw new InternalServerErrorException(error);
     }
+  }
+
+  /**
+   * Format Name
+   *
+   * Takes a string trims it and capitalizes every word
+   */
+  public formatName( title: string ): string {
+    return title
+      .trim()
+      .replace(/\n/g, ' ')
+      .replace(/\s\s+/g, ' ')
+      .replace(/\w\S*/g, ( w ) => w.replace(/^\w/, ( l ) => l.toUpperCase()));
+  }
+
+  /**
+   * Generate Point Slug
+   *
+   * Takes a string and generates a slug with dtos as word separators
+   */
+  public generatePointSlug( str: string ): string {
+    return slugify(str, { lower: true, replacement: '.', remove: /['_\.\-]/g });
+  }
+
+  public generateMessage( message: string ): MessageMapper {
+    return new MessageMapper(message);
   }
 }

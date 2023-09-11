@@ -1,10 +1,10 @@
 import { Embedded, Entity, PrimaryKey, Property }        from '@mikro-orm/core';
 import { IsBoolean, IsEmail, IsString, Length, Matches } from 'class-validator';
 
-import { CredentialsEmbeddable }               from '@/modules/users/embeddables/credentials.embeddable';
-import { BCRYPT_HASH, NAME_REGEX, SLUG_REGEX } from '@/common/consts/regex.const';
+import { BCRYPT_HASH, NAME_REGEX, SLUG_REGEX, } from '@common/consts/regex.const';
 
-import { IUser } from '../interfaces/user.interface';
+import { CredentialsEmbeddable } from '../embeddables/credentials.embeddable';
+import { IUser }                 from '../interfaces/user.interface';
 
 @Entity({ tableName: 'users' })
 export class UserEntity implements IUser {
@@ -33,22 +33,22 @@ export class UserEntity implements IUser {
   @Length(5, 255)
   public email: string;
 
-  @Property({ columnType: 'boolean', default: false })
-  @IsBoolean()
-  public confirmed: true | false = false; // since it is saved on the db as binary
-
   @Property({ columnType: 'varchar', length: 60 })
   @IsString()
   @Length(59, 60)
   @Matches(BCRYPT_HASH)
   public password: string;
 
+  @Property({ columnType: 'boolean', default: false })
+  @IsBoolean()
+  public confirmed: true | false = false;
+
+  @Embedded(() => CredentialsEmbeddable)
+  public credentials: CredentialsEmbeddable = new CredentialsEmbeddable();
+
   @Property({ onCreate: () => new Date() })
   public createdAt: Date = new Date();
 
   @Property({ onUpdate: () => new Date() })
   public updatedAt: Date = new Date();
-
-  @Embedded(() => CredentialsEmbeddable)
-  public credentials: CredentialsEmbeddable = new CredentialsEmbeddable();
 }
