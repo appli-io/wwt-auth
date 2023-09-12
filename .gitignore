@@ -42,4 +42,9 @@ lerna-debug.log*
 !.yarn/plugins
 !.yarn/sdks
 !.yarn/versions
-yarn.lock
+
+# dotenv environment variables file
+.env
+.env.test
+.env*.local
+docker.env

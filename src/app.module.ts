@@ -1,50 +1,56 @@
-import { CacheModule }  from '@nestjs/cache-manager';
-import { Module }       from '@nestjs/common';
+import {MikroOrmModule} from '@mikro-orm/nestjs';
+import {CacheModule} from '@nestjs/cache-manager';
+import {Module} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-
-import { MikroOrmModule } from '@mikro-orm/nestjs';
-
-import { CommonModule }     from '@common/common.module';
-import { CacheConfig }      from '@config/cache.config';
-import { config }           from '@config/config';
-import { validationSchema } from '@config/config.schema';
-import { MikroOrmConfig }   from '@config/mikro-orm.config';
-import { AuthModule }       from '@modules/auth/auth.module';
-import { JwtModule }        from '@modules/jwt/jwt.module';
-import { MailerModule }     from '@modules/mailer/mailer.module';
-import { UsersModule }      from '@modules/users/users.module';
-
-import { AppService }      from './app.service';
+import {APP_GUARD} from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { ThrottlerConfig } from '@config/throttler.config';
+import {AppService} from './app.service';
+import {AuthModule} from './auth/auth.module';
+import {AuthGuard} from './auth/guards/auth.guard';
+import {CommonModule} from './common/common.module';
+import {config} from './config';
+import {CacheConfig} from './config/cache.config';
+import {validationSchema} from './config/config.schema';
+import {MikroOrmConfig} from './config/mikroorm.config';
+import {ThrottlerConfig} from './config/throttler.config';
+import {JwtModule} from './jwt/jwt.module';
+import {MailerModule} from './mailer/mailer.module';
+import {Oauth2Module} from './oauth2/oauth2.module';
+import {UsersModule} from './users/users.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema,
-      load: [ config ],
+        load: [config],
     }),
     MikroOrmModule.forRootAsync({
-      imports: [ ConfigModule ],
+        imports: [ConfigModule],
       useClass: MikroOrmConfig,
     }),
     CacheModule.registerAsync({
       isGlobal: true,
-      imports: [ ConfigModule ],
+        imports: [ConfigModule],
       useClass: CacheConfig,
     }),
     ThrottlerModule.forRootAsync({
-      imports: [ ConfigModule ],
+        imports: [ConfigModule],
       useClass: ThrottlerConfig,
     }),
     CommonModule,
     UsersModule,
+      AuthModule,
     JwtModule,
     MailerModule,
-    AuthModule,
+      Oauth2Module,
   ],
-  controllers: [],
-  providers: [ AppService ],
+    providers: [
+        AppService,
+        {
+            provide: APP_GUARD,
+            useClass: AuthGuard,
+        },
+    ],
 })
 export class AppModule {}

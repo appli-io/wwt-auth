@@ -1,5 +1,5 @@
 import { EntityRepository } from '@mikro-orm/postgresql';
-import { EntityMock }       from './entity.mock';
+import {EntityMock} from './entity.mock';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore

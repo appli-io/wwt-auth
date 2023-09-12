@@ -1,6 +1,6 @@
 import { IsString, IsUUID, Length, Matches } from 'class-validator';
-import { v4 }                                from 'uuid';
-import { NAME_REGEX }                        from '../../consts/regex.const';
+import {v4} from 'uuid';
+import {NAME_REGEX} from '../../consts/regex.const';
 
 export class EntityMock {
   @IsString()
@@ -14,7 +14,7 @@ export class EntityMock {
   })
   public name: string;
 
-  constructor( name: string ) {
+    constructor(name: string) {
     this.id = v4();
     this.name = name;
   }

@@ -1,4 +1,4 @@
-export interface IEmailAuth {
+interface IEmailAuth {
   user: string;
   pass: string;
 }
