@@ -1,4 +1,4 @@
-import {FastifyRequest as Request} from 'fastify';
+import { FastifyRequest as Request } from 'fastify';
 
 declare module 'fastify' {
   interface FastifyRequest extends Request {

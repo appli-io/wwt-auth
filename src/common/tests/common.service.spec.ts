@@ -1,16 +1,16 @@
-import {EntityRepository} from '@mikro-orm/postgresql';
+import { EntityRepository }             from '@mikro-orm/postgresql';
 import { InternalServerErrorException } from '@nestjs/common';
-import {Test, TestingModule} from '@nestjs/testing';
-import {CommonService} from '../common.service';
-import {EntityRepositoryMock} from './mocks/entity-repository.mock';
-import {EntityMock} from './mocks/entity.mock';
+import { Test, TestingModule }          from '@nestjs/testing';
+import { CommonService }                from '../common.service';
+import { EntityRepositoryMock }         from './mocks/entity-repository.mock';
+import { EntityMock }                   from './mocks/entity.mock';
 
 describe('CommonService', () => {
   let service: CommonService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-        providers: [CommonService],
+      providers: [ CommonService ],
     }).compile();
 
     service = module.get<CommonService>(CommonService);
@@ -39,8 +39,8 @@ describe('CommonService', () => {
   });
 
   describe('error wrappers', () => {
-      const mockPromise = (code: string) => {
-          return new Promise((_, reject) => {
+    const mockPromise = (code: string) => {
+      return new Promise((_, reject) => {
         const err = new Error('mock error') as unknown as Record<
           string,
           string
@@ -91,9 +91,9 @@ describe('CommonService', () => {
       expect(repository.persist).toBeCalledTimes(1);
       expect(repository.flush).toBeCalledTimes(2);
 
-        await expect(
-            service.saveEntity(repository, new EntityMock('a!cc')),
-        ).rejects.toThrowError('name must not have special characters');
+      await expect(
+        service.saveEntity(repository, new EntityMock('a!cc')),
+      ).rejects.toThrowError('name must not have special characters');
     });
 
     it('remove entity', async () => {
@@ -116,7 +116,7 @@ describe('CommonService', () => {
     });
 
     it('should generate a point slug', () => {
-        expect(service.generatePointSlug("Sir' John Doe")).toBe('sir.john.doe');
+      expect(service.generatePointSlug('Sir\' John Doe')).toBe('sir.john.doe');
       expect(service.generatePointSlug('Some-linked name')).toBe(
         'somelinked.name',
       );

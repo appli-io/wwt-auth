@@ -1,18 +1,21 @@
-import {Dictionary} from '@mikro-orm/core';
-import {EntityRepository} from '@mikro-orm/postgresql';
+import { Dictionary }       from '@mikro-orm/core';
+import { EntityRepository } from '@mikro-orm/postgresql';
 import {
-    BadRequestException,
-    ConflictException,
-    Injectable,
-    InternalServerErrorException,
-    Logger,
-    LoggerService,
-    NotFoundException,
-} from '@nestjs/common';
-import {validate} from 'class-validator';
-import slugify from 'slugify';
-import {MessageMapper} from './mappers/message.mapper';
-import { isNull, isUndefined } from './utils/validation.util';
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  LoggerService,
+  NotFoundException,
+}                           from '@nestjs/common';
+import { validate }         from 'class-validator';
+import slugify              from 'slugify';
+import { MessageMapper }    from './mappers/message.mapper';
+import {
+  isNull,
+  isUndefined
+}                           from './utils/validation.util';
 
 @Injectable()
 export class CommonService {
@@ -31,11 +34,11 @@ export class CommonService {
     const errors = await validate(entity);
     const messages: string[] = [];
 
-      for (const error of errors) {
+    for (const error of errors) {
       messages.push(...Object.values(error.constraints));
     }
 
-      if (errors.length > 0) {
+    if (errors.length > 0) {
       throw new BadRequestException(messages.join(',\n'));
     }
   }
@@ -49,8 +52,8 @@ export class CommonService {
     entity: T | null | undefined,
     name: string,
   ): void {
-      if (isNull(entity) || isUndefined(entity)) {
-          throw new NotFoundException(`${name} not found`);
+    if (isNull(entity) || isUndefined(entity)) {
+      throw new NotFoundException(`${ name } not found`);
     }
   }
 
@@ -66,7 +69,7 @@ export class CommonService {
   ): Promise<void> {
     await this.validateEntity(entity);
 
-      if (isNew) {
+    if (isNew) {
       repo.persist(entity);
     }
 
@@ -97,7 +100,7 @@ export class CommonService {
     } catch (error) {
       this.loggerService.error(error);
 
-        if (error.code === '23505') {
+      if (error.code === '23505') {
         throw new ConflictException(message ?? 'Duplicated value in database');
       }
 
@@ -129,7 +132,7 @@ export class CommonService {
       .trim()
       .replace(/\n/g, ' ')
       .replace(/\s\s+/g, ' ')
-        .replace(/\w\S*/g, (w) => w.replace(/^\w/, (l) => l.toUpperCase()));
+      .replace(/\w\S*/g, (w) => w.replace(/^\w/, (l) => l.toUpperCase()));
   }
 
   /**
@@ -138,10 +141,10 @@ export class CommonService {
    * Takes a string and generates a slug with dtos as word separators
    */
   public generatePointSlug(str: string): string {
-    return slugify(str, { lower: true, replacement: '.', remove: /['_\.\-]/g });
+    return slugify(str, {lower: true, replacement: '.', remove: /['_\.\-]/g});
   }
 
-    public generateMessage(message: string): MessageMapper {
+  public generateMessage(message: string): MessageMapper {
     return new MessageMapper(message);
   }
 }

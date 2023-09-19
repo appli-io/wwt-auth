@@ -1,4 +1,4 @@
-import {FastifyReply} from 'fastify';
+import { FastifyReply } from 'fastify';
 
 class ResponseMock {
   public cookie = jest.fn().mockReturnThis();
@@ -9,4 +9,4 @@ class ResponseMock {
 }
 
 export const createResponseMock = (): FastifyReply =>
-    new ResponseMock() as unknown as FastifyReply;
+  new ResponseMock() as unknown as FastifyReply;
