@@ -1,9 +1,9 @@
-import { MikroOrmModule }   from '@mikro-orm/nestjs';
-import { CacheModule }      from '@nestjs/cache-manager';
-import { Module }           from '@nestjs/common';
-import { ConfigModule }     from '@nestjs/config';
-import { APP_GUARD }        from '@nestjs/core';
-import { ThrottlerModule }  from '@nestjs/throttler';
+import { MikroOrmModule }                         from '@mikro-orm/nestjs';
+import { CacheModule }                            from '@nestjs/cache-manager';
+import { Module }                                 from '@nestjs/common';
+import { ConfigModule }                           from '@nestjs/config';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerModule }                        from '@nestjs/throttler';
 
 import { CommonModule }     from '@common/common.module';
 import { AuthModule }       from '@modules/auth/auth.module';
@@ -17,8 +17,10 @@ import { validationSchema } from '@config/config.schema';
 import { MikroOrmConfig }   from '@config/mikroorm.config';
 import { ThrottlerConfig }  from '@config/throttler.config';
 
-import { AppService }       from './app.service';
-import { config }           from './config';
+import { AppService }              from './app.service';
+import { config }                  from './config';
+import { HttpResponseInterceptor } from '@common/interceptors/http-response.interceptor';
+import { HttpExceptionFilter }     from '@common/filters/http-exception.filter';
 
 @Module({
   imports: [
@@ -52,6 +54,14 @@ import { config }           from './config';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpResponseInterceptor
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
     },
   ],
 })

@@ -1,6 +1,6 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, } from '@nestjs/common';
-import { Observable }                                                  from 'rxjs';
-import { map }                                                         from 'rxjs/operators';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { Observable }                                                 from 'rxjs';
+import { map }                                                        from 'rxjs/operators';
 
 @Injectable()
 export class HttpResponseInterceptor implements NestInterceptor {
@@ -8,17 +8,14 @@ export class HttpResponseInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
 
     return next.handle().pipe(
-      map((content) => {
-        const timestamp = new Date().toISOString();
-
-        return {
-          statusCode: context.switchToHttp().getResponse().statusCode,
-          timestamp,
-          path: request.url,
-          method: request.method,
-          content,
-        };
-      }),
+      map(content => ({
+        content,
+        statusCode: context.switchToHttp().getResponse().statusCode,
+        path: request.url,
+        method: request.method,
+        timestamp: new Date().toISOString(),
+      })),
     );
   }
 }
+
