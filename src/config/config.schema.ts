@@ -4,7 +4,7 @@ export const validationSchema = Joi.object({
   APP_ID: Joi.string().uuid({version: 'uuidv4'}).required(),
   NODE_ENV: Joi.string().required(),
   PORT: Joi.number().required(),
-  DOMAIN: Joi.string().domain().required(),
+  DOMAIN: Joi.string().required(),
   URL: Joi.string().uri().required(),
   DATABASE_URL: Joi.string().required(),
   REDIS_URL: Joi.string().required(),

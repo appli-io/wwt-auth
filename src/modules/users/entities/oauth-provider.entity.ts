@@ -18,6 +18,7 @@ export class OAuthProviderEntity implements IOAuthProvider {
 
   @ManyToOne({
     entity: () => UserEntity,
+
     inversedBy: (u) => u.oauthProviders,
     primary: true,
     onDelete: 'cascade',

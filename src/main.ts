@@ -22,8 +22,15 @@ async function bootstrap() {
   await app.register(fastifyCsrfProtection as any, {cookieOpts: {signed: true}});
   await app.register(fastifyCors as any, {
     credentials: true,
-    origin: `https://${ configService.get<string>('domain') }`
+    origin: configService.get<string>('domain')
   });
+
+  // app.enableCors({
+  //   credentials: true,
+  //   origin: configService.get<string>('domain'),
+  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  // })
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true
