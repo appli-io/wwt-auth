@@ -1,7 +1,7 @@
 import { MikroOrmModule }                         from '@mikro-orm/nestjs';
 import { CacheModule }                            from '@nestjs/cache-manager';
 import { Module }                                 from '@nestjs/common';
-import { ConfigModule }                           from '@nestjs/config';
+import { ConfigModule, ConfigService }            from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule }                        from '@nestjs/throttler';
 
@@ -30,8 +30,9 @@ import { HttpExceptionFilter }     from '@common/filters/http-exception.filter';
       load: [ config ],
     }),
     MikroOrmModule.forRootAsync({
+      providers: [ ConfigService ],
       imports: [ ConfigModule ],
-      useClass: MikroOrmConfig,
+      useClass: MikroOrmConfig
     }),
     CacheModule.registerAsync({
       isGlobal: true,
