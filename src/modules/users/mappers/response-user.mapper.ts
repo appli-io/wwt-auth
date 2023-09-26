@@ -30,6 +30,15 @@ export class ResponseUserMapper implements IResponseUser {
   public username: string;
 
   @ApiProperty({
+    description: 'User email',
+    example: 'john.doe1@email.com',
+    minLength: 3,
+    maxLength: 106,
+    type: String,
+  })
+  public email: string;
+
+  @ApiProperty({
     description: 'User creation date',
     example: '2021-01-01T00:00:00.000Z',
     type: String,
@@ -52,6 +61,7 @@ export class ResponseUserMapper implements IResponseUser {
       id: user.id,
       name: user.name,
       username: user.username,
+      email: user.email,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     });

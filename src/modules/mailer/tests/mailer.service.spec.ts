@@ -25,7 +25,6 @@ describe('MailerService', () => {
     jest
       .spyOn(service, 'sendEmail')
       .mockImplementation((_, __, html: string, log?: string) => {
-        console.log('html', html);
         if (log) {
           console.log(log);
         }

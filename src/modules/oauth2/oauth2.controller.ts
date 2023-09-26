@@ -11,7 +11,7 @@ import { IFacebookUser, IGitHubUser, IGoogleUser, IMicrosoftUser, } from './inte
 import { Oauth2Service }                                            from './oauth2.service';
 
 @ApiTags('Oauth2')
-@Controller('api/auth/ext')
+@Controller('auth/ext')
 @UseGuards(FastifyThrottlerGuard)
 export class Oauth2Controller {
   private readonly url: string;

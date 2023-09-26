@@ -65,7 +65,7 @@ describe('AppController (e2e)', () => {
   } as IUser;
   const newEmail = faker.internet.email().toLowerCase();
 
-  describe('api/auth', () => {
+  describe('auth', () => {
     const baseUrl = '/api/auth';
 
     describe('sign-up', () => {
@@ -525,7 +525,7 @@ describe('AppController (e2e)', () => {
     });
   });
 
-  describe('api/users', () => {
+  describe('users', () => {
     const baseUrl = '/api/users';
 
     describe('find-user', () => {

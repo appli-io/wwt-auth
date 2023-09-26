@@ -9,32 +9,31 @@ import {
   ApiUnauthorizedResponse,
 }                                                                                                                from '@nestjs/swagger';
 import { FastifyReply, FastifyRequest }                                                                          from 'fastify';
-import { IMessage }                                                                                              from '@common/interfaces/message.interface';
-import { MessageMapper }                                                                                         from '@common/mappers/message.mapper';
-import {
-  isNull,
-  isUndefined
-}                                                                                                                from '@common/utils/validation.util';
-import { UsersService }                                                                                          from '../users/users.service';
-import { AuthService }                                                                                           from './auth.service';
-import { CurrentUser }                                                                                           from './decorators/current-user.decorator';
-import { Origin }                                                                                                from './decorators/origin.decorator';
-import { Public }                                                                                                from './decorators/public.decorator';
-import { ChangePasswordDto }                                                                                     from './dtos/change-password.dto';
-import { ConfirmEmailDto }                                                                                       from './dtos/confirm-email.dto';
-import { EmailDto }                                                                                              from './dtos/email.dto';
-import { ResetPasswordDto }                                                                                      from './dtos/reset-password.dto';
-import { SignInDto }                                                                                             from './dtos/sign-in.dto';
-import { SignUpDto }                                                                                             from './dtos/sign-up.dto';
-import { FastifyThrottlerGuard }                                                                                 from './guards/fastify-throttler.guard';
-import { IAuthResponseUser }                                                                                     from './interfaces/auth-response-user.interface';
-import { IOAuthProvidersResponse }                                                                               from './interfaces/oauth-provider-response.interface';
-import { AuthResponseUserMapper }                                                                                from './mappers/auth-response-user.mapper';
-import { AuthResponseMapper }                                                                                    from './mappers/auth-response.mapper';
-import { OAuthProvidersResponseMapper }                                                                          from './mappers/oauth-provider-response.mapper';
+
+import { isNull, isUndefined } from '@common/utils/validation.util';
+import { IMessage }            from '@common/interfaces/message.interface';
+import { MessageMapper }       from '@common/mappers/message.mapper';
+
+import { UsersService }                 from '../users/users.service';
+import { AuthService }                  from './auth.service';
+import { CurrentUser }                  from './decorators/current-user.decorator';
+import { Origin }                       from './decorators/origin.decorator';
+import { Public }                       from './decorators/public.decorator';
+import { ChangePasswordDto }            from './dtos/change-password.dto';
+import { ConfirmEmailDto }              from './dtos/confirm-email.dto';
+import { EmailDto }                     from './dtos/email.dto';
+import { ResetPasswordDto }             from './dtos/reset-password.dto';
+import { SignInDto }                    from './dtos/sign-in.dto';
+import { SignUpDto }                    from './dtos/sign-up.dto';
+import { FastifyThrottlerGuard }        from './guards/fastify-throttler.guard';
+import { IAuthResponseUser }            from './interfaces/auth-response-user.interface';
+import { IOAuthProvidersResponse }      from './interfaces/oauth-provider-response.interface';
+import { AuthResponseUserMapper }       from './mappers/auth-response-user.mapper';
+import { AuthResponseMapper }           from './mappers/auth-response.mapper';
+import { OAuthProvidersResponseMapper } from './mappers/oauth-provider-response.mapper';
 
 @ApiTags('Auth')
-@Controller('api/auth')
+@Controller('auth')
 @UseGuards(FastifyThrottlerGuard)
 export class AuthController {
   private readonly cookiePath = '/api/auth';

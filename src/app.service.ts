@@ -18,11 +18,8 @@ export class AppService implements OnModuleInit, OnModuleDestroy {
   public async onModuleInit() {
     const updateDump = await this.orm.getSchemaGenerator().getUpdateSchemaSQL();
     const createDump = await this.orm.getSchemaGenerator().getCreateSchemaSQL();
-    console.log('createDump', createDump);
 
     if (updateDump) {
-      console.log('Actualizando esquema...');
-      console.log(updateDump);
       await this.orm.getSchemaGenerator().updateSchema();
     } else {
       console.log('El esquema está actualizado.');

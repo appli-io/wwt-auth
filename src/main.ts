@@ -15,6 +15,8 @@ async function bootstrap() {
     new FastifyAdapter()
   );
   const configService = app.get(ConfigService);
+
+  app.setGlobalPrefix('api');
   await app.register(fastifyCookie as any, {
     secret: configService.get<string>('COOKIE_SECRET')
   });
