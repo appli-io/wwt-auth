@@ -43,9 +43,11 @@ export class MailerService {
   public sendConfirmationEmail(user: IUser, token: string): void {
     const {email, name} = user;
     const subject = 'Confirm your email';
+    // If link contain http or https regex search, set domain, else add it
+    const domain = this.domain.includes('http') ? this.domain : `https://${ this.domain }`;
     const html = this.templates.confirmation({
       name,
-      link: `https://${ this.domain }/auth/confirm/${ token }`,
+      link: `${ domain }/auth/confirm/${ token }`,
     });
     this.sendEmail(email, subject, html, 'A new confirmation email was sent.');
   }
@@ -53,9 +55,10 @@ export class MailerService {
   public sendResetPasswordEmail(user: IUser, token: string): void {
     const {email, name} = user;
     const subject = 'Reset your password';
+    const domain = this.domain.includes('http') ? this.domain : `https://${ this.domain }`;
     const html = this.templates.resetPassword({
       name,
-      link: `https://${ this.domain }/auth/reset-password/${ token }`,
+      link: `${ domain }/auth/reset-password/${ token }`,
     });
     this.sendEmail(
       email,

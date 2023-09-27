@@ -45,6 +45,14 @@ export class UserEntity implements IUser {
   @Embedded(() => CredentialsEmbeddable)
   public credentials: CredentialsEmbeddable = new CredentialsEmbeddable();
 
+  // User profile picture
+  @Property({columnType: 'varchar', length: 255, nullable: true})
+  public avatar: string;
+
+  // JSON of user's settings
+  @Property({columnType: 'json', nullable: true})
+  public settings: Record<string, any>;
+
   @Property({onCreate: () => new Date()})
   public createdAt: Date = new Date();
 

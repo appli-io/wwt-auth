@@ -39,6 +39,15 @@ export class ResponseUserMapper implements IResponseUser {
   public email: string;
 
   @ApiProperty({
+    description: 'User avatar',
+    example: 'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50',
+    minLength: 3,
+    maxLength: 255,
+    type: String,
+  })
+  public avatar: string;
+
+  @ApiProperty({
     description: 'User creation date',
     example: '2021-01-01T00:00:00.000Z',
     type: String,
@@ -62,6 +71,7 @@ export class ResponseUserMapper implements IResponseUser {
       name: user.name,
       username: user.username,
       email: user.email,
+      avatar: user.avatar,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     });

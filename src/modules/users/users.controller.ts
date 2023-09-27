@@ -123,4 +123,23 @@ export class UsersController {
       .status(HttpStatus.NO_CONTENT)
       .send();
   }
+
+  @Patch('/avatar')
+  @ApiOkResponse({
+    type: ResponseUserMapper,
+    description: 'The avatar is updated.',
+  })
+  @ApiBadRequestResponse({
+    description: 'Something is invalid on the request body.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'The user is not logged in.',
+  })
+  public async updateAvatar(
+    @CurrentUser() id: number,
+    @Body() dto: { avatar: string },
+  ): Promise<IResponseUser> {
+    const user = await this.usersService.updateAvatar(id, dto);
+    return ResponseUserMapper.map(user);
+  }
 }

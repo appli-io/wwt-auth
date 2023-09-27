@@ -49,6 +49,7 @@ export class JwtService {
     return new Promise((resolve, rejects) => {
       jwt.verify(token, secret, options, (error, payload: T) => {
         if (error) {
+          console.log(error);
           rejects(error);
           return;
         }
@@ -131,10 +132,11 @@ export class JwtService {
 
   public async verifyToken<
     T extends IAccessToken | IRefreshToken | IEmailToken,
-  >(token: string, tokenType: TokenTypeEnum): Promise<T> {
+  >(token: string, tokenType: TokenTypeEnum, origin?: string): Promise<T> {
+    console.log(origin);
     const jwtOptions: jwt.VerifyOptions = {
       issuer: this.issuer,
-      audience: new RegExp(this.domain),
+      audience: origin ? new RegExp(origin) : new RegExp(this.domain),
     };
 
     switch (tokenType) {

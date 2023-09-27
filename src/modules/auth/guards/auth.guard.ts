@@ -58,10 +58,13 @@ export class AuthGuard implements CanActivate {
       return isPublic;
     }
 
+    const origin = req.headers?.origin;
+
     try {
       const {id} = await this.jwtService.verifyToken(
         token,
         TokenTypeEnum.ACCESS,
+        origin
       );
       req.user = id;
       return true;

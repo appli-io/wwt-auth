@@ -274,6 +274,13 @@ export class UsersService {
     );
   }
 
+  async updateAvatar(id: number, dto: { avatar: string }) {
+    const user = await this.findOneById(id);
+    user.avatar = dto.avatar;
+    await this.commonService.saveEntity(this.usersRepository, user);
+    return user;
+  }
+
   private async changePassword(
     user: UserEntity,
     password: string,

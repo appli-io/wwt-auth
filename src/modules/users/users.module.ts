@@ -8,6 +8,7 @@ import { RolEntity }                from '@modules/users/entities/rol.entity';
 import { PermissionActionEntity }   from '@modules/users/entities/permission/action.entity';
 import { PermissionResourceEntity } from '@modules/users/entities/permission/resource.entity';
 import { RolResourceActionEntity }  from '@modules/users/entities/rol-resource-action.entity';
+import { JwtModule }                from '@modules/jwt/jwt.module';
 
 @Module({
   imports: [ MikroOrmModule.forFeature([
@@ -17,7 +18,9 @@ import { RolResourceActionEntity }  from '@modules/users/entities/rol-resource-a
     RolEntity,
     RolResourceActionEntity,
     UserEntity,
-  ]) ],
+  ]),
+    JwtModule
+  ],
   providers: [ UsersService ],
   exports: [ UsersService ],
   controllers: [ UsersController ],
