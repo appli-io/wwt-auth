@@ -1,4 +1,4 @@
-import { IRol }                         from '@modules/users/interfaces/rol.interface';
+import { IRol }                         from '@modules/permissions/interfaces/rol.interface';
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { IsString, Length, Matches }    from 'class-validator';
 import { NAME_REGEX }                   from '@common/consts/regex.const';

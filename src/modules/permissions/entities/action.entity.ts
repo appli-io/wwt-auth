@@ -1,11 +1,11 @@
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { IsString, Length, Matches }    from 'class-validator';
 
-import { IPermissionResource } from '@modules/users/interfaces/permission/resource.interface';
-import { NAME_REGEX }          from '@common/consts/regex.const';
+import { IPermissionAction } from '@modules/permissions/interfaces/action.interface';
+import { NAME_REGEX }        from '@common/consts/regex.const';
 
-@Entity({tableName: 'permission_resource'})
-export class PermissionResourceEntity implements IPermissionResource {
+@Entity({tableName: 'permission_action'})
+export class PermissionActionEntity implements IPermissionAction {
   @PrimaryKey()
   public id: number;
 

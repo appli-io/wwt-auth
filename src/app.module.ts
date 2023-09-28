@@ -20,6 +20,7 @@ import { ThrottlerConfig }  from '@config/throttler.config';
 import { AppService }              from './app.service';
 import { config }                  from './config';
 import { HttpResponseInterceptor } from '@common/interceptors/http-response.interceptor';
+import { PermissionsModule }       from './modules/permissions/permissions.module';
 import { HttpExceptionFilter }     from '@common/filters/http-exception.filter';
 
 @Module({
@@ -49,6 +50,7 @@ import { HttpExceptionFilter }     from '@common/filters/http-exception.filter';
     JwtModule,
     MailerModule,
     Oauth2Module,
+    PermissionsModule,
   ],
   providers: [
     AppService,

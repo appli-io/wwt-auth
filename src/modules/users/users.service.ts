@@ -18,10 +18,8 @@ import { OAuthProvidersEnum }                                                   
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly usersRepository: EntityRepository<UserEntity>,
-    @InjectRepository(OAuthProviderEntity)
-    private readonly oauthProvidersRepository: EntityRepository<OAuthProviderEntity>,
+    @InjectRepository(UserEntity) private readonly usersRepository: EntityRepository<UserEntity>,
+    @InjectRepository(OAuthProviderEntity) private readonly oauthProvidersRepository: EntityRepository<OAuthProviderEntity>,
     private readonly commonService: CommonService,
   ) {
   }

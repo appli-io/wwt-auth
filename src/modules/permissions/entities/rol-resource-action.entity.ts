@@ -1,7 +1,7 @@
 import { Entity, Index, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { RolEntity }                            from '@modules/users/entities/rol.entity';
-import { PermissionResourceEntity }             from '@modules/users/entities/permission/resource.entity';
-import { PermissionActionEntity }               from '@modules/users/entities/permission/action.entity';
+import { PermissionResourceEntity }             from '@modules/permissions/entities/resource.entity';
+import { PermissionActionEntity }               from '@modules/permissions/entities/action.entity';
 
 @Entity({tableName: 'rol_resource_action'})
 @Index({properties: [ 'rol', 'resource', 'action' ]})
