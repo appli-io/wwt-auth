@@ -24,12 +24,7 @@ export class UsersService {
   ) {
   }
 
-  public async create(
-    provider: OAuthProvidersEnum,
-    email: string,
-    name: string,
-    password?: string,
-  ): Promise<UserEntity> {
+  public async create(provider: OAuthProvidersEnum, email: string, name: string, password?: string,): Promise<UserEntity> {
     const isConfirmed = provider !== OAuthProvidersEnum.LOCAL;
     const formattedEmail = email.toLowerCase();
     await this.checkEmailUniqueness(formattedEmail);
@@ -51,9 +46,7 @@ export class UsersService {
     return this.usersRepository.findAll();
   }
 
-  public async findOneByIdOrUsername(
-    idOrUsername: string,
-  ): Promise<UserEntity> {
+  public async findOneByIdOrUsername(idOrUsername: string,): Promise<UserEntity> {
     const parsedValue = parseInt(idOrUsername, 10);
 
     if (!isNaN(parsedValue) && parsedValue > 0 && isInt(parsedValue)) {
@@ -77,10 +70,7 @@ export class UsersService {
     return user;
   }
 
-  public async findOneByUsername(
-    username: string,
-    forAuth = false,
-  ): Promise<UserEntity> {
+  public async findOneByUsername(username: string, forAuth = false,): Promise<UserEntity> {
     const user = await this.usersRepository.findOne({
       username: username.toLowerCase(),
     });
@@ -109,10 +99,7 @@ export class UsersService {
     });
   }
 
-  public async findOneByCredentials(
-    id: number,
-    version: number,
-  ): Promise<UserEntity> {
+  public async findOneByCredentials(id: number, version: number,): Promise<UserEntity> {
     const user = await this.usersRepository.findOne({id});
     this.throwUnauthorizedException(user);
 
@@ -123,10 +110,7 @@ export class UsersService {
     return user;
   }
 
-  public async confirmEmail(
-    userId: number,
-    version: number,
-  ): Promise<UserEntity> {
+  public async confirmEmail(userId: number, version: number,): Promise<UserEntity> {
     const user = await this.findOneByCredentials(userId, version);
 
     if (user.confirmed) {
@@ -165,11 +149,7 @@ export class UsersService {
     return user;
   }
 
-  public async updatePassword(
-    userId: number,
-    newPassword: string,
-    password?: string,
-  ): Promise<UserEntity> {
+  public async updatePassword(userId: number, newPassword: string, password?: string,): Promise<UserEntity> {
     const user = await this.findOneById(userId);
 
     if (user.password === 'UNSET') {
@@ -189,19 +169,12 @@ export class UsersService {
     return await this.changePassword(user, newPassword);
   }
 
-  public async resetPassword(
-    userId: number,
-    version: number,
-    password: string,
-  ): Promise<UserEntity> {
+  public async resetPassword(userId: number, version: number, password: string,): Promise<UserEntity> {
     const user = await this.findOneByCredentials(userId, version);
     return await this.changePassword(user, password);
   }
 
-  public async updateEmail(
-    userId: number,
-    dto: ChangeEmailDto,
-  ): Promise<UserEntity> {
+  public async updateEmail(userId: number, dto: ChangeEmailDto,): Promise<UserEntity> {
     const user = await this.findOneById(userId);
     const {email, password} = dto;
 
@@ -232,11 +205,7 @@ export class UsersService {
     return user;
   }
 
-  public async findOrCreate(
-    provider: OAuthProvidersEnum,
-    email: string,
-    name: string,
-  ): Promise<UserEntity> {
+  public async findOrCreate(provider: OAuthProvidersEnum, email: string, name: string,): Promise<UserEntity> {
     const formattedEmail = email.toLowerCase();
     const user = await this.usersRepository.findOne(
       {
@@ -261,9 +230,7 @@ export class UsersService {
     return user;
   }
 
-  public async findOAuthProviders(
-    userId: number,
-  ): Promise<OAuthProviderEntity[]> {
+  public async findOAuthProviders(userId: number,): Promise<OAuthProviderEntity[]> {
     return await this.oauthProvidersRepository.find(
       {
         user: userId,
@@ -279,10 +246,7 @@ export class UsersService {
     return user;
   }
 
-  private async changePassword(
-    user: UserEntity,
-    password: string,
-  ): Promise<UserEntity> {
+  private async changePassword(user: UserEntity, password: string,): Promise<UserEntity> {
     user.credentials.updatePassword(user.password);
     user.password = await hash(password, 10);
     await this.commonService.saveEntity(this.usersRepository, user);
@@ -297,9 +261,7 @@ export class UsersService {
     }
   }
 
-  private throwUnauthorizedException(
-    user: undefined | null | UserEntity,
-  ): void {
+  private throwUnauthorizedException(user: undefined | null | UserEntity,): void {
     if (isUndefined(user) || isNull(user)) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -334,10 +296,7 @@ export class UsersService {
     return pointSlug;
   }
 
-  private async createOAuthProvider(
-    provider: OAuthProvidersEnum,
-    userId: number,
-  ): Promise<OAuthProviderEntity> {
+  private async createOAuthProvider(provider: OAuthProvidersEnum, userId: number,): Promise<OAuthProviderEntity> {
     const oauthProvider = this.oauthProvidersRepository.create({
       provider,
       user: userId,
