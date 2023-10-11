@@ -30,6 +30,15 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
   public username: string;
 
   @ApiProperty({
+    description: 'User avatar',
+    example: 'https://example.com/avatar.png',
+    minLength: 3,
+    maxLength: 255,
+    type: String,
+  })
+  public avatar: string;
+
+  @ApiProperty({
     description: 'User email',
     example: 'example@gmail.com',
     minLength: 5,
@@ -60,6 +69,7 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
       id: user.id,
       name: user.name,
       username: user.username,
+      avatar: user.avatar,
       email: user.email,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),

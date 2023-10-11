@@ -120,7 +120,7 @@ export class AuthController {
       .send(AuthResponseMapper.map(result));
   }
 
-  @Post('/logout')
+  @Post('/sign-out')
   @ApiOkResponse({
     type: MessageMapper,
     description: 'The user is logged out',
@@ -131,7 +131,7 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'Invalid token',
   })
-  public async logout(
+  public async signOut(
     @Req() req: FastifyRequest,
     @Res() res: FastifyReply,
   ): Promise<void> {
