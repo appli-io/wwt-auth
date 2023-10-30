@@ -16,10 +16,11 @@ import { AuthResponseUserMapper }                                        from '.
 import { ChangeEmailDto }                                                from './dtos/change-email.dto';
 import { GetUserParams }                                                 from './dtos/get-user.params';
 import { PasswordDto }                                                   from './dtos/password.dto';
-import { UpdateUserDto }                                                 from './dtos/update-user.dto';
+import { UpdateUsernameDto }                                             from './dtos/update-username.dto';
 import { IResponseUser }                                                 from './interfaces/response-user.interface';
 import { ResponseUserMapper }                                            from './mappers/response-user.mapper';
 import { UsersService }                                                  from './users.service';
+import { UpdateUserInfoDto }                                             from '@modules/users/dtos/update-user-info.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -64,7 +65,26 @@ export class UsersController {
     return ResponseUserMapper.map(user);
   }
 
-  @Patch()
+  @Patch('/info')
+  @ApiOkResponse({
+    type: ResponseUserMapper,
+    description: 'The user is updated.',
+  })
+  @ApiBadRequestResponse({
+    description: 'Something is invalid on the request body.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'The user is not logged in.',
+  })
+  public async update(
+    @CurrentUser() id: number,
+    @Body() dto: UpdateUserInfoDto,
+  ): Promise<IResponseUser> {
+    const user = await this.usersService.updateUserInfo(id, dto);
+    return ResponseUserMapper.map(user);
+  }
+
+  @Patch('/username')
   @ApiOkResponse({
     type: ResponseUserMapper,
     description: 'The username is updated.',
@@ -75,11 +95,11 @@ export class UsersController {
   @ApiUnauthorizedResponse({
     description: 'The user is not logged in.',
   })
-  public async updateUser(
+  public async updateUsername(
     @CurrentUser() id: number,
-    @Body() dto: UpdateUserDto,
+    @Body() dto: UpdateUsernameDto,
   ): Promise<IResponseUser> {
-    const user = await this.usersService.update(id, dto);
+    const user = await this.usersService.updateUsername(id, dto);
     return ResponseUserMapper.map(user);
   }
 

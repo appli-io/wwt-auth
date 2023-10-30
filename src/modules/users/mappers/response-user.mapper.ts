@@ -48,18 +48,22 @@ export class ResponseUserMapper implements IResponseUser {
   public avatar: string;
 
   @ApiProperty({
-    description: 'User creation date',
-    example: '2021-01-01T00:00:00.000Z',
+    description: 'User position',
+    example: 'Software Engineer',
+    minLength: 3,
+    maxLength: 255,
     type: String,
   })
-  public createdAt: string;
+  public position: string;
 
   @ApiProperty({
-    description: 'User last update date',
-    example: '2021-01-01T00:00:00.000Z',
+    description: 'User location',
+    example: 'San Francisco, CA',
+    minLength: 3,
+    maxLength: 255,
     type: String,
   })
-  public updatedAt: string;
+  public location: string;
 
   constructor(values: IResponseUser) {
     Object.assign(this, values);
@@ -72,8 +76,8 @@ export class ResponseUserMapper implements IResponseUser {
       username: user.username,
       email: user.email,
       avatar: user.avatar,
-      createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString(),
+      position: user.position,
+      location: user.location,
     });
   }
 }

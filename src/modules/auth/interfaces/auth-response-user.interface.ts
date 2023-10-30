@@ -4,6 +4,6 @@ export interface IAuthResponseUser {
   username: string;
   avatar: string;
   email: string;
-  createdAt: string;
-  updatedAt: string;
+  position: string;
+  location: string;
 }

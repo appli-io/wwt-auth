@@ -31,11 +31,9 @@ export class OAuthClass {
     tokenPath: '/login/oauth/access_token',
   };
   private static userDataUrls: Record<OAuthProvidersEnum, string> = {
-    [OAuthProvidersEnum.GOOGLE]:
-      'https://www.googleapis.com/oauth2/v3/userinfo',
+    [OAuthProvidersEnum.GOOGLE]: 'https://www.googleapis.com/oauth2/v3/userinfo',
     [OAuthProvidersEnum.MICROSOFT]: 'https://graph.microsoft.com/v1.0/me',
-    [OAuthProvidersEnum.FACEBOOK]:
-      'https://graph.facebook.com/v16.0/me?fields=email,name',
+    [OAuthProvidersEnum.FACEBOOK]: 'https://graph.facebook.com/v16.0/me?fields=email,name',
     [OAuthProvidersEnum.GITHUB]: 'https://api.github.com/user',
     [OAuthProvidersEnum.LOCAL]: '',
   };
@@ -88,6 +86,7 @@ export class OAuthClass {
           scope: [
             'https://www.googleapis.com/auth/userinfo.email',
             'https://www.googleapis.com/auth/userinfo.profile',
+            'OpenID'
           ],
         };
       case OAuthProvidersEnum.MICROSOFT:

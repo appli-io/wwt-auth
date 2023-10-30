@@ -3,7 +3,7 @@ import { IsString, Length, Matches, ValidateIf } from 'class-validator';
 import { NAME_REGEX, SLUG_REGEX }                from '@common/consts/regex.const';
 import { isNull, isUndefined }                   from '@common/utils/validation.util';
 
-export abstract class UpdateUserDto {
+export abstract class UpdateUsernameDto {
   @ApiProperty({
     description: 'The new username',
     example: 'new-username',
@@ -15,7 +15,7 @@ export abstract class UpdateUserDto {
     message: 'Username must be a valid slugs',
   })
   @ValidateIf(
-    (o: UpdateUserDto) =>
+    (o: UpdateUsernameDto) =>
       !isUndefined(o.username) || isUndefined(o.name) || isNull(o.name),
   )
   public username?: string;
@@ -31,7 +31,7 @@ export abstract class UpdateUserDto {
     message: 'Name must not have special characters',
   })
   @ValidateIf(
-    (o: UpdateUserDto) =>
+    (o: UpdateUsernameDto) =>
       !isUndefined(o.name) || isUndefined(o.username) || isNull(o.username),
   )
   public name?: string;

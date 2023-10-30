@@ -8,6 +8,8 @@ export interface IUser {
   password: string;
   confirmed: boolean;
   avatar: string;
+  position: string;
+  location: string;
   settings: Record<string, any>;
   credentials: ICredentials;
   createdAt: Date;

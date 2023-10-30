@@ -49,6 +49,14 @@ export class UserEntity implements IUser {
   @Property({columnType: 'varchar', length: 255, nullable: true})
   public avatar: string;
 
+  // User's position
+  @Property({columnType: 'varchar', length: 255, nullable: true})
+  public position: string;
+
+  // User's location
+  @Property({columnType: 'varchar', length: 255, nullable: true})
+  public location: string;
+
   // JSON of user's settings
   @Property({columnType: 'json', nullable: true})
   public settings: Record<string, any>;

@@ -9,11 +9,12 @@ import { SLUG_REGEX }                                                           
 import { isNull, isUndefined }                                                        from '@common/utils/validation.util';
 import { ChangeEmailDto }                                                             from './dtos/change-email.dto';
 import { PasswordDto }                                                                from './dtos/password.dto';
-import { UpdateUserDto }                                                              from './dtos/update-user.dto';
+import { UpdateUsernameDto }                                                          from './dtos/update-username.dto';
 import { CredentialsEmbeddable }                                                      from './embeddables/credentials.embeddable';
 import { OAuthProviderEntity }                                                        from './entities/oauth-provider.entity';
 import { UserEntity }                                                                 from './entities/user.entity';
 import { OAuthProvidersEnum }                                                         from './enums/oauth-providers.enum';
+import { UpdateUserInfoDto }                                                          from '@modules/users/dtos/update-user-info.dto';
 
 @Injectable()
 export class UsersService {
@@ -123,7 +124,7 @@ export class UsersService {
     return user;
   }
 
-  public async update(userId: number, dto: UpdateUserDto): Promise<UserEntity> {
+  public async updateUsername(userId: number, dto: UpdateUsernameDto): Promise<UserEntity> {
     const user = await this.findOneById(userId);
     const {name, username} = dto;
 
@@ -144,6 +145,23 @@ export class UsersService {
       await this.checkUsernameUniqueness(formattedUsername);
       user.username = formattedUsername;
     }
+
+    await this.commonService.saveEntity(this.usersRepository, user);
+    return user;
+  }
+
+  public async updateUserInfo(userId: number, dto: UpdateUserInfoDto): Promise<UserEntity> {
+    const {avatar, position, location} = dto;
+    const user = await this.findOneById(userId);
+
+    if (!isUndefined(avatar) && !isNull(avatar) && avatar !== user.avatar)
+      user.avatar = avatar;
+
+    if (!isUndefined(position) && !isNull(position) && position !== user.position)
+      user.position = position;
+
+    if (!isUndefined(location) && !isNull(location) && location !== user.location)
+      user.location = location;
 
     await this.commonService.saveEntity(this.usersRepository, user);
     return user;

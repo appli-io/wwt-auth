@@ -47,18 +47,22 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
   public email: string;
 
   @ApiProperty({
-    description: 'User creation date',
-    example: '2021-01-01T00:00:00.000Z',
+    description: 'User position',
+    example: 'Software Engineer',
+    minLength: 3,
+    maxLength: 255,
     type: String,
   })
-  public createdAt: string;
+  public position: string;
 
   @ApiProperty({
-    description: 'User last update date',
-    example: '2021-01-01T00:00:00.000Z',
+    description: 'User location',
+    example: 'San Francisco, CA',
+    minLength: 3,
+    maxLength: 255,
     type: String,
   })
-  public updatedAt: string;
+  public location: string;
 
   constructor(values: IAuthResponseUser) {
     Object.assign(this, values);
@@ -71,8 +75,8 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
       username: user.username,
       avatar: user.avatar,
       email: user.email,
-      createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString(),
+      position: user.position,
+      location: user.location,
     });
   }
 }
