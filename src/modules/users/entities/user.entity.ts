@@ -1,9 +1,10 @@
-import { Collection, Embedded, Entity, OneToMany, PrimaryKey, Property, } from '@mikro-orm/core';
-import { IsBoolean, IsEmail, IsString, Length, Matches }                  from 'class-validator';
-import { BCRYPT_HASH_OR_UNSET, NAME_REGEX, SLUG_REGEX, }                  from '@common/consts/regex.const';
-import { CredentialsEmbeddable }                                          from '../embeddables/credentials.embeddable';
-import { IUser }                                                          from '../interfaces/user.interface';
-import { OAuthProviderEntity }                                            from './oauth-provider.entity';
+import { Collection, Embedded, Entity, OneToMany, PrimaryKey, Property, }   from '@mikro-orm/core';
+import { IsBoolean, IsEmail, IsOptional, IsString, IsUrl, Length, Matches } from 'class-validator';
+import { BCRYPT_HASH_OR_UNSET, NAME_REGEX, SLUG_REGEX, }                    from '@common/consts/regex.const';
+import { CredentialsEmbeddable }                                            from '../embeddables/credentials.embeddable';
+import { IUser }                                                            from '../interfaces/user.interface';
+import { OAuthProviderEntity }                                              from './oauth-provider.entity';
+import { CompanyEntity }                                                    from '@modules/company/entities/company.entity';
 
 @Entity({tableName: 'users'})
 export class UserEntity implements IUser {
@@ -47,14 +48,21 @@ export class UserEntity implements IUser {
 
   // User profile picture
   @Property({columnType: 'varchar', length: 255, nullable: true})
+  @IsString()
+  @IsUrl()
+  @IsOptional()
   public avatar: string;
 
   // User's position
   @Property({columnType: 'varchar', length: 255, nullable: true})
+  @IsString()
+  @IsOptional()
   public position: string;
 
   // User's location
   @Property({columnType: 'varchar', length: 255, nullable: true})
+  @IsString()
+  @IsOptional()
   public location: string;
 
   // JSON of user's settings
@@ -69,4 +77,7 @@ export class UserEntity implements IUser {
 
   @OneToMany(() => OAuthProviderEntity, (oauth) => oauth.user)
   public oauthProviders = new Collection<OAuthProviderEntity, UserEntity>(this);
+
+  @OneToMany(() => CompanyEntity, (company) => company.owner)
+  public companies = new Collection<CompanyEntity, UserEntity>(this);
 }
