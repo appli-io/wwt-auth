@@ -29,10 +29,10 @@ export class UsersController {
   private cookieName: string;
 
   constructor(
-    private readonly usersService: UsersService,
-    private readonly configService: ConfigService,
+    private readonly _usersService: UsersService,
+    private readonly _configService: ConfigService,
   ) {
-    this.cookieName = this.configService.get<string>('REFRESH_COOKIE');
+    this.cookieName = this._configService.get<string>('REFRESH_COOKIE');
   }
 
   @Public()
@@ -42,7 +42,7 @@ export class UsersController {
     description: 'The users are found and returned.',
   })
   public async getUsers(): Promise<IResponseUser[]> {
-    const users = await this.usersService.findAll();
+    const users = await this._usersService.findAll();
     return users.map(ResponseUserMapper.map);
   }
 
@@ -59,7 +59,7 @@ export class UsersController {
     description: 'The user is not found.',
   })
   public async getUser(@Param() params: GetUserParams): Promise<IResponseUser> {
-    const user = await this.usersService.findOneByIdOrUsername(
+    const user = await this._usersService.findOneByIdOrUsername(
       params.idOrUsername,
     );
     return ResponseUserMapper.map(user);
@@ -80,7 +80,7 @@ export class UsersController {
     @CurrentUser() id: number,
     @Body() dto: UpdateUserInfoDto,
   ): Promise<IResponseUser> {
-    const user = await this.usersService.updateUserInfo(id, dto);
+    const user = await this._usersService.updateUserInfo(id, dto);
     return ResponseUserMapper.map(user);
   }
 
@@ -99,7 +99,7 @@ export class UsersController {
     @CurrentUser() id: number,
     @Body() dto: UpdateUsernameDto,
   ): Promise<IResponseUser> {
-    const user = await this.usersService.updateUsername(id, dto);
+    const user = await this._usersService.updateUsername(id, dto);
     return ResponseUserMapper.map(user);
   }
 
@@ -118,7 +118,7 @@ export class UsersController {
     @CurrentUser() id: number,
     @Body() dto: ChangeEmailDto,
   ): Promise<IAuthResponseUser> {
-    const user = await this.usersService.updateEmail(id, dto);
+    const user = await this._usersService.updateEmail(id, dto);
     return AuthResponseUserMapper.map(user);
   }
 
@@ -137,7 +137,7 @@ export class UsersController {
     @Body() dto: PasswordDto,
     @Res() res: FastifyReply,
   ): Promise<void> {
-    await this.usersService.delete(id, dto);
+    await this._usersService.delete(id, dto);
     res
       .clearCookie(this.cookieName, {path: this.cookiePath})
       .status(HttpStatus.NO_CONTENT)
@@ -159,7 +159,7 @@ export class UsersController {
     @CurrentUser() id: number,
     @Body() dto: { avatar: string },
   ): Promise<IResponseUser> {
-    const user = await this.usersService.updateAvatar(id, dto);
+    const user = await this._usersService.updateAvatar(id, dto);
     return ResponseUserMapper.map(user);
   }
 }

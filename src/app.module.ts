@@ -20,8 +20,9 @@ import { validationSchema }        from '@config/config.schema';
 import { MikroOrmConfig }          from '@config/mikroorm.config';
 import { ThrottlerConfig }         from '@config/throttler.config';
 
-import { AppService } from './app.service';
-import { config }     from './config';
+import { AppService }    from './app.service';
+import { config }        from './config';
+import { CompanyModule } from '@modules/company/company.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { config }     from './config';
       useClass: ThrottlerConfig,
     }),
     CommonModule,
+    CompanyModule,
     UsersModule,
     AuthModule,
     JwtModule,
