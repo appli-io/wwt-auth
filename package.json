@@ -40,7 +40,7 @@
     "@nestjs/platform-fastify": "^9.4.3",
     "@nestjs/swagger": "^6.3.0",
     "@nestjs/throttler": "^4.2.1",
-    "axios": "^1.5.0",
+    "axios" : "^1.6.7",
     "bcrypt": "^5.1.1",
     "cache-manager": "^5.2.3",
     "cache-manager-ioredis-yet": "^1.2.2",

@@ -4,6 +4,7 @@ import { IsString, Length, Matches }               from 'class-validator';
 import { SLUG_REGEX }                              from '@common/consts/regex.const';
 import { NewsCategoryEntity }                      from '@modules/news/entities/news-category.entity';
 import { UserEntity }                              from '@modules/users/entities/user.entity';
+import { CompanyEntity }                           from '@modules/company/entities/company.entity';
 
 @Entity({tableName: 'news'})
 export class NewsEntity implements INews {
@@ -31,12 +32,6 @@ export class NewsEntity implements INews {
   @ManyToOne()
   public category: NewsCategoryEntity;
 
-  @Property({columnType: 'boolean'})
-  public isRead: boolean;
-
-  @Property({columnType: 'integer'})
-  public readTime: number;
-
   // For images, the columnType is json as we want to store an array
   @Property({columnType: 'json'})
   public images: string[];
@@ -47,7 +42,10 @@ export class NewsEntity implements INews {
   @Property({columnType: 'timestamptz', onUpdate: () => new Date()})
   public updatedAt: Date;
 
-  @ManyToOne()
+  @ManyToOne(() => CompanyEntity, {nullable: false})
+  public companyId: CompanyEntity;
+
+  @ManyToOne(() => UserEntity, {nullable: false})
   public createdBy: UserEntity;
 
   @ManyToOne()

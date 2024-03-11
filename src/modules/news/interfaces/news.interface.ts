@@ -16,6 +16,7 @@
 
 import { INewsCategory } from '@modules/news/interfaces/news-category.interface';
 import { IUser }         from '@modules/users/interfaces/user.interface';
+import { ICompany }      from '@modules/company/interfaces/company.interface';
 
 export interface INews {
   id?: string;
@@ -24,8 +25,8 @@ export interface INews {
   abstract?: string;
   body?: string;
   category?: INewsCategory;
-  isRead?: boolean;
-  readTime?: number;
+  companyId?: ICompany;
+  // isRead?: boolean;
   images?: string[];
   publishedAt?: Date;
   updatedAt?: Date;
