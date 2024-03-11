@@ -219,7 +219,7 @@ export class UsersService {
       throw new BadRequestException('Wrong password');
     }
 
-    await this.commonService.removeEntity(this.usersRepository, user);
+    await this.commonService.removeEntity(user);
     return user;
   }
 

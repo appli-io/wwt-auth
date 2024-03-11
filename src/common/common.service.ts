@@ -1,5 +1,5 @@
-import { Dictionary }       from '@mikro-orm/core';
-import { EntityRepository } from '@mikro-orm/postgresql';
+import { Dictionary, EntityManager } from '@mikro-orm/core';
+import { EntityRepository }          from '@mikro-orm/postgresql';
 import {
   BadRequestException,
   ConflictException,
@@ -8,20 +8,20 @@ import {
   Logger,
   LoggerService,
   NotFoundException,
-}                           from '@nestjs/common';
-import { validate }         from 'class-validator';
-import slugify              from 'slugify';
-import { MessageMapper }    from './mappers/message.mapper';
+}                                    from '@nestjs/common';
+import { validate }                  from 'class-validator';
+import slugify                       from 'slugify';
+import { MessageMapper }             from './mappers/message.mapper';
 import {
   isNull,
   isUndefined
-}                           from './utils/validation.util';
+}                                    from './utils/validation.util';
 
 @Injectable()
 export class CommonService {
   private readonly loggerService: LoggerService;
 
-  constructor() {
+  constructor(private _em: EntityManager,) {
     this.loggerService = new Logger(CommonService.name);
   }
 
@@ -70,10 +70,10 @@ export class CommonService {
     await this.validateEntity(entity);
 
     if (isNew) {
-      repo.persist(entity);
+      this._em.persist(entity);
     }
 
-    await this.throwDuplicateError(repo.flush());
+    await this.throwDuplicateError(this._em.flush());
   }
 
   /**
@@ -82,10 +82,9 @@ export class CommonService {
    * Removes an entities from the DB.
    */
   public async removeEntity<T extends Dictionary>(
-    repo: EntityRepository<T>,
     entity: T,
   ): Promise<void> {
-    await this.throwInternalError(repo.removeAndFlush(entity));
+    await this.throwInternalError(this._em.removeAndFlush(entity));
   }
 
   /**

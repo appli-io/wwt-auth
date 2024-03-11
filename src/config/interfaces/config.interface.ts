@@ -1,9 +1,9 @@
-import { MikroOrmModuleOptions }  from '@mikro-orm/nestjs';
-import { ThrottlerModuleOptions } from '@nestjs/throttler';
-import { RedisOptions }           from 'ioredis';
-import { IEmailConfig }           from './email-config.interface';
-import { IJwt }                   from './jwt.interface';
-import { IOAuth2 }                from './oauth2.interface';
+import { MikroOrmModuleOptions } from '@mikro-orm/nestjs';
+import { RedisOptions }          from 'ioredis';
+import { IEmailConfig }          from './email-config.interface';
+import { IJwt }                  from './jwt.interface';
+import { IOAuth2 }               from './oauth2.interface';
+import { ThrottlerOptions }      from '@nestjs/throttler/dist/throttler-module-options.interface';
 
 export interface IConfig {
   readonly id: string;
@@ -14,7 +14,7 @@ export interface IConfig {
   readonly redis: RedisOptions;
   readonly jwt: IJwt;
   readonly emailService: IEmailConfig;
-  readonly throttler: ThrottlerModuleOptions;
+  readonly throttler: ThrottlerOptions;
   readonly testing: boolean;
   readonly oauth2: IOAuth2;
 }
