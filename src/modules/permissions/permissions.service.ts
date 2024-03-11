@@ -28,7 +28,7 @@ export class PermissionsService {
 
   public async createResource(createResourceDto: CreateResourceDto) {
     const resource = this.permissionResourceRepository.create({...createResourceDto});
-    await this.commonService.saveEntity(this.permissionResourceRepository, resource, true);
+    await this.commonService.saveEntity(resource, true);
     return resource;
   }
 
@@ -40,7 +40,7 @@ export class PermissionsService {
 
   public async createAction(createActionDto: CreateActionDto) {
     const action = this.permissionActionRepository.create({...createActionDto});
-    await this.commonService.saveEntity(this.permissionActionRepository, action, true);
+    await this.commonService.saveEntity(action, true);
     return action;
   }
 

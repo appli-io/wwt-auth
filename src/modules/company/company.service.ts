@@ -19,7 +19,7 @@ export class CompanyService {
 
     const company = this.companyRepository.create(createCompanyDto);
 
-    await this.commonService.saveEntity(this.companyRepository, company);
+    await this.commonService.saveEntity(company);
     return company;
   }
 

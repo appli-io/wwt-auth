@@ -38,7 +38,7 @@ export class UsersService {
       confirmed: isConfirmed,
       credentials: new CredentialsEmbeddable(isConfirmed),
     });
-    await this.commonService.saveEntity(this.usersRepository, user, true);
+    await this.commonService.saveEntity(user, true);
     await this.createOAuthProvider(provider, user.id);
     return user;
   }
@@ -120,7 +120,7 @@ export class UsersService {
 
     user.confirmed = true;
     user.credentials.updateVersion();
-    await this.commonService.saveEntity(this.usersRepository, user);
+    await this.commonService.saveEntity(user);
     return user;
   }
 
@@ -146,7 +146,7 @@ export class UsersService {
       user.username = formattedUsername;
     }
 
-    await this.commonService.saveEntity(this.usersRepository, user);
+    await this.commonService.saveEntity(user);
     return user;
   }
 
@@ -163,7 +163,7 @@ export class UsersService {
     if (!isUndefined(location) && !isNull(location) && location !== user.location)
       user.location = location;
 
-    await this.commonService.saveEntity(this.usersRepository, user);
+    await this.commonService.saveEntity(user);
     return user;
   }
 
@@ -208,7 +208,7 @@ export class UsersService {
 
     await this.checkEmailUniqueness(formattedEmail);
     user.email = formattedEmail;
-    await this.commonService.saveEntity(this.usersRepository, user);
+    await this.commonService.saveEntity(user);
     return user;
   }
 
@@ -260,14 +260,14 @@ export class UsersService {
   async updateAvatar(id: number, dto: { avatar: string }) {
     const user = await this.findOneById(id);
     user.avatar = dto.avatar;
-    await this.commonService.saveEntity(this.usersRepository, user);
+    await this.commonService.saveEntity(user);
     return user;
   }
 
   private async changePassword(user: UserEntity, password: string,): Promise<UserEntity> {
     user.credentials.updatePassword(user.password);
     user.password = await hash(password, 10);
-    await this.commonService.saveEntity(this.usersRepository, user);
+    await this.commonService.saveEntity(user);
     return user;
   }
 
@@ -319,11 +319,7 @@ export class UsersService {
       provider,
       user: userId,
     });
-    await this.commonService.saveEntity(
-      this.oauthProvidersRepository,
-      oauthProvider,
-      true,
-    );
+    await this.commonService.saveEntity(oauthProvider, true,);
     return oauthProvider;
   }
 }

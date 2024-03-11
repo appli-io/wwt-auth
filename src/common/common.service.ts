@@ -1,5 +1,4 @@
 import { Dictionary, EntityManager } from '@mikro-orm/core';
-import { EntityRepository }          from '@mikro-orm/postgresql';
 import {
   BadRequestException,
   ConflictException,
@@ -63,7 +62,6 @@ export class CommonService {
    * Validates, saves and flushes entities into the DB
    */
   public async saveEntity<T extends Dictionary>(
-    repo: EntityRepository<T>,
     entity: T,
     isNew = false,
   ): Promise<void> {
