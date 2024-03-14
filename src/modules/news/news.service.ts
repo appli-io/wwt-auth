@@ -21,4 +21,8 @@ export class NewsService {
   public async findByCompanyId(companyId: string): Promise<NewsEntity[]> {
     return this._newsRepository.find({companyId});
   }
+
+  public async create(news: NewsEntity): Promise<NewsEntity> {
+    return this._newsRepository.create(news);
+  }
 }

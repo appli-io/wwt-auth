@@ -41,6 +41,10 @@ export class CreateNewsDto implements Partial<INews> {
   @Length(50)
   body: string;
 
+  @ApiProperty({
+    description: 'News category ID',
+    type: String
+  })
   @IsString()
   @IsUUID()
   categoryId?: string;

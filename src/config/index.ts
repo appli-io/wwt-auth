@@ -1,11 +1,11 @@
-import { LoadStrategy }                       from '@mikro-orm/core';
-import { defineConfig as definePGConfig }     from '@mikro-orm/postgresql';
-import { defineConfig as defineSqliteConfig } from '@mikro-orm/sqlite';
-import { readFileSync }                       from 'fs';
-import { join }                               from 'path';
-import { isUndefined }                        from '../common/utils/validation.util';
-import { IConfig }                            from './interfaces/config.interface';
-import { redisUrlParser }                     from './utils/redis-url-parser.util';
+import { LoadStrategy }                   from '@mikro-orm/core';
+import { defineConfig as definePGConfig } from '@mikro-orm/postgresql';
+import { readFileSync }                   from 'fs';
+import { join }                           from 'path';
+
+import { isUndefined }    from '@common/utils/validation.util';
+import { IConfig }        from './interfaces/config.interface';
+import { redisUrlParser } from './utils/redis-url-parser.util';
 
 export function config(): IConfig {
   const publicKey = readFileSync(
@@ -58,9 +58,9 @@ export function config(): IConfig {
       },
     },
     db: definePGConfig({
-        ...dbOptions,
-        clientUrl: process.env.DATABASE_URL,
-      }),
+      ...dbOptions,
+      clientUrl: process.env.DATABASE_URL,
+    }),
     redis: redisUrlParser(process.env.REDIS_URL),
     throttler: {
       ttl: parseInt(process.env.THROTTLE_TTL, 10),
