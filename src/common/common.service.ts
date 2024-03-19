@@ -1,4 +1,3 @@
-import { Dictionary, EntityManager } from '@mikro-orm/core';
 import {
   BadRequestException,
   ConflictException,
@@ -8,13 +7,13 @@ import {
   LoggerService,
   NotFoundException,
 }                                    from '@nestjs/common';
-import { validate }                  from 'class-validator';
-import slugify                       from 'slugify';
-import { MessageMapper }             from './mappers/message.mapper';
-import {
-  isNull,
-  isUndefined
-}                                    from './utils/validation.util';
+import { Dictionary, EntityManager } from '@mikro-orm/core';
+
+import { validate } from 'class-validator';
+import slugify      from 'slugify';
+
+import { MessageMapper }       from './mappers/message.mapper';
+import { isNull, isUndefined } from './utils/validation.util';
 
 @Injectable()
 export class CommonService {

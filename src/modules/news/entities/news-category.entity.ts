@@ -1,10 +1,13 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { IsString, Length, Matches }               from 'class-validator';
-import { INewsCategory }                           from '@modules/news/interfaces/news-category.interface';
-import { SLUG_REGEX }                              from '@common/consts/regex.const';
-import { UserEntity }                              from '@modules/users/entities/user.entity';
+
+import { IsString, Length, Matches } from 'class-validator';
+
+import { SLUG_REGEX }    from '@common/consts/regex.const';
+import { INewsCategory } from '@modules/news/interfaces/news-category.interface';
+import { UserEntity }    from '@modules/users/entities/user.entity';
 
 @Entity({tableName: 'news_category'})
+// TODO: Unique by slug and company
 export class NewsCategoryEntity implements INewsCategory {
   @PrimaryKey({columnType: 'uuid'})
   public id: string;
@@ -36,6 +39,8 @@ export class NewsCategoryEntity implements INewsCategory {
 
   @Property({columnType: 'timestamptz', onUpdate: () => new Date()})
   public updatedAt: Date;
+
+  // TODO: linked to company
 
   @ManyToOne()
   public createdBy: UserEntity;
