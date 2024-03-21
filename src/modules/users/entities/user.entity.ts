@@ -1,10 +1,12 @@
-import { Collection, Embedded, Entity, OneToMany, PrimaryKey, Property, }   from '@mikro-orm/core';
-import { IsBoolean, IsEmail, IsOptional, IsString, IsUrl, Length, Matches } from 'class-validator';
-import { BCRYPT_HASH_OR_UNSET, NAME_REGEX, SLUG_REGEX, }                    from '@common/consts/regex.const';
-import { CredentialsEmbeddable }                                            from '../embeddables/credentials.embeddable';
-import { IUser }                                                            from '../interfaces/user.interface';
-import { OAuthProviderEntity }                                              from './oauth-provider.entity';
-import { CompanyEntity }                                                    from '@modules/company/entities/company.entity';
+import { Collection, Embedded, Entity, ManyToMany, OneToMany, PrimaryKey, Property, } from '@mikro-orm/core';
+import { IsBoolean, IsEmail, IsOptional, IsString, IsUrl, Length, Matches }           from 'class-validator';
+
+import { BCRYPT_HASH_OR_UNSET, NAME_REGEX, SLUG_REGEX, } from '@common/consts/regex.const';
+import { CompanyEntity }                                 from '@modules/company/entities/company.entity';
+
+import { CredentialsEmbeddable } from '../embeddables/credentials.embeddable';
+import { IUser }                 from '../interfaces/user.interface';
+import { OAuthProviderEntity }   from './oauth-provider.entity';
 
 @Entity({tableName: 'users'})
 export class UserEntity implements IUser {
@@ -79,5 +81,8 @@ export class UserEntity implements IUser {
   public oauthProviders = new Collection<OAuthProviderEntity, UserEntity>(this);
 
   @OneToMany(() => CompanyEntity, (company) => company.owner)
-  public companies = new Collection<CompanyEntity, UserEntity>(this);
+  public ownedCompanies = new Collection<CompanyEntity>(this);
+
+  @ManyToMany({entity: () => CompanyEntity, mappedBy: c => c.users})
+  public assignedCompanies = new Collection<CompanyEntity>(this);
 }

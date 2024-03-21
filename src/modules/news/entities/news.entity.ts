@@ -29,9 +29,6 @@ export class NewsEntity implements INews {
   @IsString()
   public body: string;
 
-  @ManyToOne()
-  public category: NewsCategoryEntity;
-
   // For images, the columnType is json as we want to store an array
   @Property({columnType: 'json'})
   public images: string[];
@@ -42,10 +39,13 @@ export class NewsEntity implements INews {
   @Property({columnType: 'timestamptz', onUpdate: () => new Date()})
   public updatedAt: Date;
 
-  @ManyToOne(() => CompanyEntity, {nullable: false})
-  public companyId: CompanyEntity;
+  @ManyToOne(() => NewsCategoryEntity, {nullable: false})
+  public category: NewsCategoryEntity;
 
-  @ManyToOne(() => UserEntity, {nullable: false})
+  @ManyToOne(() => CompanyEntity, {nullable: false})
+  public company: CompanyEntity;
+
+  @ManyToOne({entity: () => UserEntity, nullable: false})
   public createdBy: UserEntity;
 
   @ManyToOne()

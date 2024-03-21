@@ -34,12 +34,11 @@ export class CreateCompanyDto implements Partial<ICompany> {
 
   @ApiProperty({
     description: 'Company national ID',
-    minLength: 5,
-    maxLength: 255,
+    minLength: 3,
+    maxLength: 100,
     type: String
   })
   @IsString()
-  @IsOptional()
   @Length(3, 100, {message: 'Name has to be between 3 and 255 characters.',})
   public nationalId!: string;
 

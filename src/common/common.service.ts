@@ -74,6 +74,15 @@ export class CommonService {
   }
 
   /**
+   * Refresh Entity
+   *
+   * Refreshes an entity from the DB
+   */
+  public async refreshEntity<T extends Dictionary>(entity: T,) {
+    return await this._em.refresh(entity);
+  }
+
+  /**
    * Remove Entity
    *
    * Removes an entities from the DB.

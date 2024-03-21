@@ -1,22 +1,25 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, } from '@nestjs/common';
 import { Reflector }                                                         from '@nestjs/core';
-import { isJWT }                                                             from 'class-validator';
-import { FastifyRequest }                                                    from 'fastify';
-import { isNull, isUndefined }                                               from '@common/utils/validation.util';
-import { TokenTypeEnum }                                                     from '../../jwt/enums/token-type.enum';
-import { JwtService }                                                        from '../../jwt/jwt.service';
-import { IS_PUBLIC_KEY }                                                     from '../decorators/public.decorator';
+
+import { isJWT }          from 'class-validator';
+import { FastifyRequest } from 'fastify';
+
+import { isNull, isUndefined } from '@common/utils/validation.util';
+
+import { TokenTypeEnum } from '../../jwt/enums/token-type.enum';
+import { JwtService }    from '../../jwt/jwt.service';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
-    private readonly reflector: Reflector,
-    private readonly jwtService: JwtService,
+    private readonly _reflector: Reflector,
+    private readonly _jwtService: JwtService,
   ) {
   }
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+    const isPublic = this._reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
@@ -60,11 +63,12 @@ export class AuthGuard implements CanActivate {
     const origin = req.headers?.origin;
 
     try {
-      const {id} = await this.jwtService.verifyToken(
+      const {id} = await this._jwtService.verifyToken(
         token,
         TokenTypeEnum.ACCESS,
         origin
       );
+
       req.user = id;
       return true;
     } catch (_) {

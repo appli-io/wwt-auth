@@ -1,13 +1,14 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
-import { IsString, Length, Matches } from 'class-validator';
+import { IsString, IsUrl, Length, Matches } from 'class-validator';
 
 import { SLUG_REGEX }    from '@common/consts/regex.const';
+import { CompanyEntity } from '@modules/company/entities/company.entity';
 import { INewsCategory } from '@modules/news/interfaces/news-category.interface';
 import { UserEntity }    from '@modules/users/entities/user.entity';
 
 @Entity({tableName: 'news_category'})
-// TODO: Unique by slug and company
+@Unique({properties: [ 'slug', 'company' ]})
 export class NewsCategoryEntity implements INewsCategory {
   @PrimaryKey({columnType: 'uuid'})
   public id: string;
@@ -21,7 +22,7 @@ export class NewsCategoryEntity implements INewsCategory {
   public description: string;
 
   @Property({columnType: 'text'})
-  @IsString()
+  @IsUrl()
   public image: string;
 
   @Property({columnType: 'text'})
@@ -34,17 +35,18 @@ export class NewsCategoryEntity implements INewsCategory {
   @Matches(SLUG_REGEX, {message: 'should be a valid slug'})
   public slug: string;
 
+  @ManyToOne(() => CompanyEntity, {nullable: false, name: 'company_id'})
+  public company: CompanyEntity;
+
   @Property({columnType: 'timestamptz', onCreate: () => new Date()})
   public createdAt: Date;
 
   @Property({columnType: 'timestamptz', onUpdate: () => new Date()})
   public updatedAt: Date;
 
-  // TODO: linked to company
-
-  @ManyToOne()
+  @ManyToOne(() => UserEntity)
   public createdBy: UserEntity;
 
-  @ManyToOne()
+  @ManyToOne(() => UserEntity)
   public updatedBy: UserEntity;
 }

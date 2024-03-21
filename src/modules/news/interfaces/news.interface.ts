@@ -25,7 +25,9 @@ export interface INews {
   abstract?: string;
   body?: string;
   category?: INewsCategory;
-  companyId?: ICompany;
+  categoryId?: string;
+  company?: ICompany;
+  companyId?: string;
   // isRead?: boolean;
   images?: string[];
   publishedAt?: Date;

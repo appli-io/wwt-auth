@@ -1,8 +1,7 @@
-import { ApiProperty }   from '@nestjs/swagger';
-import { IResponseUser } from '../interfaces/response-user.interface';
-import { IUser }         from '../interfaces/user.interface';
+import { ApiProperty } from '@nestjs/swagger';
+import { IUser }       from '../interfaces/user.interface';
 
-export class ResponseUserMapper implements IResponseUser {
+export class ResponseUserMapper implements Partial<IUser> {
   @ApiProperty({
     description: 'User id',
     example: 123,
@@ -65,7 +64,7 @@ export class ResponseUserMapper implements IResponseUser {
   })
   public location: string;
 
-  constructor(values: IResponseUser) {
+  constructor(values: ResponseUserMapper) {
     Object.assign(this, values);
   }
 

@@ -1,14 +1,16 @@
-import { Entity, ManyToOne, PrimaryKey, Property }              from '@mikro-orm/core';
-import { IsBoolean, IsEmail, IsString, IsUrl, Length, Matches } from 'class-validator';
+import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { IsEmail, IsOptional, IsString, IsUrl, Length, Matches }           from 'class-validator';
+import { v4 }                                                              from 'uuid';
 
 import { NAME_REGEX, SLUG_REGEX } from '@common/consts/regex.const';
 import { ICompany }               from '@modules/company/interfaces/company.interface';
 import { UserEntity }             from '@modules/users/entities/user.entity';
+import { UserCompanyEntity }      from '@modules/users/entities/user-company.entity';
 
 @Entity({tableName: 'companies'})
 export class CompanyEntity implements ICompany {
-  @PrimaryKey({type: 'uuid'})
-  public id: string;
+  @PrimaryKey()
+  public id: string = v4();
 
   @Property({columnType: 'varchar', length: 100})
   @IsString()
@@ -27,21 +29,23 @@ export class CompanyEntity implements ICompany {
   })
   public username: string;
 
-  @Property({columnType: 'varchar', length: 255})
+  @Property({columnType: 'varchar', length: 255, nullable: true})
+  @IsOptional()
   @IsString()
   @Length(5, 255)
-  public description: string;
+  public description?: string;
 
   @Property({columnType: 'varchar', length: 255})
   @IsString()
-  @Length(5, 255)
+  @Length(3, 255)
   public nationalId: string;
 
-  @Property({columnType: 'varchar', length: 255})
+  @Property({columnType: 'varchar', length: 255, nullable: true})
+  @IsOptional()
   @IsString()
   @IsUrl()
   @Length(5, 255)
-  public logo: string;
+  public logo?: string;
 
   @Property({columnType: 'varchar', length: 255})
   @IsString()
@@ -52,18 +56,14 @@ export class CompanyEntity implements ICompany {
   @Property({columnType: 'varchar', length: 255})
   @IsString()
   @IsUrl()
+  @IsOptional()
   @Length(5, 255)
   public website: string;
 
-  @ManyToOne(() => UserEntity, {nullable: false})
-  public owner: UserEntity;
-
   @Property({columnType: 'boolean', default: false})
-  @IsBoolean()
   public isVerified: boolean;
 
   @Property({columnType: 'boolean', default: true})
-  @IsBoolean()
   public isActive: boolean;
 
   @Property({columnType: 'varchar', length: 255})
@@ -71,9 +71,15 @@ export class CompanyEntity implements ICompany {
   @Length(2, 255)
   public country: string;
 
+  @ManyToOne(() => UserEntity, {nullable: false})
+  public owner: UserEntity;
+
+  @ManyToMany({entity: () => UserEntity, pivotEntity: () => UserCompanyEntity})
+  public users = new Collection<UserEntity>(this);
+
   @Property({onCreate: () => new Date()})
   public createdAt: Date = new Date();
 
-  @Property({onUpdate: () => new Date()})
+  @Property({onUpdate: () => new Date(), nullable: true})
   public updatedAt: Date = new Date();
 }

@@ -10,8 +10,10 @@ import { HttpExceptionFilter }     from '@common/filters/http-exception.filter';
 import { HttpResponseInterceptor } from '@common/interceptors/http-response.interceptor';
 import { AuthModule }              from '@modules/auth/auth.module';
 import { AuthGuard }               from '@modules/auth/guards/auth.guard';
+import { CompanyModule }           from '@modules/company/company.module';
 import { JwtModule }               from '@modules/jwt/jwt.module';
 import { MailerModule }            from '@modules/mailer/mailer.module';
+import { NewsModule }              from '@modules/news/news.module';
 import { PermissionsModule }       from '@modules/permissions/permissions.module';
 import { UsersModule }             from '@modules/users/users.module';
 import { Oauth2Module }            from '@modules/oauth2/oauth2.module';
@@ -20,9 +22,8 @@ import { validationSchema }        from '@config/config.schema';
 import { MikroOrmConfig }          from '@config/mikroorm.config';
 import { ThrottlerConfig }         from '@config/throttler.config';
 
-import { AppService }    from './app.service';
-import { config }        from './config';
-import { CompanyModule } from '@modules/company/company.module';
+import { AppService } from './app.service';
+import { config }     from './config';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { CompanyModule } from '@modules/company/company.module';
     MailerModule,
     Oauth2Module,
     PermissionsModule,
+    NewsModule
   ],
   providers: [
     AppService,
