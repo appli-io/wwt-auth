@@ -33,6 +33,7 @@ export class CompanyService {
     const userCompany = this._userCompanyRepository.create({
       user: userId,
       company: company,
+      role: 'ADMIN',
     });
 
     await this._commonService.saveEntity(userCompany, true);
