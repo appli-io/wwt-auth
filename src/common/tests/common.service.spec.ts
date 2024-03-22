@@ -78,7 +78,6 @@ describe('CommonService', () => {
         service.checkEntityExistence(undefined, 'Entity'),
       ).toThrowError('Entity not found');
     });
-
   });
 
   describe('string manipulation', () => {

@@ -256,14 +256,14 @@ describe('AuthController', () => {
     const res = createResponseMock();
 
     it('should throw a UnauthorizedException if there is no token', async () => {
-      await expect(controller.logout(req, res)).rejects.toThrowError(
+      await expect(controller.signOut(req, res)).rejects.toThrowError(
         'Unauthorized',
       );
     });
 
     it('should throw a UnauthorizedException if the token is invalid', async () => {
       req.setCookie(cookieName, 'invalid');
-      await expect(controller.logout(req, res)).rejects.toThrowError(
+      await expect(controller.signOut(req, res)).rejects.toThrowError(
         'Invalid token',
       );
     });
@@ -274,7 +274,7 @@ describe('AuthController', () => {
         TokenTypeEnum.REFRESH,
       );
       req.setCookie(cookieName, token);
-      await controller.logout(req, res);
+      await controller.signOut(req, res);
       expect(res.clearCookie).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalled();

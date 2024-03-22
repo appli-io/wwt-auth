@@ -4,6 +4,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   NotFoundException,
   Param,
   ParseIntPipe,
@@ -75,6 +77,7 @@ export class CompanyController {
   }
 
   @Delete('member/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @RequiredRole(RoleEnum.ADMIN)
   public async removeUserFromCompany(
     @Param('id', ParseIntPipe) memberId: number,

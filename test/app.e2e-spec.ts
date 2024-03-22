@@ -1,18 +1,19 @@
-import { faker }                                   from '@faker-js/faker';
-import fastifyCookie                               from '@fastify/cookie';
 import { HttpStatus, ValidationPipe }              from '@nestjs/common';
-import { ConfigService }                           from '@nestjs/config';
 import { FastifyAdapter, NestFastifyApplication, } from '@nestjs/platform-fastify';
 import { Test, TestingModule }                     from '@nestjs/testing';
-import request                                     from 'supertest';
-import { AppModule }                               from '../src/app.module';
-import { CommonService }                           from '../src/common/common.service';
-import { TokenTypeEnum }                           from '@modules/jwt/enums/token-type.enum';
-import { JwtService }                              from '@modules/jwt/jwt.service';
-import { MailerService }                           from '@modules/mailer/mailer.service';
-import { OAuthProvidersEnum }                      from '@modules/users/enums/oauth-providers.enum';
-import { IUser }                                   from '@modules/users/interfaces/user.interface';
-import { UsersService }                            from '@modules/users/users.service';
+
+import { faker } from '@faker-js/faker';
+import request   from 'supertest';
+
+import { CommonService }      from '@common/common.service';
+import { TokenTypeEnum }      from '@modules/jwt/enums/token-type.enum';
+import { JwtService }         from '@modules/jwt/jwt.service';
+import { MailerService }      from '@modules/mailer/mailer.service';
+import { OAuthProvidersEnum } from '@modules/users/enums/oauth-providers.enum';
+import { IUser }              from '@modules/users/interfaces/user.interface';
+import { UsersService }       from '@modules/users/users.service';
+
+import { AppModule } from '../src/app.module';
 
 describe('AppController (e2e)', () => {
   let app: NestFastifyApplication,
@@ -38,10 +39,6 @@ describe('AppController (e2e)', () => {
     usersService = app.get(UsersService);
     commonService = app.get(CommonService);
 
-    const configService = app.get(ConfigService);
-    await app.register(fastifyCookie, {
-      secret: configService.get<string>('COOKIE_SECRET'),
-    });
     app.useGlobalPipes(
       new ValidationPipe({
         transform: true,
