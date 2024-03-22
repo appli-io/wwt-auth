@@ -1,20 +1,19 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { EntityManager }                 from '@mikro-orm/core';
 import { InjectRepository }              from '@mikro-orm/nestjs';
 import { EntityRepository }              from '@mikro-orm/postgresql';
 
-import { CommonService }     from '@common/common.service';
-import { CompanyEntity }     from '@modules/company/entities/company.entity';
-import { CreateCompanyDto }  from '@modules/company/dtos/create-company.dto';
-import { UserCompanyEntity } from '@modules/users/entities/user-company.entity';
+import { CommonService }      from '@common/common.service';
+import { CompanyEntity }      from '@modules/company/entities/company.entity';
+import { CreateCompanyDto }   from '@modules/company/dtos/create-company.dto';
+import { CompanyUserService } from '@modules/company-user/company-user.service';
+import { RoleEnum }           from '@modules/company-user/enums/role.enum';
 
 @Injectable()
 export class CompanyService {
   constructor(
     @InjectRepository(CompanyEntity) private readonly _companyRepository: EntityRepository<CompanyEntity>,
-    @InjectRepository(UserCompanyEntity) private readonly _userCompanyRepository: EntityRepository<UserCompanyEntity>,
-    private readonly _commonService: CommonService,
-    private _em: EntityManager
+    private readonly _companyUserService: CompanyUserService,
+    private readonly _commonService: CommonService
   ) {}
 
   public async create(createCompanyDto: CreateCompanyDto, userId: number) {
@@ -28,15 +27,7 @@ export class CompanyService {
     });
 
     await this._commonService.saveEntity(company, true);
-
-    // assign the company to the user
-    const userCompany = this._userCompanyRepository.create({
-      user: userId,
-      company: company,
-      role: 'ADMIN',
-    });
-
-    await this._commonService.saveEntity(userCompany, true);
+    await this._companyUserService.assignCompanyToUser(company.id, {userId, role: RoleEnum.ADMIN});
 
     return this.findById(company.id);
   }
@@ -46,7 +37,7 @@ export class CompanyService {
   }
 
   public async findById(id: string): Promise<CompanyEntity> {
-    return this._companyRepository.findOneOrFail({id}, {populate: [ 'owner', 'users' ]});
+    return this._companyRepository.findOne({id}, {populate: [ 'owner', 'users' ]});
   }
 
   private async checkIfCompanyExists(nationalId: string, country: string) {

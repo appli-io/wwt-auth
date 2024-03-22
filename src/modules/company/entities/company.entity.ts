@@ -4,8 +4,8 @@ import { v4 }                                                              from 
 
 import { NAME_REGEX, SLUG_REGEX } from '@common/consts/regex.const';
 import { ICompany }               from '@modules/company/interfaces/company.interface';
+import { CompanyUserEntity }      from '@modules/company-user/entities/company-user.entity';
 import { UserEntity }             from '@modules/users/entities/user.entity';
-import { UserCompanyEntity }      from '@modules/users/entities/user-company.entity';
 
 @Entity({tableName: 'companies'})
 export class CompanyEntity implements ICompany {
@@ -74,7 +74,7 @@ export class CompanyEntity implements ICompany {
   @ManyToOne(() => UserEntity, {nullable: false})
   public owner: UserEntity;
 
-  @ManyToMany({entity: () => UserEntity, pivotEntity: () => UserCompanyEntity})
+  @ManyToMany({entity: () => UserEntity, pivotEntity: () => CompanyUserEntity})
   public users = new Collection<UserEntity>(this);
 
   @Property({onCreate: () => new Date()})

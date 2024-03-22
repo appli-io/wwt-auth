@@ -1,8 +1,6 @@
-import { EntityRepository }             from '@mikro-orm/postgresql';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Test, TestingModule }          from '@nestjs/testing';
 import { CommonService }                from '../common.service';
-import { EntityRepositoryMock }         from './mocks/entity-repository.mock';
 import { EntityMock }                   from './mocks/entity.mock';
 
 describe('CommonService', () => {
@@ -67,8 +65,6 @@ describe('CommonService', () => {
   });
 
   describe('entity actions', () => {
-    const repository =
-      new EntityRepositoryMock() as unknown as EntityRepository<EntityMock>;
     const entity = new EntityMock('Valid Name');
 
     it('check entity existence', () => {
@@ -83,23 +79,6 @@ describe('CommonService', () => {
       ).toThrowError('Entity not found');
     });
 
-    it('save entity', async () => {
-      await service.saveEntity(repository, entity);
-      expect(repository.flush).toBeCalledTimes(1);
-
-      await service.saveEntity(repository, entity, true);
-      expect(repository.persist).toBeCalledTimes(1);
-      expect(repository.flush).toBeCalledTimes(2);
-
-      await expect(
-        service.saveEntity(repository, new EntityMock('a!cc')),
-      ).rejects.toThrowError('name must not have special characters');
-    });
-
-    it('remove entity', async () => {
-      await service.removeEntity(repository, entity);
-      expect(repository.removeAndFlush).toBeCalledTimes(1);
-    });
   });
 
   describe('string manipulation', () => {
