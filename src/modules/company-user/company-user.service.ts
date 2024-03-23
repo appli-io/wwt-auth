@@ -21,13 +21,12 @@ export class CompanyUserService {
 
   public async assignCompanyToUser(companyId: string, {userId, role}: AddUserToCompanyDto) {
     await this.checkIfUserIsAlreadyInCompany(userId, companyId);
-    this.loggerService.log('Assigning company to user');
 
     const userCompany = this._userCompanyRepository.create({
       user: userId,
       company: companyId,
       role: role,
-      active: true,
+      isActive: true,
     });
 
     await this._commonService.saveEntity(userCompany, true);
@@ -47,10 +46,9 @@ export class CompanyUserService {
   }
 
   public async getUserRole(companyId: string, userId: number, requiredRoles: RoleEnum[]) {
-    this.loggerService.log('Getting user role');
-    const em = this._userCompanyRepository.getEntityManager();
-
-    const qb = em.createQueryBuilder(CompanyUserEntity);
+    const qb = this._userCompanyRepository
+      .getEntityManager()
+      .createQueryBuilder(CompanyUserEntity);
 
     qb.where({user: userId, company: companyId});
 
@@ -58,7 +56,6 @@ export class CompanyUserService {
 
     const results = await qb.select('role').execute();
     const roles: RoleEnum[] = results.map(result => result.role);
-    this.loggerService.log('User role obtained', JSON.stringify(roles));
 
     return roles;
   }

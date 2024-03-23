@@ -9,6 +9,7 @@ import {
   NotFoundException,
   Param,
   ParseIntPipe,
+  ParseUUIDPipe,
   Post,
   UseGuards
 }                                 from '@nestjs/common';
@@ -49,11 +50,22 @@ export class CompanyController {
   @ApiOkResponse({
     description: 'The company is found and returned.',
   })
-  public async getCompany(@Param('id') companyId: string) {
+  public async getCompany(@Param('id', ParseUUIDPipe) companyId: string) {
     if (!companyId) throw new BadRequestException('Company id is required');
     const company = await this._companyService.findById(companyId);
 
     if (!company) throw new NotFoundException('Company not found');
+    return ResponseCompanyMapper.map(company);
+  }
+
+  @Get('active')
+  @ApiOkResponse({
+    description: 'The company is found and returned.',
+  })
+  public async getActiveCompanies(
+    @CurrentCompanyId() companyId: string
+  ): Promise<ResponseCompanyMapper> {
+    const company = await this._companyService.findById(companyId);
     return ResponseCompanyMapper.map(company);
   }
 

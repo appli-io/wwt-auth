@@ -1,10 +1,11 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { INews }                                   from '@modules/news/interfaces/news.interface';
 import { IsString, Length, Matches }               from 'class-validator';
-import { SLUG_REGEX }                              from '@common/consts/regex.const';
-import { NewsCategoryEntity }                      from '@modules/news/entities/news-category.entity';
-import { UserEntity }                              from '@modules/users/entities/user.entity';
-import { CompanyEntity }                           from '@modules/company/entities/company.entity';
+
+import { SLUG_REGEX }         from '@common/consts/regex.const';
+import { CompanyEntity }      from '@modules/company/entities/company.entity';
+import { NewsCategoryEntity } from '@modules/news/entities/news-category.entity';
+import { INews }              from '@modules/news/interfaces/news.interface';
+import { UserEntity }         from '@modules/users/entities/user.entity';
 
 @Entity({tableName: 'news'})
 export class NewsEntity implements INews {
@@ -39,6 +40,9 @@ export class NewsEntity implements INews {
   @Property({columnType: 'timestamptz', onUpdate: () => new Date()})
   public updatedAt: Date;
 
+  @Property({columnType: 'boolean', default: false})
+  public isDeleted: boolean;
+
   @ManyToOne(() => NewsCategoryEntity, {nullable: false})
   public category: NewsCategoryEntity;
 
@@ -48,6 +52,6 @@ export class NewsEntity implements INews {
   @ManyToOne({entity: () => UserEntity, nullable: false})
   public createdBy: UserEntity;
 
-  @ManyToOne()
-  public updatedBy: UserEntity;
+  @ManyToOne({entity: () => UserEntity, nullable: true})
+  public updatedBy?: UserEntity;
 }

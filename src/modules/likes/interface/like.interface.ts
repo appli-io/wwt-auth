@@ -6,7 +6,7 @@ export interface ILike {
   userId: IUser;
   contentType: ContentType;
   contentId: string;
-  isDeleted: boolean;
+  isDeleted?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -22,6 +22,8 @@ export function config(): IConfig {
     entitiesTs: [ 'src/**/*.entity.ts', 'src/**/*.embeddable.ts' ],
     loadStrategy: LoadStrategy.JOINED,
     allowGlobalContext: true,
+    forceUtcTimezone: true,
+    ignoreUndefinedInQuery: true,
   };
 
   return {

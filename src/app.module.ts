@@ -17,6 +17,7 @@ import { AuthGuard }               from '@modules/auth/guards/auth.guard';
 import { CompanyModule }           from '@modules/company/company.module';
 import { CompanyUserModule }       from '@modules/company-user/company-user.module';
 import { JwtModule }               from '@modules/jwt/jwt.module';
+import { LikeModule }              from '@modules/likes/like.module';
 import { MailerModule }            from '@modules/mailer/mailer.module';
 import { NewsModule }              from '@modules/news/news.module';
 import { PermissionsModule }       from '@modules/permissions/permissions.module';
@@ -57,6 +58,7 @@ import { config }     from './config';
     Oauth2Module,
     PermissionsModule,
     NewsModule,
+    LikeModule
   ],
   providers: [
     AppService,

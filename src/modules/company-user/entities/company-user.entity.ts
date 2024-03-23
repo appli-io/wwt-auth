@@ -14,7 +14,7 @@ export class CompanyUserEntity {
   public company: CompanyEntity;
 
   @Property({columnType: 'boolean', default: true})
-  public active: boolean;
+  public isActive: boolean;
 
   @Enum({items: () => RoleEnum, default: RoleEnum.USER})
   public role: RoleEnum;
