@@ -3,7 +3,6 @@ import { ContentType } from '@modules/shared/enums/content-type.enum';
 
 export interface IComment {
   id: string;
-  userId: IUser;
   content: string;
   contentType: ContentType;
   contentId: string;

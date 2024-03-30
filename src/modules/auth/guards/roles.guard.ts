@@ -15,9 +15,7 @@ export class RolesGuard implements CanActivate {
     private _companyUserService: CompanyUserService
   ) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const requiredRoles = this._reflector.get<RoleEnum[]>(requiredRolesKey, context.getHandler());
 
     // If no roles are required, allow access
@@ -35,6 +33,6 @@ export class RolesGuard implements CanActivate {
 
     return this._companyUserService.getUserRole(companyId, userId, requiredRoles).then(roles => {
       return roles.some(role => requiredRoles.includes(role));
-    });
+    }).catch(() => false);
   }
 }

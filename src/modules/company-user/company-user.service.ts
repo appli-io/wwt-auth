@@ -20,7 +20,9 @@ export class CompanyUserService {
   }
 
   public async assignCompanyToUser(companyId: string, {userId, role}: AddUserToCompanyDto) {
-    await this.checkIfUserIsAlreadyInCompany(userId, companyId);
+    const isUserInCompany: boolean = await this.isUserInCompany(companyId, userId);
+
+    if (isUserInCompany) throw new ConflictException('User is already in company');
 
     const userCompany = this._userCompanyRepository.create({
       user: userId,
@@ -32,7 +34,7 @@ export class CompanyUserService {
     await this._commonService.saveEntity(userCompany, true);
   }
 
-  public async removeCompanyFromUser(companyId: string, userId: number) {
+  public async removeCompanyFromUser(companyId: string, userId: number): Promise<boolean> {
     this.loggerService.log('Removing company from user');
 
     const userCompany = await this._userCompanyRepository.findOneOrFail({user: userId, company: companyId})
@@ -42,8 +44,24 @@ export class CompanyUserService {
 
     await this._commonService.removeEntity(userCompany);
 
-    return;
+    return true;
   }
+
+  public async disableUserInCompany(companyId: string, userId: number): Promise<boolean> {
+    this.loggerService.log('Disabling user in company');
+
+    const userCompany = await this._userCompanyRepository.findOneOrFail({user: userId, company: companyId})
+      .catch(() => {
+        throw new NotFoundException('Member not found in company');
+      });
+
+    userCompany.isActive = false;
+
+    await this._commonService.saveEntity(userCompany);
+
+    return true;
+  }
+
 
   public async getUserRole(companyId: string, userId: number, requiredRoles: RoleEnum[]) {
     const qb = this._userCompanyRepository
@@ -60,11 +78,7 @@ export class CompanyUserService {
     return roles;
   }
 
-
-  private async checkIfUserIsAlreadyInCompany(userId: number, companyId: string) {
-    const userCompany = await this._userCompanyRepository.count({user: userId, company: companyId});
-
-    if (userCompany > 0)
-      throw new ConflictException('User already in company');
-  }
+  public isUserInCompany = (companyId: string, userId: number) =>
+    this._userCompanyRepository.count({user: userId, company: companyId})
+      .then(userCompany => userCompany > 0);
 }

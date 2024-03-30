@@ -2,11 +2,12 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository }              from '@mikro-orm/nestjs';
 import { EntityRepository }              from '@mikro-orm/postgresql';
 
-import { CommonService }      from '@common/common.service';
-import { CompanyEntity }      from '@modules/company/entities/company.entity';
-import { CreateCompanyDto }   from '@modules/company/dtos/create-company.dto';
-import { CompanyUserService } from '@modules/company-user/company-user.service';
-import { RoleEnum }           from '@modules/company-user/enums/role.enum';
+import { CommonService }               from '@common/common.service';
+import { Page, Pageable, PageFactory } from '@lib/pageable';
+import { CompanyEntity }               from '@modules/company/entities/company.entity';
+import { CreateCompanyDto }            from '@modules/company/dtos/create-company.dto';
+import { CompanyUserService }          from '@modules/company-user/company-user.service';
+import { RoleEnum }                    from '@modules/company-user/enums/role.enum';
 
 @Injectable()
 export class CompanyService {
@@ -32,7 +33,27 @@ export class CompanyService {
     return this.findById(company.id);
   }
 
-  public async findAll(): Promise<CompanyEntity[]> {
+  public async findAll(pageable: Pageable): Promise<Page<CompanyEntity>> {
+    // console.log(await this._companyRepository.findAll({populate: [ 'owner', 'users' ]}));
+    return await new PageFactory(
+      pageable,
+      this._companyRepository,
+      {
+        relations: [
+          {
+            property: 'owner',
+            andSelect: true
+          },
+          {
+            property: 'users',
+            andSelect: true
+          }
+        ]
+      }
+    ).create();
+  }
+
+  public async findAll2(): Promise<CompanyEntity[]> {
     return this._companyRepository.findAll({populate: [ 'owner', 'users' ]});
   }
 

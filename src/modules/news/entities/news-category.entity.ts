@@ -6,28 +6,29 @@ import { SLUG_REGEX }    from '@common/consts/regex.const';
 import { CompanyEntity } from '@modules/company/entities/company.entity';
 import { INewsCategory } from '@modules/news/interfaces/news-category.interface';
 import { UserEntity }    from '@modules/users/entities/user.entity';
+import { v4 } from 'uuid';
 
 @Entity({tableName: 'news_category'})
 @Unique({properties: [ 'slug', 'company' ]})
 export class NewsCategoryEntity implements INewsCategory {
   @PrimaryKey({columnType: 'uuid'})
-  public id: string;
+  public id: string = v4();
 
   @Property({columnType: 'text'})
   @IsString()
   public name: string;
 
-  @Property({columnType: 'text'})
+  @Property({columnType: 'text', nullable: true})
   @IsString()
-  public description: string;
+  public description?: string;
 
-  @Property({columnType: 'text'})
+  @Property({columnType: 'text', nullable: true})
   @IsUrl()
-  public image: string;
+  public image?: string;
 
-  @Property({columnType: 'text'})
+  @Property({columnType: 'text', nullable: true})
   @IsString()
-  public color: string;
+  public color?: string;
 
   @Property({columnType: 'varchar', length: 106})
   @IsString()
@@ -41,12 +42,12 @@ export class NewsCategoryEntity implements INewsCategory {
   @Property({columnType: 'timestamptz', onCreate: () => new Date()})
   public createdAt: Date;
 
-  @Property({columnType: 'timestamptz', onUpdate: () => new Date()})
-  public updatedAt: Date;
+  @Property({columnType: 'timestamptz', onUpdate: () => new Date(), nullable: true})
+  public updatedAt?: Date;
 
   @ManyToOne(() => UserEntity)
   public createdBy: UserEntity;
 
-  @ManyToOne(() => UserEntity)
-  public updatedBy: UserEntity;
+  @ManyToOne(() => UserEntity, {nullable: true})
+  public updatedBy?: UserEntity;
 }

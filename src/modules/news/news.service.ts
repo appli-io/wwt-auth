@@ -6,6 +6,7 @@ import { EntityRepository } from '@mikro-orm/postgresql';
 import { CommonService } from '@common/common.service';
 import { NewsEntity }    from '@modules/news/entities/news.entity';
 import { CreateNewsDto } from '@modules/news/dtos/create-news.dto';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class NewsService {
@@ -19,14 +20,15 @@ export class NewsService {
     return this._newsRepository.findAll();
   }
 
-  public async findOne(id: string): Promise<NewsEntity> {
-    return this._newsRepository.findOne({id});
+  public async findOneBySlugOrId(slugOrId: string): Promise<NewsEntity> {
+    if (isUUID(slugOrId)) return this._newsRepository.findOne({id: slugOrId});
+    else return this._newsRepository.findOne({slug: slugOrId});
   }
 
   public async create(newsDto: CreateNewsDto, userId: number, companyId: string): Promise<NewsEntity> {
     if (!newsDto.slug) newsDto.slug = await this.generateSlug(newsDto.headline, companyId);
     else {
-      const count: number = await this.countBySlug(newsDto.slug, companyId);
+      const count: number = await this.countBySlugLike(newsDto.slug, companyId);
 
       if (count > 0) throw new ConflictException('Slug already exists');
     }
@@ -56,7 +58,7 @@ export class NewsService {
 
   private async generateSlug(name: string, companyId: string): Promise<string> {
     const pointSlug = this._commonService.generatePointSlug(name);
-    const count = await this.countBySlug(pointSlug, companyId);
+    const count = await this.countBySlugLike(pointSlug, companyId);
 
     if (count > 0) {
       return `${ pointSlug }${ count }`;
@@ -65,7 +67,7 @@ export class NewsService {
     return pointSlug;
   }
 
-  private countBySlug(slug: string, companyId: string): Promise<number> {
+  private countBySlugLike(slug: string, companyId: string): Promise<number> {
     return this._newsRepository.count({
       slug: {$like: `${ slug }%`,},
       company: {$eq: companyId,},

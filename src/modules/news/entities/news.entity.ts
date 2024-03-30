@@ -6,11 +6,12 @@ import { CompanyEntity }      from '@modules/company/entities/company.entity';
 import { NewsCategoryEntity } from '@modules/news/entities/news-category.entity';
 import { INews }              from '@modules/news/interfaces/news.interface';
 import { UserEntity }         from '@modules/users/entities/user.entity';
+import { v4 } from 'uuid';
 
 @Entity({tableName: 'news'})
 export class NewsEntity implements INews {
-  @PrimaryKey({columnType: 'uuid'})
-  public id: string;
+  @PrimaryKey()
+  public id: string = v4();
 
   @Property({columnType: 'text'})
   @IsString()
@@ -31,14 +32,17 @@ export class NewsEntity implements INews {
   public body: string;
 
   // For images, the columnType is json as we want to store an array
-  @Property({columnType: 'json'})
-  public images: string[];
+  @Property({columnType: 'json', nullable: true})
+  public images?: string[];
+
+  @Property({columnType: 'text', nullable: true})
+  public portraitImage?: string;
 
   @Property({columnType: 'timestamptz', onCreate: () => new Date()})
   public publishedAt: Date;
 
-  @Property({columnType: 'timestamptz', onUpdate: () => new Date()})
-  public updatedAt: Date;
+  @Property({columnType: 'timestamptz', onUpdate: () => new Date(), nullable: true})
+  public updatedAt?: Date;
 
   @Property({columnType: 'boolean', default: false})
   public isDeleted: boolean;

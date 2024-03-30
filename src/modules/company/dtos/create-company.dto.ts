@@ -22,6 +22,7 @@ export class CreateCompanyDto implements Partial<ICompany> {
     minLength: 3,
     maxLength: 100,
     type: String,
+    pattern: SLUG_REGEX.source
   })
   @IsString()
   @Length(3, 100, {
@@ -60,7 +61,7 @@ export class CreateCompanyDto implements Partial<ICompany> {
     type: String
   })
   @IsString()
-  @IsEmail()
+  @IsEmail({}, {message: 'Invalid email format.'})
   @Length(5, 255)
   @IsOptional()
   public email: string;

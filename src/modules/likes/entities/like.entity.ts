@@ -9,10 +9,7 @@ import { UserEntity }  from '@modules/users/entities/user.entity';
 @Entity({tableName: 'likes'})
 export class LikeEntity implements ILike {
   @PrimaryKey()
-  public id: string = v4();
-
-  @ManyToOne(() => UserEntity)
-  public userId: UserEntity;
+  public id: string = v4()
 
   @Property({nullable: false})
   public contentType: ContentType;
@@ -28,4 +25,7 @@ export class LikeEntity implements ILike {
 
   @Property({onUpdate: () => new Date()})
   public updatedAt: Date;
+
+  @ManyToOne(() => UserEntity)
+  public createdBy: UserEntity;
 }

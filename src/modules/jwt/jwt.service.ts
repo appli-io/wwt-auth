@@ -49,7 +49,7 @@ export class JwtService {
     return new Promise((resolve, rejects) => {
       jwt.verify(token, secret, options, (error, payload: T) => {
         if (error) {
-          console.log(error);
+
           rejects(error);
           return;
         }
