@@ -35,7 +35,7 @@ export class CompanyService {
 
   public async findAll(pageable: Pageable): Promise<Page<CompanyEntity>> {
     // console.log(await this._companyRepository.findAll({populate: [ 'owner', 'users' ]}));
-    return await new PageFactory(
+    return await new PageFactory<CompanyEntity>(
       pageable,
       this._companyRepository,
       {

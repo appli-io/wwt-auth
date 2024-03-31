@@ -11,9 +11,10 @@ import {
   ParseIntPipe,
   ParseUUIDPipe,
   Post,
+  Query,
   UseGuards
-}                                 from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+}                                                                from '@nestjs/common';
+import { ApiExtraModels, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 
 import { Pageable, PageableDefault } from '@lib/pageable';
 import { PageableResponseDto }       from '@lib/pageable/dtos/page-response.dto';
@@ -43,10 +44,26 @@ export class CompanyController {
   @Public()
   @Get()
   @MemberUnneeded()
+  @ApiExtraModels(PageableResponseDto, ResponseCompanyMapper)
   @ApiOkResponse({
     description: 'The company is found and returned.',
+    type: () => PageableResponseDto,
+    schema: {
+      allOf: [
+        {$ref: getSchemaPath(PageableResponseDto)},
+        {
+          properties: {
+            content: {
+              type: 'array',
+              items: {$ref: getSchemaPath(ResponseCompanyMapper)},
+            },
+          },
+        },
+      ],
+    },
   })
-  public async getCompanies(@PageableDefault() pageable: Pageable): Promise<PageableResponseDto<ResponseCompanyMapper>> {
+  public async getCompanies(@PageableDefault() pageable: Pageable, @Query() query: any): Promise<PageableResponseDto<ResponseCompanyMapper>> {
+    console.log('query', query);
     const companyPage = await this._companyService.findAll(pageable);
 
     return {
@@ -59,6 +76,7 @@ export class CompanyController {
   @MemberUnneeded()
   @ApiOkResponse({
     description: 'The company is found and returned.',
+    type: ResponseCompanyMapper,
   })
   public async getCompany(@Param('id', ParseUUIDPipe) companyId: string): Promise<ResponseCompanyMapper> {
     if (!companyId) throw new BadRequestException('Company id is required');

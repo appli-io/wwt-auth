@@ -57,6 +57,7 @@ export class PageFactory<TEntity extends object, TOutput extends object = TEntit
     const queryBuilder = this.repo.createQueryBuilder(alias);
     let {page, offset, size, sort} = this.pageable;
     const {unpaged, limit} = this.pageable;
+
     if (unpaged) {
       page = 0;
       offset = 0;
