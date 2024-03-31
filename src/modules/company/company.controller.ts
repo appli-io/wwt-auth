@@ -13,24 +13,26 @@ import {
   Post,
   Query,
   UseGuards
-}                                                                from '@nestjs/common';
-import { ApiExtraModels, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
+}                                                 from '@nestjs/common';
+import { ApiExtraModels, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
-import { Pageable, PageableDefault } from '@lib/pageable';
-import { PageableResponseDto }       from '@lib/pageable/dtos/page-response.dto';
-import { Public }                    from '@modules/auth/decorators/public.decorator';
-import { CurrentUser }               from '@modules/auth/decorators/current-user.decorator';
-import { RequiredRole }              from '@modules/auth/decorators/requierd-role.decorator';
-import { RolesGuard }                from '@modules/auth/guards/roles.guard';
-import { CompanyService }            from '@modules/company/company.service';
-import { CreateCompanyDto }          from '@modules/company/dtos/create-company.dto';
-import { ResponseCompanyMapper }     from '@modules/company/response-company.mapper';
-import { CurrentCompanyId }          from '@modules/company/decorators/company-id.decorator';
-import { AddUserToCompanyDto }       from '@modules/company/dtos/add-user-to-company.dto';
-import { RoleEnum }                  from '@modules/company-user/enums/role.enum';
-import { CompanyUserService }        from '@modules/company-user/company-user.service';
-import { MemberGuard }               from '@modules/auth/guards/member.guard';
-import { MemberUnneeded }            from '@modules/auth/decorators/member-unneeded.decorator';
+import { Page, Pageable, PageableDefault } from '@lib/pageable';
+import { PageableResponseDto }             from '@lib/pageable/dtos/page-response.dto';
+import { Public }                          from '@modules/auth/decorators/public.decorator';
+import { CurrentUser }                     from '@modules/auth/decorators/current-user.decorator';
+import { RequiredRole }                    from '@modules/auth/decorators/requierd-role.decorator';
+import { RolesGuard }                      from '@modules/auth/guards/roles.guard';
+import { CompanyService }                  from '@modules/company/company.service';
+import { CreateCompanyDto }                from '@modules/company/dtos/create-company.dto';
+import { ResponseCompanyMapper }           from '@modules/company/response-company.mapper';
+import { CurrentCompanyId }                from '@modules/company/decorators/company-id.decorator';
+import { AddUserToCompanyDto }             from '@modules/company/dtos/add-user-to-company.dto';
+import { RoleEnum }                        from '@modules/company-user/enums/role.enum';
+import { CompanyUserService }              from '@modules/company-user/company-user.service';
+import { MemberGuard }                     from '@modules/auth/guards/member.guard';
+import { MemberUnneeded }                  from '@modules/auth/decorators/member-unneeded.decorator';
+import { CompanyQueryDto }                 from '@modules/company/dtos/company-query.dto';
+import { CompanyEntity }                   from '@modules/company/entities/company.entity';
 
 @ApiTags('Company')
 @Controller('company')
@@ -47,24 +49,13 @@ export class CompanyController {
   @ApiExtraModels(PageableResponseDto, ResponseCompanyMapper)
   @ApiOkResponse({
     description: 'The company is found and returned.',
-    type: () => PageableResponseDto,
-    schema: {
-      allOf: [
-        {$ref: getSchemaPath(PageableResponseDto)},
-        {
-          properties: {
-            content: {
-              type: 'array',
-              items: {$ref: getSchemaPath(ResponseCompanyMapper)},
-            },
-          },
-        },
-      ],
-    },
+    type: () => PageableResponseDto<ResponseCompanyMapper>
   })
-  public async getCompanies(@PageableDefault() pageable: Pageable, @Query() query: any): Promise<PageableResponseDto<ResponseCompanyMapper>> {
-    console.log('query', query);
-    const companyPage = await this._companyService.findAll(pageable);
+  public async getCompanies(
+    @PageableDefault() pageable: Pageable,
+    @Query() query: CompanyQueryDto
+  ): Promise<PageableResponseDto<ResponseCompanyMapper>> {
+    const companyPage: Page<CompanyEntity> = await this._companyService.findAll(query, pageable);
 
     return {
       ...companyPage,

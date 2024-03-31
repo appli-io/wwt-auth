@@ -1,11 +1,14 @@
 import { ConflictException, Injectable } from '@nestjs/common';
-import { InjectRepository }              from '@mikro-orm/nestjs';
-import { EntityRepository }              from '@mikro-orm/postgresql';
+
+import { QBFilterQuery }    from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository } from '@mikro-orm/postgresql';
 
 import { CommonService }               from '@common/common.service';
 import { Page, Pageable, PageFactory } from '@lib/pageable';
 import { CompanyEntity }               from '@modules/company/entities/company.entity';
 import { CreateCompanyDto }            from '@modules/company/dtos/create-company.dto';
+import { CompanyQueryDto }             from '@modules/company/dtos/company-query.dto';
 import { CompanyUserService }          from '@modules/company-user/company-user.service';
 import { RoleEnum }                    from '@modules/company-user/enums/role.enum';
 
@@ -33,12 +36,24 @@ export class CompanyService {
     return this.findById(company.id);
   }
 
-  public async findAll(pageable: Pageable): Promise<Page<CompanyEntity>> {
-    // console.log(await this._companyRepository.findAll({populate: [ 'owner', 'users' ]}));
+  public async findAll(query: CompanyQueryDto, pageable: Pageable): Promise<Page<CompanyEntity>> {
+    const whereClause: QBFilterQuery<CompanyEntity> = {};
+    console.log('query', query);
+
+    if (query.id) whereClause['id'] = {$ilike: `%${ query.id }%`};
+    if (query.name) whereClause['name'] = {$ilike: `%${ query.name }%`};
+    if (query.username) whereClause['username'] = {$ilike: `%${ query.username }%`};
+    if (query.email) whereClause['email'] = {$ilike: `%${ query.email }%`};
+    if (query.nationalId) whereClause['nationalId'] = {$ilike: `%${ query.nationalId }%`};
+    if (query.country) whereClause['country'] = {$ilike: `%${ query.country }%`};
+    if (query.isActive) whereClause['isActive'] = query.isActive;
+    if (query.isVerified) whereClause['isVerified'] = query.isVerified;
+
     return await new PageFactory<CompanyEntity>(
       pageable,
       this._companyRepository,
       {
+        where: whereClause,
         relations: [
           {
             property: 'owner',

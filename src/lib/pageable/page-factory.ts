@@ -1,6 +1,7 @@
-import { Dictionary, QBFilterQuery, QBQueryOrderMap, QueryOrder }            from '@mikro-orm/core';
+import { Dictionary, QBFilterQuery, QBQueryOrderMap, QueryOrder } from '@mikro-orm/core';
+import { EntityRepository, JoinType }                             from '@mikro-orm/postgresql';
+
 import { DriverName, ExtendedPageable, Page, Relation, Sort, SortDirection } from './types';
-import { EntityRepository, JoinType }                                        from '@mikro-orm/postgresql';
 
 type PageFactoryConfig<T extends object> = {
   alias?: string;
@@ -20,27 +21,6 @@ export class PageFactory<TEntity extends object, TOutput extends object = TEntit
     protected _map: (entity: TEntity & Dictionary) => TOutput & Dictionary = (entity) => entity as unknown as TOutput & Dictionary
   ) {
     this.driverName = repo.getEntityManager().getDriver().constructor.name;
-  }
-
-  static fromResults(pageable: ExtendedPageable, results: any[]) {
-    const {page, offset, size, sort} = pageable;
-    const {unpaged} = pageable;
-    const totalElements = results.length;
-    const totalPages = Math.ceil(totalElements / size);
-
-    return {
-      content: results,
-      pageable: {
-        page,
-        offset,
-        size,
-        unpaged,
-        totalPages,
-        totalElements,
-        sort
-      }
-    };
-
   }
 
   map<TMappedOutput extends object, TMappedPage = Page<TMappedOutput>>(mapper: (entity: TEntity & Dictionary) => TMappedOutput): PageFactory<TEntity, TMappedOutput, TMappedPage> {

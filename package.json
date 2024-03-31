@@ -54,7 +54,7 @@
     "jsonwebtoken": "^9.0.2",
     "nestjs-throttler-storage-redis" : "^0.4.3",
     "nodemailer": "^6.9.5",
-    "reflect-metadata": "^0.1.13",
+    "reflect-metadata" : "^0.2.2",
     "rxjs": "^7.8.1",
     "simple-oauth2": "^5.0.0",
     "slugify": "^1.6.6",
