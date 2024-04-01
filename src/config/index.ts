@@ -51,12 +51,13 @@ export function config(): IConfig {
       },
     },
     emailService: {
-      host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT, 10),
-      secure: process.env.EMAIL_SECURE === 'true',
+      service: 'gmail',
       auth: {
+        type: 'OAUTH2',
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
+        clientId: process.env.EMAIL_CLIENT_ID,
+        clientSecret: process.env.EMAIL_CLIENT_SECRET,
+        refreshToken: process.env.EMAIL_CLIENT_REFRESH_TOKEN,
       },
     },
     db: definePGConfig({

@@ -3,10 +3,13 @@ import { ConflictException, Injectable, NotFoundException, UnauthorizedException
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 
-import { CommonService } from '@common/common.service';
-import { NewsEntity }    from '@modules/news/entities/news.entity';
-import { CreateNewsDto } from '@modules/news/dtos/create-news.dto';
-import { isUUID } from 'class-validator';
+import { CommonService }               from '@common/common.service';
+import { NewsEntity }                  from '@modules/news/entities/news.entity';
+import { CreateNewsDto }               from '@modules/news/dtos/create-news.dto';
+import { isUUID }                      from 'class-validator';
+import { NewsQueryDto }                from '@modules/news/dtos/news-query.dto';
+import { Page, Pageable, PageFactory } from '@lib/pageable';
+import { QBFilterQuery }               from '@mikro-orm/core';
 
 @Injectable()
 export class NewsService {
@@ -16,8 +19,28 @@ export class NewsService {
     private readonly _commonService: CommonService,
   ) {}
 
-  public async findAll(): Promise<NewsEntity[]> {
-    return this._newsRepository.findAll();
+  public async findAll(query: NewsQueryDto, pageable: Pageable, companyId: string): Promise<Page<NewsEntity>> {
+    const whereClause: QBFilterQuery<NewsEntity> = {company: companyId};
+
+    if (query.id) whereClause['id'] = {$ilike: `%${ query.id }%`};
+    if (query.headline) whereClause['headline'] = {$ilike: `%${ query.headline }%`};
+    if (query.slug) whereClause['slug'] = {$ilike: `%${ query.slug }%`};
+    if (query.authorId) whereClause['createdBy.id'] = {$ilike: `%${ query.authorId }%`};
+    if (query.authorName) whereClause['createdBy.name'] = {$ilike: `%${ query.authorName }%`};
+
+    return await new PageFactory(
+      pageable,
+      this._newsRepository,
+      {
+        where: whereClause,
+        relations: [
+          {
+            property: 'createdBy',
+            andSelect: true
+          }
+        ]
+      }
+    ).create();
   }
 
   public async findOneBySlugOrId(slugOrId: string): Promise<NewsEntity> {

@@ -1,11 +1,13 @@
-interface IEmailAuth {
+interface IClientAuth {
+  type: string;
   user: string;
-  pass: string;
+  clientId: string;
+  clientSecret: string;
+  refreshToken: string;
+  accessToken?: string;
 }
 
 export interface IEmailConfig {
-  host: string;
-  port: number;
-  secure: boolean;
-  auth: IEmailAuth;
+  service: string;
+  auth: IClientAuth;
 }

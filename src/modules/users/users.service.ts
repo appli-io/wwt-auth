@@ -1,20 +1,24 @@
-import { QueryOrder }                                                                 from '@mikro-orm/core';
-import { InjectRepository }                                                           from '@mikro-orm/nestjs';
-import { EntityRepository }                                                           from '@mikro-orm/postgresql';
 import { BadRequestException, ConflictException, Injectable, UnauthorizedException, } from '@nestjs/common';
-import { compare, hash }                                                              from 'bcrypt';
-import { isInt }                                                                      from 'class-validator';
-import { CommonService }                                                              from '@common/common.service';
-import { SLUG_REGEX }                                                                 from '@common/consts/regex.const';
-import { isNull, isUndefined }                                                        from '@common/utils/validation.util';
-import { ChangeEmailDto }                                                             from './dtos/change-email.dto';
-import { PasswordDto }                                                                from './dtos/password.dto';
-import { UpdateUsernameDto }                                                          from './dtos/update-username.dto';
-import { CredentialsEmbeddable }                                                      from './embeddables/credentials.embeddable';
-import { OAuthProviderEntity }                                                        from './entities/oauth-provider.entity';
-import { UserEntity }                                                                 from './entities/user.entity';
-import { OAuthProvidersEnum }                                                         from './enums/oauth-providers.enum';
-import { UpdateUserInfoDto }                                                          from '@modules/users/dtos/update-user-info.dto';
+
+import { QueryOrder }       from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository } from '@mikro-orm/postgresql';
+
+import { compare, hash } from 'bcrypt';
+import { isInt }         from 'class-validator';
+
+import { CommonService }       from '@common/common.service';
+import { SLUG_REGEX }          from '@common/consts/regex.const';
+import { isNull, isUndefined } from '@common/utils/validation.util';
+import { UpdateUserInfoDto }   from '@modules/users/dtos/update-user-info.dto';
+
+import { ChangeEmailDto }        from './dtos/change-email.dto';
+import { PasswordDto }           from './dtos/password.dto';
+import { UpdateUsernameDto }     from './dtos/update-username.dto';
+import { CredentialsEmbeddable } from './embeddables/credentials.embeddable';
+import { OAuthProviderEntity }   from './entities/oauth-provider.entity';
+import { UserEntity }            from './entities/user.entity';
+import { OAuthProvidersEnum }    from './enums/oauth-providers.enum';
 
 @Injectable()
 export class UsersService {

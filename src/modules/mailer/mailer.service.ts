@@ -1,33 +1,40 @@
 import { Injectable, Logger, LoggerService } from '@nestjs/common';
 import { ConfigService }                     from '@nestjs/config';
-import { readFileSync }                      from 'fs';
-import Handlebars                            from 'handlebars';
-import { createTransport, Transporter }      from 'nodemailer';
-import SMTPTransport                         from 'nodemailer/lib/smtp-transport';
-import { join }                              from 'path';
-import { IEmailConfig }                      from '@config/interfaces/email-config.interface';
-import { IUser }                             from '../users/interfaces/user.interface';
-import { ITemplatedData }                    from './interfaces/template-data.interface';
-import { ITemplates }                        from './interfaces/templates.interface';
+
+import { readFileSync }    from 'fs';
+import Handlebars          from 'handlebars';
+import { createTransport } from 'nodemailer';
+import SMTPTransport       from 'nodemailer/lib/smtp-transport';
+import { join }            from 'path';
+
+import { IEmailConfig }  from '@config/interfaces/email-config.interface';
+import { OAuth2Service } from '@modules/mailer/oauth2.service';
+
+import { IUser }          from '../users/interfaces/user.interface';
+import { ITemplatedData } from './interfaces/template-data.interface';
+import { ITemplates }     from './interfaces/templates.interface';
 
 @Injectable()
 export class MailerService {
   private readonly loggerService: LoggerService;
-  private readonly transport: Transporter<SMTPTransport.SentMessageInfo>;
-  private readonly email: string;
-  private readonly domain: string;
-  private readonly templates: ITemplates;
+  private email: string;
+  private domain: string;
+  private templates: ITemplates;
 
-  constructor(private readonly configService: ConfigService) {
-    const emailConfig = this.configService.get<IEmailConfig>('emailService');
-    this.transport = createTransport(emailConfig);
-    this.email = `"My App" <${ emailConfig.auth.user }>`;
-    this.domain = this.configService.get<string>('domain');
+  constructor(private readonly _configService: ConfigService, private readonly _gmailService: OAuth2Service) {
+    const emailConfig = this._configService.get<IEmailConfig>('emailService');
+
     this.loggerService = new Logger(MailerService.name);
-    this.templates = {
-      confirmation: MailerService.parseTemplate('confirmation.hbs'),
-      resetPassword: MailerService.parseTemplate('reset-password.hbs'),
-    };
+    this._gmailService.getAccessToken().then((token) => {
+      emailConfig.auth.accessToken = token;
+      this.email = `"WeWorkTogether" <${ emailConfig.auth.user }>`;
+      this.domain = this._configService.get<string>('domain');
+      this.templates = {
+        confirmation: MailerService.parseTemplate('confirmation.hbs'),
+        resetPassword: MailerService.parseTemplate('reset-password.hbs'),
+      };
+    });
+
   }
 
   private static parseTemplate(
@@ -49,7 +56,7 @@ export class MailerService {
       name,
       link: `${ domain }/auth/confirm/${ token }`,
     });
-    this.sendEmail(email, subject, html, 'A new confirmation email was sent.');
+    this.sendEmail(email, subject, html, 'A new confirmation email was sent.').then();
   }
 
   public sendResetPasswordEmail(user: IUser, token: string): void {
@@ -65,16 +72,20 @@ export class MailerService {
       subject,
       html,
       'A new reset password email was sent.',
-    );
+    ).then();
   }
 
-  public sendEmail(
+  public async sendEmail(
     to: string,
     subject: string,
     html: string,
     log?: string,
-  ): void {
-    this.transport
+  ): Promise<void> {
+    const emailConfig = this._configService.get<IEmailConfig>('emailService');
+    emailConfig.auth.accessToken = await this._gmailService.getAccessToken();
+    const transport = createTransport(emailConfig as SMTPTransport.Options);
+
+    transport
       .sendMail({
         from: this.email,
         to,
@@ -82,6 +93,6 @@ export class MailerService {
         html,
       })
       .then(() => this.loggerService.log(log ?? 'A new email was sent.'))
-      .catch((error) => this.loggerService.error(error));
+      .catch(console.error);
   }
 }

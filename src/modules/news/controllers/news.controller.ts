@@ -9,21 +9,23 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   UseGuards
 }                  from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { CurrentUser }           from '@modules/auth/decorators/current-user.decorator';
-import { MemberGuard }           from '@modules/auth/guards/member.guard';
-import { CommentService }        from '@modules/comment/comment.service';
-import { CurrentCompanyId }      from '@modules/company/decorators/company-id.decorator';
-import { CompanyUserService }    from '@modules/company-user/company-user.service';
-import { RoleEnum }              from '@modules/company-user/enums/role.enum';
-import { LikeService }           from '@modules/likes/like.service';
-import { CreateNewsDto }         from '@modules/news/dtos/create-news.dto';
-import { ResponseAllNewsMapper } from '@modules/news/mappers/response-all-news.mapper';
-import { NewsService }           from '@modules/news/news.service';
-import { ContentType }           from '@modules/shared/enums/content-type.enum';
+import { CurrentUser }               from '@modules/auth/decorators/current-user.decorator';
+import { MemberGuard }               from '@modules/auth/guards/member.guard';
+import { CommentService }            from '@modules/comment/comment.service';
+import { CurrentCompanyId }          from '@modules/company/decorators/company-id.decorator';
+import { CompanyUserService }        from '@modules/company-user/company-user.service';
+import { RoleEnum }                  from '@modules/company-user/enums/role.enum';
+import { LikeService }               from '@modules/likes/like.service';
+import { CreateNewsDto }             from '@modules/news/dtos/create-news.dto';
+import { ResponseAllNewsMapper }     from '@modules/news/mappers/response-all-news.mapper';
+import { NewsService }               from '@modules/news/news.service';
+import { ContentType }               from '@modules/shared/enums/content-type.enum';
+import { Pageable, PageableDefault } from '@lib/pageable';
 
 @ApiTags('News')
 @Controller('news')
@@ -37,10 +39,14 @@ export class NewsController {
   ) {}
 
   @Get()
-  public async findAll() {
-    const news = await this._newsService.findAll();
+  public async findAll(
+    @CurrentCompanyId() companyId: string,
+    @PageableDefault() pageable: Pageable,
+    @Query() query: any,
+  ) {
+    const news = await this._newsService.findAll(query, pageable, companyId);
 
-    return news.map(ResponseAllNewsMapper.map);
+    return news.content.map(ResponseAllNewsMapper.map);
   }
 
   @Get(':slugOrId')

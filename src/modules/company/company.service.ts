@@ -38,7 +38,6 @@ export class CompanyService {
 
   public async findAll(query: CompanyQueryDto, pageable: Pageable): Promise<Page<CompanyEntity>> {
     const whereClause: QBFilterQuery<CompanyEntity> = {};
-    console.log('query', query);
 
     if (query.id) whereClause['id'] = {$ilike: `%${ query.id }%`};
     if (query.name) whereClause['name'] = {$ilike: `%${ query.name }%`};
@@ -66,10 +65,6 @@ export class CompanyService {
         ]
       }
     ).create();
-  }
-
-  public async findAll2(): Promise<CompanyEntity[]> {
-    return this._companyRepository.findAll({populate: [ 'owner', 'users' ]});
   }
 
   public async findById(id: string): Promise<CompanyEntity> {
