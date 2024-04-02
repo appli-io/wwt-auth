@@ -20,19 +20,19 @@ import { Page, Pageable, PageableDefault } from '@lib/pageable';
 import { PageableResponseDto }             from '@lib/pageable/dtos/page-response.dto';
 import { Public }                          from '@modules/auth/decorators/public.decorator';
 import { CurrentUser }                     from '@modules/auth/decorators/current-user.decorator';
+import { MemberUnneeded }                  from '@modules/auth/decorators/member-unneeded.decorator';
 import { RequiredRole }                    from '@modules/auth/decorators/requierd-role.decorator';
 import { RolesGuard }                      from '@modules/auth/guards/roles.guard';
+import { MemberGuard }                     from '@modules/auth/guards/member.guard';
 import { CompanyService }                  from '@modules/company/company.service';
+import { CompanyQueryDto }                 from '@modules/company/dtos/company-query.dto';
 import { CreateCompanyDto }                from '@modules/company/dtos/create-company.dto';
-import { ResponseCompanyMapper }           from '@modules/company/response-company.mapper';
+import { CompanyEntity }                   from '@modules/company/entities/company.entity';
 import { CurrentCompanyId }                from '@modules/company/decorators/company-id.decorator';
 import { AddUserToCompanyDto }             from '@modules/company/dtos/add-user-to-company.dto';
+import { ResponseCompanyMapper }           from '@modules/company/response-company.mapper';
 import { RoleEnum }                        from '@modules/company-user/enums/role.enum';
 import { CompanyUserService }              from '@modules/company-user/company-user.service';
-import { MemberGuard }                     from '@modules/auth/guards/member.guard';
-import { MemberUnneeded }                  from '@modules/auth/decorators/member-unneeded.decorator';
-import { CompanyQueryDto }                 from '@modules/company/dtos/company-query.dto';
-import { CompanyEntity }                   from '@modules/company/entities/company.entity';
 
 @ApiTags('Company')
 @Controller('company')
