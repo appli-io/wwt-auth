@@ -3,6 +3,7 @@ import { IsBoolean, IsEmail, IsOptional, IsString, IsUrl, Length, Matches }     
 
 import { BCRYPT_HASH_OR_UNSET, NAME_REGEX, SLUG_REGEX, } from '@common/consts/regex.const';
 import { CompanyEntity }                                 from '@modules/company/entities/company.entity';
+import { CompanyUserEntity }                             from '@modules/company-user/entities/company-user.entity';
 
 import { CredentialsEmbeddable } from '../embeddables/credentials.embeddable';
 import { IUser }                 from '../interfaces/user.interface';
@@ -55,12 +56,6 @@ export class UserEntity implements IUser {
   @IsOptional()
   public avatar: string;
 
-  // User's position
-  @Property({columnType: 'varchar', length: 255, nullable: true})
-  @IsString()
-  @IsOptional()
-  public position: string;
-
   // User's location
   @Property({columnType: 'varchar', length: 255, nullable: true})
   @IsString()
@@ -82,6 +77,9 @@ export class UserEntity implements IUser {
 
   @OneToMany(() => CompanyEntity, (company) => company.owner)
   public ownedCompanies = new Collection<CompanyEntity>(this);
+
+  @OneToMany(() => CompanyUserEntity, companyUser => companyUser.user)
+  public companyUsers = new Collection<CompanyUserEntity>(this);
 
   @ManyToMany({entity: () => CompanyEntity, mappedBy: c => c.users})
   public assignedCompanies = new Collection<CompanyEntity>(this);

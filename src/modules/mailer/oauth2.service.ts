@@ -1,11 +1,13 @@
-import { Injectable }    from '@nestjs/common';
-import { OAuth2Client }  from 'google-auth-library';
-import { google }        from 'googleapis';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService }      from '@nestjs/config';
+
+import { OAuth2Client } from 'google-auth-library';
+import { google }       from 'googleapis';
 
 @Injectable()
 export class OAuth2Service {
   private oauth2Client: OAuth2Client;
+  private readonly logger: Logger = new Logger(OAuth2Service.name);
 
   constructor(private readonly _configService: ConfigService) {
     const emailConfig = this._configService.get('emailService');
@@ -21,10 +23,13 @@ export class OAuth2Service {
   }
 
   async getAccessToken(): Promise<string> {
-    const {token} = await this.oauth2Client.getAccessToken();
-    if (!token) {
-      throw new Error('Failed to create access token');
-    }
+    const {token} = await this.oauth2Client.getAccessToken().catch((err) => {
+      this.logger.error('Failed to create access token', JSON.stringify(err));
+      return {token: undefined};
+    });
+
+    if (!token) this.logger.error('Failed to create access token');
+
     return token;
   }
 }

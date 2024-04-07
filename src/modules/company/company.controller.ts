@@ -27,6 +27,8 @@ import { MemberGuard }                     from '@modules/auth/guards/member.gua
 import { CompanyService }                  from '@modules/company/company.service';
 import { CompanyQueryDto }                 from '@modules/company/dtos/company-query.dto';
 import { CreateCompanyDto }                from '@modules/company/dtos/create-company.dto';
+import { MembersQueryDto }                 from '@modules/company/dtos/members-query.dto';
+import { ResponseCompanyMemberMapper }     from '@modules/company/mapper/response-company-member.mapper';
 import { CompanyEntity }                   from '@modules/company/entities/company.entity';
 import { CurrentCompanyId }                from '@modules/company/decorators/company-id.decorator';
 import { AddUserToCompanyDto }             from '@modules/company/dtos/add-user-to-company.dto';
@@ -99,6 +101,20 @@ export class CompanyController {
     return ResponseCompanyMapper.map(company);
   }
 
+  @Get('member')
+  public async getMembers(
+    @CurrentCompanyId() companyId: string,
+    @PageableDefault({unpaged: true}) pageable: Pageable,
+    @Query() query: MembersQueryDto
+  ) {
+    const members = await this._companyUserService.getMembers(companyId, query, pageable);
+
+    return {
+      ...members,
+      content: members.content.map(ResponseCompanyMemberMapper.map)
+    };
+  }
+
   @Post('member')
   @RequiredRole(RoleEnum.ADMIN)
   public async addUsersToCompany(
@@ -119,4 +135,16 @@ export class CompanyController {
 
     await this._companyUserService.removeCompanyFromUser(companyId, memberId);
   }
+
+  // @Get('member/:id/contact')
+  // @ApiOkResponse({
+  //   type: ResponseUserMapper,
+  //   description: 'The user is found and returned.',
+  // })
+  // public async getContactCard(
+  //   @Param('id') id: number,
+  // ) {
+  //   const user = await this._usersService.findUserContact(id);
+  //   return ResponseFullUserMapper.map(user);
+  // }
 }

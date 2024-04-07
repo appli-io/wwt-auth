@@ -1,12 +1,15 @@
 import { ConflictException, Injectable, Logger, LoggerService, NotFoundException } from '@nestjs/common';
 
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository } from '@mikro-orm/postgresql';
+import { EntityManager, QBFilterQuery } from '@mikro-orm/core';
+import { InjectRepository }             from '@mikro-orm/nestjs';
+import { EntityRepository }             from '@mikro-orm/postgresql';
 
-import { CommonService }       from '@common/common.service';
-import { AddUserToCompanyDto } from '@modules/company/dtos/add-user-to-company.dto';
-import { CompanyUserEntity }   from '@modules/company-user/entities/company-user.entity';
-import { RoleEnum }            from '@modules/company-user/enums/role.enum';
+import { CommonService }               from '@common/common.service';
+import { Page, Pageable, PageFactory } from '@lib/pageable';
+import { AddUserToCompanyDto }         from '@modules/company/dtos/add-user-to-company.dto';
+import { CompanyUserEntity }           from '@modules/company-user/entities/company-user.entity';
+import { RoleEnum }                    from '@modules/company-user/enums/role.enum';
+import { MembersQueryDto }             from '@modules/company/dtos/members-query.dto';
 
 @Injectable()
 export class CompanyUserService {
@@ -14,9 +17,35 @@ export class CompanyUserService {
 
   constructor(
     @InjectRepository(CompanyUserEntity) private readonly _userCompanyRepository: EntityRepository<CompanyUserEntity>,
+    public readonly _em: EntityManager,
     private readonly _commonService: CommonService,
   ) {
     this.loggerService = new Logger(CompanyUserService.name);
+  }
+
+  public async getMembers(companyId: string, query: MembersQueryDto, pageable: Pageable) {
+    const whereClause: QBFilterQuery<CompanyUserEntity> = {company: {id: {$eq: companyId}}};
+
+    if (query.memberId) whereClause.user = {id: {$eq: query.memberId}};
+    if (query.role) whereClause.role = {$eq: query.role};
+    if (query.isActive) whereClause.isActive = {$eq: query.isActive};
+    if (query.createdFrom) whereClause.createdAt = {$gte: query.createdFrom};
+
+    const users: Page<CompanyUserEntity> = await new PageFactory(
+      pageable,
+      this._userCompanyRepository,
+      {
+        where: whereClause,
+        relations: [
+          {
+            property: 'user',
+            andSelect: true
+          }
+        ]
+      }
+    ).create();
+
+    return users;
   }
 
   public async assignCompanyToUser(companyId: string, {userId, role}: AddUserToCompanyDto) {
@@ -62,7 +91,6 @@ export class CompanyUserService {
     return true;
   }
 
-
   public async getUserRole(companyId: string, userId: number, requiredRoles: RoleEnum[]) {
     const qb = this._userCompanyRepository
       .getEntityManager()
@@ -81,4 +109,9 @@ export class CompanyUserService {
   public isUserInCompany = (companyId: string, userId: number) =>
     this._userCompanyRepository.count({user: userId, company: companyId})
       .then(userCompany => userCompany > 0);
+
+  public async isActiveUserInCompanies(id: number, companiesIds: string[]) {
+    const userCompany = await this._userCompanyRepository.count({user: id, company: {$in: companiesIds}, isActive: true});
+    return companiesIds.length === userCompany;
+  }
 }

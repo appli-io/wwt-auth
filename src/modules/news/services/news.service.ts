@@ -1,15 +1,15 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 
+import { QBFilterQuery }    from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
+import { isUUID }           from 'class-validator';
 
 import { CommonService }               from '@common/common.service';
+import { Page, Pageable, PageFactory } from '@lib/pageable';
 import { NewsEntity }                  from '@modules/news/entities/news.entity';
 import { CreateNewsDto }               from '@modules/news/dtos/create-news.dto';
-import { isUUID }                      from 'class-validator';
 import { NewsQueryDto }                from '@modules/news/dtos/news-query.dto';
-import { Page, Pageable, PageFactory } from '@lib/pageable';
-import { QBFilterQuery }               from '@mikro-orm/core';
 
 @Injectable()
 export class NewsService {
@@ -35,7 +35,11 @@ export class NewsService {
         where: whereClause,
         relations: [
           {
-            property: 'createdBy',
+            property: 'createdBy', // join author
+            andSelect: true
+          },
+          {
+            property: 'category', // join category
             andSelect: true
           }
         ]
@@ -58,6 +62,7 @@ export class NewsService {
 
     const news: NewsEntity = this._newsRepository.create({
       ...newsDto,
+      category: newsDto.categoryId,
       createdBy: userId,
       company: companyId,
     });

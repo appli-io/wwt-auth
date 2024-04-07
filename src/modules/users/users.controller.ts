@@ -8,19 +8,22 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 }                                                                        from '@nestjs/swagger';
-import { FastifyReply }                                                  from 'fastify';
-import { CurrentUser }                                                   from '../auth/decorators/current-user.decorator';
-import { Public }                                                        from '../auth/decorators/public.decorator';
-import { IAuthResponseUser }                                             from '../auth/interfaces/auth-response-user.interface';
-import { AuthResponseUserMapper }                                        from '../auth/mappers/auth-response-user.mapper';
-import { ChangeEmailDto }                                                from './dtos/change-email.dto';
-import { GetUserParams }                                                 from './dtos/get-user.params';
-import { PasswordDto }                                                   from './dtos/password.dto';
-import { UpdateUsernameDto }                                             from './dtos/update-username.dto';
-import { IResponseUser }                                                 from './interfaces/response-user.interface';
-import { ResponseUserMapper }                                            from './mappers/response-user.mapper';
-import { UsersService }                                                  from './users.service';
-import { UpdateUserInfoDto }                                             from '@modules/users/dtos/update-user-info.dto';
+
+import { FastifyReply } from 'fastify';
+
+import { UpdateUserInfoDto }      from '@modules/users/dtos/update-user-info.dto';
+import { ResponseFullUserMapper } from '@modules/users/mappers/response-full-user.mapper';
+import { CurrentUser }            from '../auth/decorators/current-user.decorator';
+import { Public }                 from '../auth/decorators/public.decorator';
+import { IAuthResponseUser }      from '../auth/interfaces/auth-response-user.interface';
+import { AuthResponseUserMapper } from '../auth/mappers/auth-response-user.mapper';
+import { ChangeEmailDto }         from './dtos/change-email.dto';
+import { GetUserParams }          from './dtos/get-user.params';
+import { PasswordDto }            from './dtos/password.dto';
+import { UpdateUsernameDto }      from './dtos/update-username.dto';
+import { IResponseUser }          from './interfaces/response-user.interface';
+import { ResponseUserMapper }     from './mappers/response-user.mapper';
+import { UsersService }           from './users.service';
 
 @ApiTags('Users')
 @Controller('users')
@@ -43,7 +46,7 @@ export class UsersController {
   })
   public async getUsers(): Promise<IResponseUser[]> {
     const users = await this._usersService.findAll();
-    return users.map(ResponseUserMapper.map);
+    return users.map(user => ResponseUserMapper.map(user));
   }
 
   @Public()
@@ -65,7 +68,7 @@ export class UsersController {
     return ResponseUserMapper.map(user);
   }
 
-  @Patch('/info')
+  @Patch('/me')
   @ApiOkResponse({
     type: ResponseUserMapper,
     description: 'The user is updated.',
@@ -81,7 +84,7 @@ export class UsersController {
     @Body() dto: UpdateUserInfoDto,
   ): Promise<IResponseUser> {
     const user = await this._usersService.updateUserInfo(id, dto);
-    return ResponseUserMapper.map(user);
+    return ResponseFullUserMapper.map(user);
   }
 
   @Patch('/username')

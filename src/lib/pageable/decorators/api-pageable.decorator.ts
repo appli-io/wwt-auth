@@ -1,8 +1,8 @@
 import { ApiExtraModels, ApiOkResponse, ApiQuery, getSchemaPath } from '@nestjs/swagger';
 import { applyDecorators }                                        from '@nestjs/common';
-import { sortRegex, defaultPageableOptions }                      from '../constants';
-import { PageableOptions }                                        from '../types';
+import { defaultPageableOptions, sortRegex }                      from '../constants';
 import { PageableResponse }                                       from '../dtos';
+import { PageableOptions }                                        from '../types';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function ApiPageable(pageableOptions: PageableOptions & { dto?: Function } = {}) {
@@ -10,12 +10,12 @@ export function ApiPageable(pageableOptions: PageableOptions & { dto?: Function 
   const pattern = getPattern();
   return applyDecorators(
     ApiQuery({name: 'page', required: false, description: 'Page number (starting from 1)', schema: {type: 'integer', minimum: 0}}),
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     enableSize ? ApiQuery({
       name: 'size',
       required: false,
       description: 'Number of items on each page',
       schema: {type: 'integer', minimum: 0, maximum: maxSize}
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
     }) : () => {},
     enableSort
       ? ApiQuery({
@@ -33,6 +33,7 @@ export function ApiPageable(pageableOptions: PageableOptions & { dto?: Function 
       required: false,
       type: 'boolean',
       description: 'Set to true to retrieve all items without pagination'
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
     }) : () => {},
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     ApiExtraModels(PageableResponse, dto ?? (() => {})),

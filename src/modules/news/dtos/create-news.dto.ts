@@ -1,6 +1,8 @@
-import { INews }                                         from '@modules/news/interfaces/news.interface';
+import { ApiProperty } from '@nestjs/swagger';
+
 import { IsArray, IsOptional, IsString, IsUUID, Length } from 'class-validator';
-import { ApiProperty }                                   from '@nestjs/swagger';
+
+import { INews } from '@modules/news/interfaces/news.interface';
 
 export class CreateNewsDto implements Partial<INews> {
   @ApiProperty({
@@ -41,14 +43,13 @@ export class CreateNewsDto implements Partial<INews> {
   @Length(50)
   body: string;
 
-  // TODO: Create and implement new Category Entity
-  // @ApiProperty({
-  //   description: 'News category ID',
-  //   type: String
-  // })
-  // @IsString()
-  // @IsUUID()
-  // categoryId!: string;
+  @ApiProperty({
+    description: 'News category ID',
+    type: String
+  })
+  @IsString()
+  @IsUUID()
+  categoryId!: string;
 
   @IsArray()
   @IsOptional()

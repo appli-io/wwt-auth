@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 
-import { NewsCategoryService }     from '@modules/news/news-category.service';
+import { CurrentUser }             from '@modules/auth/decorators/current-user.decorator';
 import { MemberGuard }             from '@modules/auth/guards/member.guard';
 import { CurrentCompanyId }        from '@modules/company/decorators/company-id.decorator';
-import { CurrentUser }             from '@modules/auth/decorators/current-user.decorator';
 import { CreateNewsCategoriesDto } from '@modules/news/dtos/create-news-categories.dto';
+import { NewsCategoryService }     from '@modules/news/services/news-category.service';
 
-@Controller('news/category')
+@Controller('news-category')
 @UseGuards(MemberGuard)
 export class NewsCategoryController {
   constructor(

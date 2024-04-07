@@ -74,6 +74,25 @@ export class CommonService {
   }
 
   /**
+   * Save All Entities
+   *
+   * Validates, saves and flushes multiple entities into the DB
+   */
+  public async saveAllEntities<T extends Dictionary>(
+    entities: T[],
+    isNew = false,
+  ): Promise<void> {
+    for (const entity of entities) {
+      await this.validateEntity(entity);
+    }
+
+    if (isNew)
+      await this._em.persistAndFlush(entities);
+    else
+      await this.throwDuplicateError(this._em.flush());
+  }
+
+  /**
    * Refresh Entity
    *
    * Refreshes an entity from the DB

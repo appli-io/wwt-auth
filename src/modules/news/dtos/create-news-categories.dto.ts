@@ -1,12 +1,14 @@
-import { ApiProperty }                          from '@nestjs/swagger';
-import { NewsCategoryEntity }                   from '@modules/news/entities/news-category.entity';
+import { ApiProperty } from '@nestjs/swagger';
+
 import { IsOptional, IsString, IsUrl, Matches } from 'class-validator';
-import { NAME_REGEX, SLUG_REGEX }               from '@common/consts/regex.const';
+
+import { NAME_REGEX, SLUG_REGEX } from '@common/consts/regex.const';
+import { NewsCategoryEntity }     from '@modules/news/entities/news-category.entity';
 
 export class CreateNewsCategoriesDto implements Partial<NewsCategoryEntity> {
   @ApiProperty({
     description: 'Category name',
-    example: 'Science & Technology',
+    example: 'Science And Technology',
     type: String
   })
   @IsString()
@@ -15,7 +17,7 @@ export class CreateNewsCategoriesDto implements Partial<NewsCategoryEntity> {
 
   @ApiProperty({
     description: 'Category description',
-    example: 'Science & Technology news articles',
+    example: 'Science And Technology news articles',
     type: String
   })
   description: string;

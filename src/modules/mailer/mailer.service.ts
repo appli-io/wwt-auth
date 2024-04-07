@@ -25,16 +25,12 @@ export class MailerService {
     const emailConfig = this._configService.get<IEmailConfig>('emailService');
 
     this.loggerService = new Logger(MailerService.name);
-    this._gmailService.getAccessToken().then((token) => {
-      emailConfig.auth.accessToken = token;
-      this.email = `"WeWorkTogether" <${ emailConfig.auth.user }>`;
-      this.domain = this._configService.get<string>('domain');
-      this.templates = {
-        confirmation: MailerService.parseTemplate('confirmation.hbs'),
-        resetPassword: MailerService.parseTemplate('reset-password.hbs'),
-      };
-    });
-
+    this.email = `"Synergiq" <${ emailConfig.auth.user }>`;
+    this.domain = this._configService.get<string>('domain');
+    this.templates = {
+      confirmation: MailerService.parseTemplate('confirmation.hbs'),
+      resetPassword: MailerService.parseTemplate('reset-password.hbs'),
+    };
   }
 
   private static parseTemplate(

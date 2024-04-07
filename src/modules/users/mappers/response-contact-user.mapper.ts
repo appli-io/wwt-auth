@@ -1,8 +1,11 @@
-import { ApiProperty }       from '@nestjs/swagger';
-import { IUser }             from '../../users/interfaces/user.interface';
-import { IAuthResponseUser } from '../interfaces/auth-response-user.interface';
+import { ApiProperty } from '@nestjs/swagger';
 
-export class AuthResponseUserMapper implements IAuthResponseUser {
+import { ContactDto } from '@modules/users/dtos/contact.dto';
+import { UserEntity } from '@modules/users/entities/user.entity';
+
+import { IUser } from '../interfaces/user.interface';
+
+export class ResponseContactUserMapper implements Partial<IUser> {
   @ApiProperty({
     description: 'User id',
     example: 123,
@@ -30,21 +33,22 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
   public username: string;
 
   @ApiProperty({
+    description: 'User email',
+    example: 'john.doe1@email.com',
+    minLength: 3,
+    maxLength: 106,
+    type: String,
+  })
+  public email: string;
+
+  @ApiProperty({
     description: 'User avatar',
-    example: 'https://example.com/avatar.png',
+    example: 'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50',
     minLength: 3,
     maxLength: 255,
     type: String,
   })
   public avatar: string;
-
-  @ApiProperty({
-    description: 'User email',
-    example: 'example@gmail.com',
-    minLength: 5,
-    maxLength: 255,
-  })
-  public email: string;
 
   @ApiProperty({
     description: 'User position',
@@ -64,19 +68,25 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
   })
   public location: string;
 
-  constructor(values: IAuthResponseUser) {
+  @ApiProperty({
+    description: 'User contacts',
+  })
+  public contacts: ContactDto[];
+
+  constructor(values: ResponseContactUserMapper) {
     Object.assign(this, values);
   }
 
-  public static map(user: IUser, companyPosition?: string): AuthResponseUserMapper {
-    return new AuthResponseUserMapper({
+  public static map(user: UserEntity, companyPosition?: string): ResponseContactUserMapper {
+    return new ResponseContactUserMapper({
       id: user.id,
       name: user.name,
       username: user.username,
-      avatar: user.avatar,
       email: user.email,
-      position: companyPosition || '',
+      avatar: user.avatar,
+      position: companyPosition,
       location: user.location,
+      contacts: []
     });
   }
 }

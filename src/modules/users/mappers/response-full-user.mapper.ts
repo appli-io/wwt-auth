@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { ContactDto } from '@modules/users/dtos/contact.dto';
 import { UserEntity } from '@modules/users/entities/user.entity';
 
 import { IUser } from '../interfaces/user.interface';
 
-export class ResponseUserMapper implements Partial<IUser> {
+export class ResponseFullUserMapper implements Partial<IUser> {
   @ApiProperty({
     description: 'User id',
     example: 123,
@@ -50,13 +51,15 @@ export class ResponseUserMapper implements Partial<IUser> {
   public avatar: string;
 
   @ApiProperty({
-    description: 'User position',
-    example: 'Software Engineer',
+    description: 'User positions by company',
     minLength: 3,
     maxLength: 255,
-    type: String,
+    type: Object,
   })
-  public position: string;
+  public positions: {
+    position: string,
+    companyId: string,
+  }[];
 
   @ApiProperty({
     description: 'User location',
@@ -67,19 +70,33 @@ export class ResponseUserMapper implements Partial<IUser> {
   })
   public location: string;
 
-  constructor(values: ResponseUserMapper) {
+  @ApiProperty({
+    description: 'User settings',
+    example: {},
+    type: Object,
+  })
+  public settings: Record<string, any>;
+
+  @ApiProperty({
+    description: 'User contacts',
+  })
+  public contacts: ContactDto[];
+
+  constructor(values: ResponseFullUserMapper) {
     Object.assign(this, values);
   }
 
-  public static map(user: UserEntity, companyPosition?: string): ResponseUserMapper {
-    return new ResponseUserMapper({
+  public static map(user: UserEntity, companyPosition?: string): ResponseFullUserMapper {
+    return new ResponseFullUserMapper({
       id: user.id,
       name: user.name,
       username: user.username,
       email: user.email,
       avatar: user.avatar,
-      position: companyPosition && undefined,
-      location: user.location
+      positions: user.companyUsers.map((companyUser) => ({position: companyUser.position, companyId: companyUser.company.id})),
+      location: user.location,
+      settings: user.settings,
+      contacts: user.companyUsers.map(cu => cu.contacts.map(c => ContactDto.fromEntity(c))).flat(),
     });
   }
 }

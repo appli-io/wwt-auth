@@ -10,7 +10,10 @@ import { isInt }         from 'class-validator';
 import { CommonService }       from '@common/common.service';
 import { SLUG_REGEX }          from '@common/consts/regex.const';
 import { isNull, isUndefined } from '@common/utils/validation.util';
+import { UsersContactEntity }  from '@modules/company-user/entities/users-contact.entity';
+import { CompanyUserService }  from '@modules/company-user/company-user.service';
 import { UpdateUserInfoDto }   from '@modules/users/dtos/update-user-info.dto';
+import { ContactDto }          from '@modules/users/dtos/contact.dto';
 
 import { ChangeEmailDto }        from './dtos/change-email.dto';
 import { PasswordDto }           from './dtos/password.dto';
@@ -23,8 +26,10 @@ import { OAuthProvidersEnum }    from './enums/oauth-providers.enum';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(UserEntity) private readonly usersRepository: EntityRepository<UserEntity>,
-    @InjectRepository(OAuthProviderEntity) private readonly oauthProvidersRepository: EntityRepository<OAuthProviderEntity>,
+    @InjectRepository(UserEntity) private readonly _usersRepository: EntityRepository<UserEntity>,
+    @InjectRepository(UsersContactEntity) private readonly _usersContactRepository: EntityRepository<UsersContactEntity>,
+    @InjectRepository(OAuthProviderEntity) private readonly _oauthProvidersRepository: EntityRepository<OAuthProviderEntity>,
+    private readonly _companyUserService: CompanyUserService,
     private readonly commonService: CommonService,
   ) {
   }
@@ -34,7 +39,7 @@ export class UsersService {
     const formattedEmail = email.toLowerCase();
     await this.checkEmailUniqueness(formattedEmail);
     const formattedName = this.commonService.formatName(name);
-    const user = this.usersRepository.create({
+    const user = this._usersRepository.create({
       email: formattedEmail,
       name: formattedName,
       username: await this.generateUsername(formattedName),
@@ -48,7 +53,7 @@ export class UsersService {
   }
 
   public async findAll(): Promise<UserEntity[]> {
-    return this.usersRepository.findAll();
+    return this._usersRepository.findAll();
   }
 
   public async findOneByIdOrUsername(idOrUsername: string,): Promise<UserEntity> {
@@ -69,14 +74,15 @@ export class UsersService {
     return this.findOneByUsername(idOrUsername);
   }
 
-  public async findOneById(id: number): Promise<UserEntity> {
-    const user = await this.usersRepository.findOne({id});
+  public async findOneById(id: number, polulateJoin?: any): Promise<UserEntity> {
+    const user = await this._usersRepository.findOne({id}, {populate: polulateJoin});
     this.commonService.checkEntityExistence(user, 'User');
+
     return user;
   }
 
   public async findOneByUsername(username: string, forAuth = false,): Promise<UserEntity> {
-    const user = await this.usersRepository.findOne({
+    const user = await this._usersRepository.findOne({
       username: username.toLowerCase(),
     });
 
@@ -90,7 +96,7 @@ export class UsersService {
   }
 
   public async findOneByEmail(email: string): Promise<UserEntity> {
-    const user = await this.usersRepository.findOne({
+    const user = await this._usersRepository.findOne({
       email: email.toLowerCase(),
     });
     this.throwUnauthorizedException(user);
@@ -99,13 +105,13 @@ export class UsersService {
 
   // necessary for password reset
   public async uncheckedUserByEmail(email: string): Promise<UserEntity> {
-    return this.usersRepository.findOne({
+    return this._usersRepository.findOne({
       email: email.toLowerCase(),
     });
   }
 
   public async findOneByCredentials(id: number, version: number,): Promise<UserEntity> {
-    const user = await this.usersRepository.findOne({id});
+    const user = await this._usersRepository.findOne({id});
     this.throwUnauthorizedException(user);
 
     if (user.credentials.version !== version) {
@@ -155,20 +161,21 @@ export class UsersService {
   }
 
   public async updateUserInfo(userId: number, dto: UpdateUserInfoDto): Promise<UserEntity> {
-    const {avatar, position, location} = dto;
+    const {avatar, location} = dto;
     const user = await this.findOneById(userId);
 
     if (!isUndefined(avatar) && !isNull(avatar) && avatar !== user.avatar)
       user.avatar = avatar;
 
-    if (!isUndefined(position) && !isNull(position) && position !== user.position)
-      user.position = position;
-
     if (!isUndefined(location) && !isNull(location) && location !== user.location)
       user.location = location;
 
+    if (!isUndefined(dto.contacts) && !isNull(dto.contacts))
+      await this.validateAndUpdateContactInfo(user, dto.contacts);
+
     await this.commonService.saveEntity(user);
-    return user;
+    console.log(user);
+    return this.findOneById(userId, [ 'assignedCompanies', 'companyUsers.contacts' ]);
   }
 
   public async updatePassword(userId: number, newPassword: string, password?: string,): Promise<UserEntity> {
@@ -229,7 +236,7 @@ export class UsersService {
 
   public async findOrCreate(provider: OAuthProvidersEnum, email: string, name: string,): Promise<UserEntity> {
     const formattedEmail = email.toLowerCase();
-    const user = await this.usersRepository.findOne(
+    const user = await this._usersRepository.findOne(
       {
         email: formattedEmail,
       },
@@ -253,7 +260,7 @@ export class UsersService {
   }
 
   public async findOAuthProviders(userId: number,): Promise<OAuthProviderEntity[]> {
-    return await this.oauthProvidersRepository.find(
+    return await this._oauthProvidersRepository.find(
       {
         user: userId,
       },
@@ -276,7 +283,7 @@ export class UsersService {
   }
 
   private async checkUsernameUniqueness(username: string): Promise<void> {
-    const count = await this.usersRepository.count({username});
+    const count = await this._usersRepository.count({username});
 
     if (count > 0) {
       throw new ConflictException('Username already in use');
@@ -290,7 +297,7 @@ export class UsersService {
   }
 
   private async checkEmailUniqueness(email: string): Promise<void> {
-    const count = await this.usersRepository.count({email});
+    const count = await this._usersRepository.count({email});
 
     if (count > 0) {
       throw new ConflictException('Email already in use');
@@ -305,7 +312,7 @@ export class UsersService {
    */
   private async generateUsername(name: string): Promise<string> {
     const pointSlug = this.commonService.generatePointSlug(name);
-    const count = await this.usersRepository.count({
+    const count = await this._usersRepository.count({
       username: {
         $like: `${ pointSlug }%`,
       },
@@ -319,11 +326,70 @@ export class UsersService {
   }
 
   private async createOAuthProvider(provider: OAuthProvidersEnum, userId: number,): Promise<OAuthProviderEntity> {
-    const oauthProvider = this.oauthProvidersRepository.create({
+    const oauthProvider = this._oauthProvidersRepository.create({
       provider,
       user: userId,
     });
     await this.commonService.saveEntity(oauthProvider, true,);
     return oauthProvider;
+  }
+
+  private async validateAndUpdateContactInfo(user: UserEntity, contactInfoDtos: ContactDto[]) {
+    const uniqueCompaniesIds = new Set(contactInfoDtos.map(dto => dto.companyId));
+
+    if (!await this._companyUserService.isActiveUserInCompanies(user.id, Array.from(uniqueCompaniesIds)))
+      throw new UnauthorizedException('You not belong to one of the companies you are trying to add contacts to or you are not active in one of them');
+
+    // console.log('uniqueCompaniesIds', uniqueCompaniesIds);
+    const existingContacts = await this._usersContactRepository.createQueryBuilder('uc')
+      .leftJoinAndSelect('uc.companyUser', 'cu')
+      .leftJoinAndSelect('cu.user', 'u')
+      .leftJoinAndSelect('cu.company', 'c')
+      .where({'u.id': user.id})
+      .populate([ {field: 'companyUser', all: true} ])
+      .getResultList();
+
+    console.log(existingContacts);
+    const contactsToAdd: ContactDto[] = [];
+    const contactsToRemove = existingContacts.filter(contact =>
+      !contactInfoDtos.find(dto =>
+        dto.value === contact.value &&
+        dto.type === contact.type &&
+        dto.companyId === contact.companyUser.company.id
+      )
+    );
+
+    for (const dto of contactInfoDtos) {
+      const existingContact = existingContacts.find(contact =>
+        dto.value === contact.value &&
+        dto.type === contact.type &&
+        dto.companyId === contact.companyUser.company.id
+      );
+      if (!existingContact && !this.isDuplicate(dto, contactsToAdd)) {
+        contactsToAdd.push(dto);
+      }
+    }
+
+    await this.addContacts(contactsToAdd, user);
+    await this.removeContacts(contactsToRemove);
+  }
+
+  private isDuplicate(newContactDto: ContactDto, contactsToAdd: ContactDto[]): boolean {
+    return contactsToAdd.some(contact => contact.value === newContactDto.value && contact.type === newContactDto.type && contact.companyId === newContactDto.companyId);
+  }
+
+  private async addContacts(contactsToAdd: ContactDto[], user: UserEntity) {
+    const contacts = contactsToAdd.map(dto => {
+      return this._usersContactRepository.create({
+        ...dto,
+        companyUser: this._companyUserService._em.getReference('CompanyUserEntity', {user: user.id, company: dto.companyId}),
+      });
+    });
+
+    await this.commonService.saveAllEntities(contacts, true);
+  }
+
+  private async removeContacts(contactsToRemove: UsersContactEntity[]) {
+    // TODO: Logic to remove unused contacts from the database
   }
 }

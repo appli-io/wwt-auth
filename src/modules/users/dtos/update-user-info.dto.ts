@@ -1,4 +1,7 @@
-import { IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
+import { Type }                                        from 'class-transformer';
+
+import { ContactDto } from '@modules/users/dtos/contact.dto';
 
 export class UpdateUserInfoDto {
   // Optional avatar field
@@ -16,4 +19,10 @@ export class UpdateUserInfoDto {
   @IsString()
   @IsOptional()
   public location?: string;
+
+  // Optional bio contact info field array
+  @IsOptional()
+  @ValidateNested({each: true})
+  @Type(() => ContactDto)
+  public contacts?: ContactDto[];
 }

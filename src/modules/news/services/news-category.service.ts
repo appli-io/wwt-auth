@@ -3,8 +3,8 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 
-import { NewsCategoryEntity }      from '@modules/news/entities/news-category.entity';
 import { CommonService }           from '@common/common.service';
+import { NewsCategoryEntity }      from '@modules/news/entities/news-category.entity';
 import { CreateNewsCategoriesDto } from '@modules/news/dtos/create-news-categories.dto';
 
 @Injectable()
@@ -58,7 +58,6 @@ export class NewsCategoryService {
       ...createNewsCategoriesDto,
       company: companyId,
       createdBy: userId,
-
     });
 
     await this._commonService.saveEntity(newNewsCategory, true);
