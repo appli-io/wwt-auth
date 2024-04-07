@@ -82,7 +82,7 @@ export class UsersController {
   public async update(
     @CurrentUser() id: number,
     @Body() dto: UpdateUserInfoDto,
-  ): Promise<IResponseUser> {
+  ): Promise<ResponseFullUserMapper> {
     const user = await this._usersService.updateUserInfo(id, dto);
     return ResponseFullUserMapper.map(user);
   }
