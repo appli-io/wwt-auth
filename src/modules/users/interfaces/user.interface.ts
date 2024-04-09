@@ -7,7 +7,8 @@ export interface IUser {
   email: string;
   password: string;
   confirmed: boolean;
-  avatar: string;
+  avatar?: string;
+  portrait?: string;
   location: string;
   settings: Record<string, any>;
   credentials: ICredentials;

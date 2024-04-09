@@ -1,7 +1,7 @@
-import { IUser } from '../../users/interfaces/user.interface';
+import { UserEntity } from '@modules/users/entities/user.entity';
 
 export interface IAuthResult {
-  user: IUser;
+  user: UserEntity;
   accessToken: string;
   refreshToken: string;
 }

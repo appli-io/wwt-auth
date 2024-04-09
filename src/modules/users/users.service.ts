@@ -95,10 +95,10 @@ export class UsersService {
     return user;
   }
 
-  public async findOneByEmail(email: string): Promise<UserEntity> {
+  public async findOneByEmail(email: string, populate?: any[]): Promise<UserEntity> {
     const user = await this._usersRepository.findOne({
       email: email.toLowerCase(),
-    });
+    }, {populate});
     this.throwUnauthorizedException(user);
     return user;
   }
@@ -111,7 +111,7 @@ export class UsersService {
   }
 
   public async findOneByCredentials(id: number, version: number,): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({id});
+    const user = await this._usersRepository.findOne({id}, {populate: [ 'assignedCompanies', 'companyUsers.company' ]});
     this.throwUnauthorizedException(user);
 
     if (user.credentials.version !== version) {

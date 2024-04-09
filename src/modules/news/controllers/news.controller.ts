@@ -14,18 +14,18 @@ import {
 }                  from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { Pageable, PageableDefault } from '@lib/pageable';
-import { CurrentUser }               from '@modules/auth/decorators/current-user.decorator';
-import { MemberGuard }               from '@modules/auth/guards/member.guard';
-import { CommentService }            from '@modules/comment/comment.service';
-import { CurrentCompanyId }          from '@modules/company/decorators/company-id.decorator';
-import { CompanyUserService }        from '@modules/company-user/company-user.service';
-import { RoleEnum }                  from '@modules/company-user/enums/role.enum';
-import { LikeService }               from '@modules/likes/like.service';
-import { CreateNewsDto }             from '@modules/news/dtos/create-news.dto';
-import { ResponseAllNewsMapper }     from '@modules/news/mappers/response-all-news.mapper';
-import { NewsService }               from '@modules/news/services/news.service';
-import { ContentType }               from '@modules/shared/enums/content-type.enum';
+import { Page, Pageable, PageableDefault } from '@lib/pageable';
+import { CurrentUser }                     from '@modules/auth/decorators/current-user.decorator';
+import { MemberGuard }                     from '@modules/auth/guards/member.guard';
+import { CommentService }                  from '@modules/comment/comment.service';
+import { CurrentCompanyId }                from '@modules/company/decorators/company-id.decorator';
+import { CompanyUserService }              from '@modules/company-user/company-user.service';
+import { RoleEnum }                        from '@modules/company-user/enums/role.enum';
+import { LikeService }                     from '@modules/likes/like.service';
+import { CreateNewsDto }                   from '@modules/news/dtos/create-news.dto';
+import { ResponseAllNewsMapper }           from '@modules/news/mappers/response-all-news.mapper';
+import { NewsService }                     from '@modules/news/services/news.service';
+import { ContentType }                     from '@modules/shared/enums/content-type.enum';
 
 @ApiTags('News')
 @Controller('news')
@@ -49,7 +49,7 @@ export class NewsController {
     return {
       ...news,
       content: news.content.map(ResponseAllNewsMapper.map)
-    };
+    } as Page<ResponseAllNewsMapper>;
   }
 
   @Get(':slugOrId')

@@ -3,7 +3,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ContactDto } from '@modules/users/dtos/contact.dto';
 import { UserEntity } from '@modules/users/entities/user.entity';
 
-import { IUser } from '../interfaces/user.interface';
+import { IUser }                     from '../interfaces/user.interface';
+import { ResponseCompanyUserMapper } from '@modules/auth/mappers/response-company-user.mapper';
 
 export class ResponseFullUserMapper implements Partial<IUser> {
   @ApiProperty({
@@ -56,10 +57,7 @@ export class ResponseFullUserMapper implements Partial<IUser> {
     maxLength: 255,
     type: Object,
   })
-  public positions: {
-    position: string,
-    companyId: string,
-  }[];
+  public positions: ResponseCompanyUserMapper[];
 
   @ApiProperty({
     description: 'User location',
@@ -86,7 +84,7 @@ export class ResponseFullUserMapper implements Partial<IUser> {
     Object.assign(this, values);
   }
 
-  public static map(user: UserEntity, companyPosition?: string): ResponseFullUserMapper {
+  public static map(user: UserEntity): ResponseFullUserMapper {
     return new ResponseFullUserMapper({
       id: user.id,
       name: user.name,

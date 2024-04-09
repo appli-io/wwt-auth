@@ -105,8 +105,7 @@ export class AuthService {
       );
     await this.checkIfTokenIsBlacklisted(id, tokenId);
     const user = await this.usersService.findOneByCredentials(id, version);
-    const [ accessToken, newRefreshToken ] =
-      await this.jwtService.generateAuthTokens(user, domain, tokenId);
+    const [ accessToken, newRefreshToken ] = await this.jwtService.generateAuthTokens(user, domain, tokenId);
     return {user, accessToken, refreshToken: newRefreshToken};
   }
 
@@ -248,7 +247,7 @@ export class AuthService {
         throw new BadRequestException('Invalid email');
       }
 
-      return this.usersService.findOneByEmail(emailOrUsername);
+      return this.usersService.findOneByEmail(emailOrUsername, [ 'assignedCompanies', 'companyUsers' ]);
     }
 
     if (

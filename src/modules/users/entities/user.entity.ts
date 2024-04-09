@@ -54,7 +54,14 @@ export class UserEntity implements IUser {
   @IsString()
   @IsUrl()
   @IsOptional()
-  public avatar: string;
+  public avatar?: string;
+
+  // User portrait picture
+  @Property({columnType: 'varchar', length: 255, nullable: true})
+  @IsString()
+  @IsUrl()
+  @IsOptional()
+  public portrait?: string;
 
   // User's location
   @Property({columnType: 'varchar', length: 255, nullable: true})

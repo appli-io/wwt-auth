@@ -1,6 +1,8 @@
-import { ApiProperty }       from '@nestjs/swagger';
-import { IUser }             from '../../users/interfaces/user.interface';
-import { IAuthResponseUser } from '../interfaces/auth-response-user.interface';
+import { ApiProperty }               from '@nestjs/swagger';
+import { IAuthResponseUser }         from '../interfaces/auth-response-user.interface';
+import { ResponseCompanyUserMapper } from '@modules/auth/mappers/response-company-user.mapper';
+import { UserEntity }                from '@modules/users/entities/user.entity';
+import { CompanyEntity }             from '@modules/company/entities/company.entity';
 
 export class AuthResponseUserMapper implements IAuthResponseUser {
   @ApiProperty({
@@ -47,13 +49,27 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
   public email: string;
 
   @ApiProperty({
-    description: 'User position',
-    example: 'Software Engineer',
-    minLength: 3,
-    maxLength: 255,
-    type: String,
+    description: 'User settings',
+    example: {},
+    type: Object,
   })
-  public position: string;
+  public settings: Record<string, any>;
+
+  @ApiProperty({
+    description: 'User companies',
+    example: [],
+    type: Array,
+  })
+  public assignedCompanies: Partial<CompanyEntity>[];
+
+  @ApiProperty({
+    description: 'User position by company',
+    example: {
+      companyId: '123e4567-e89b-12d3-a456-426614174000',
+      position: 'Software Engineer'
+    }
+  })
+  public positions?: ResponseCompanyUserMapper[];
 
   @ApiProperty({
     description: 'User location',
@@ -68,14 +84,16 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
     Object.assign(this, values);
   }
 
-  public static map(user: IUser, companyPosition?: string): AuthResponseUserMapper {
+  public static map(user: UserEntity): AuthResponseUserMapper {
     return new AuthResponseUserMapper({
       id: user.id,
       name: user.name,
       username: user.username,
       avatar: user.avatar,
       email: user.email,
-      position: companyPosition || '',
+      positions: user.companyUsers.map((companyUser) => ({position: companyUser.position, companyId: companyUser.company.id})),
+      assignedCompanies: user.assignedCompanies.map((company) => ({id: company.id, name: company.name})),
+      settings: user.settings,
       location: user.location,
     });
   }
