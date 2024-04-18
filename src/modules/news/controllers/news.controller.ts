@@ -26,6 +26,10 @@ import { CreateNewsDto }                   from '@modules/news/dtos/create-news.
 import { ResponseAllNewsMapper }           from '@modules/news/mappers/response-all-news.mapper';
 import { NewsService }                     from '@modules/news/services/news.service';
 import { ContentType }                     from '@modules/shared/enums/content-type.enum';
+import { ResponseFullNewsMapper }          from '@modules/news/mappers/response-full-news.mapper';
+import { NewsQueryDto }                    from '@modules/news/dtos/news-query.dto';
+
+const MAX_HIGHLIGHTED_NEWS = 10;
 
 @ApiTags('News')
 @Controller('news')
@@ -42,7 +46,7 @@ export class NewsController {
   public async findAll(
     @CurrentCompanyId() companyId: string,
     @PageableDefault() pageable: Pageable,
-    @Query() query: any,
+    @Query() query: NewsQueryDto,
   ) {
     const news = await this._newsService.findAll(query, pageable, companyId);
 
@@ -60,22 +64,17 @@ export class NewsController {
 
     if (!news) throw new NotFoundException('News not found');
 
-    return ResponseAllNewsMapper.map(news);
+    return ResponseFullNewsMapper.map(news);
   }
 
-  @Get('social/:id/count')
-  public async findOneSocial(
-    @Param('id', ParseUUIDPipe) id: string,
+  @Get('highlighted')
+  public async findHighlighted(
+    @CurrentCompanyId() companyId: string,
+    @PageableDefault({limit: MAX_HIGHLIGHTED_NEWS, enableUnpaged: true, unpaged: true}) pageable: Pageable,
   ) {
-    const likes: number = await this._likeService.countByContentTypeAndContentId(ContentType.NEWS, id);
-    const comments: number = await this._commentService.countBy({contentType: ContentType.NEWS, contentId: id});
+    const news = await this._newsService.findAll({highlighted: true}, pageable, companyId);
 
-    return {
-      counts: {
-        likes,
-        comments,
-      }
-    };
+    return news.content.map(ResponseAllNewsMapper.map);
   }
 
   @Post()
@@ -100,6 +99,21 @@ export class NewsController {
     await this._newsService.delete(id, userId, companyId, isAdmin);
 
     return 'News deleted';
+  }
+
+  @Get('social/:id/count')
+  public async findOneSocial(
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const likes: number = await this._likeService.countByContentTypeAndContentId(ContentType.NEWS, id);
+    const comments: number = await this._commentService.countBy({contentType: ContentType.NEWS, contentId: id});
+
+    return {
+      counts: {
+        likes,
+        comments,
+      }
+    };
   }
 
   @Get(':id/like')

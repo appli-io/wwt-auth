@@ -1,13 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-
-import { v4 } from 'uuid';
-
 import { NewsEntity }                      from '@modules/news/entities/news.entity';
-import { INews }                           from '@modules/news/interfaces/news.interface';
+import { ApiProperty }                     from '@nestjs/swagger';
+import { v4 }                              from 'uuid';
 import { ResponseAllNewsCategoriesMapper } from '@modules/news/mappers/response-all-news-categories.mapper';
 import { ResponseSimpleUserMapper }        from '@modules/users/mappers/response-simple-user.mapper';
+import { INews }                           from '@modules/news/interfaces/news.interface';
 
-export class ResponseAllNewsMapper implements Partial<INews> {
+export class ResponseFullNewsMapper implements Partial<INews> {
   @ApiProperty({
     description: 'News id',
     example: v4(),
@@ -43,6 +41,8 @@ export class ResponseAllNewsMapper implements Partial<INews> {
   })
   public portraitImage: string;
 
+  public images: string[];
+
   @ApiProperty({
     description: 'Category',
     example: 'Science And Technology',
@@ -63,17 +63,26 @@ export class ResponseAllNewsMapper implements Partial<INews> {
   })
   public publishedAt: Date;
 
-  constructor(values: ResponseAllNewsMapper) {
+  @ApiProperty({
+    description: 'Body',
+    example: 'This is the body of the news',
+    type: String,
+  })
+  public body: string;
+
+  constructor(values: ResponseFullNewsMapper) {
     Object.assign(this, values);
   }
 
-  public static map(news: NewsEntity): ResponseAllNewsMapper {
-    return new ResponseAllNewsMapper({
+  public static map(news: NewsEntity): ResponseFullNewsMapper {
+    return new ResponseFullNewsMapper({
       id: news.id,
       headline: news.headline,
       abstract: news.abstract,
       slug: news.slug,
+      body: news.body,
       portraitImage: news.portraitImage,
+      images: news.images,
       category: ResponseAllNewsCategoriesMapper.map(news.category),
       createdBy: ResponseSimpleUserMapper.map(news.createdBy),
       publishedAt: news.publishedAt,

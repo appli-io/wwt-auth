@@ -1,7 +1,8 @@
-import { Module }             from '@nestjs/common';
-import { MikroOrmModule }     from '@mikro-orm/nestjs';
-import { CompanyUserEntity }  from '@modules/company-user/entities/company-user.entity';
-import { CompanyUserService } from '@modules/company-user/company-user.service';
+import { Module }                from '@nestjs/common';
+import { MikroOrmModule }        from '@mikro-orm/nestjs';
+import { CompanyUserEntity }     from '@modules/company-user/entities/company-user.entity';
+import { CompanyUserService }    from '@modules/company-user/company-user.service';
+import { CompanyUserController } from '@modules/company-user/company-user.controller';
 
 @Module({
   imports: [
@@ -10,7 +11,7 @@ import { CompanyUserService } from '@modules/company-user/company-user.service';
     ])
   ],
   providers: [ CompanyUserService ],
-  controllers: [],
+  controllers: [ CompanyUserController ],
   exports: [ CompanyUserService ],
 })
 export class CompanyUserModule {}

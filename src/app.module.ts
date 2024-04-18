@@ -3,6 +3,7 @@ import { CacheModule }                            from '@nestjs/cache-manager';
 import { Module }                                 from '@nestjs/common';
 import { ConfigModule, ConfigService }            from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { DevtoolsModule }                         from '@nestjs/devtools-integration';
 import { ThrottlerModule }                        from '@nestjs/throttler';
 
 import { CommonModule }            from '@common/common.module';
@@ -47,6 +48,9 @@ import { config }     from './config';
     ThrottlerModule.forRootAsync({
       imports: [ ConfigModule ],
       useClass: ThrottlerConfig,
+    }),
+    DevtoolsModule.register({
+      http: process.env.NODE_ENV !== 'production',
     }),
     CommonModule,
     CompanyModule,

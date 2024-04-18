@@ -61,11 +61,9 @@ export class UsersController {
   @ApiNotFoundResponse({
     description: 'The user is not found.',
   })
-  public async getUser(@Param() params: GetUserParams): Promise<IResponseUser> {
-    const user = await this._usersService.findOneByIdOrUsername(
-      params.idOrUsername,
-    );
-    return ResponseUserMapper.map(user);
+  public async getUser(@Param() params: GetUserParams): Promise<ResponseFullUserMapper> {
+    const user = await this._usersService.findOneByIdOrUsername(params.idOrUsername);
+    return ResponseFullUserMapper.map(user);
   }
 
   @Patch('/me')

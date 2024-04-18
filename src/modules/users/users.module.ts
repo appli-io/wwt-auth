@@ -8,6 +8,7 @@ import { OAuthProviderEntity } from './entities/oauth-provider.entity';
 import { UserEntity }          from './entities/user.entity';
 import { UsersController }     from './users.controller';
 import { UsersService }        from './users.service';
+import { CompanyModule }       from '@modules/company/company.module';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { UsersService }        from './users.service';
       UserEntity,
       UsersContactEntity
     ]),
-    CompanyUserModule
+    CompanyUserModule,
+    CompanyModule
   ],
   providers: [ UsersService ],
   exports: [ UsersService ],

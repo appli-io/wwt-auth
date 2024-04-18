@@ -14,8 +14,8 @@ export class NewsCategoryService {
     private readonly _commonService: CommonService
   ) {}
 
-  public async findAll(): Promise<NewsCategoryEntity[]> {
-    return this._newsCategoryRepository.findAll();
+  public async findAll(companyId: string): Promise<NewsCategoryEntity[]> {
+    return this._newsCategoryRepository.find({company: companyId});
   }
 
   /**

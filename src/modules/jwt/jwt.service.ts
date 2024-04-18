@@ -4,11 +4,11 @@ import * as jwt                                                           from '
 import { v4 }                                                             from 'uuid';
 import { CommonService }                                                  from '@common/common.service';
 import { IJwt }                                                           from '@config/interfaces/jwt.interface';
-import { IUser }                                                          from '../users/interfaces/user.interface';
 import { TokenTypeEnum }                                                  from './enums/token-type.enum';
 import { IAccessPayload, IAccessToken, }                                  from './interfaces/access-token.interface';
 import { IEmailPayload, IEmailToken }                                     from './interfaces/email-token.interface';
 import { IRefreshPayload, IRefreshToken, }                                from './interfaces/refresh-token.interface';
+import { UserEntity }                                                     from '@modules/users/entities/user.entity';
 
 @Injectable()
 export class JwtService {
@@ -68,14 +68,14 @@ export class JwtService {
         throw new BadRequestException('Token expired');
       }
       if (error instanceof jwt.JsonWebTokenError) {
-        throw new BadRequestException('Invalid token');
+        throw new BadRequestException('Invalid token', error.message);
       }
       throw new InternalServerErrorException(error);
     }
   }
 
   public async generateToken(
-    user: IUser,
+    user: UserEntity,
     tokenType: TokenTypeEnum,
     domain?: string | null,
     tokenId?: string,
@@ -91,7 +91,7 @@ export class JwtService {
       case TokenTypeEnum.ACCESS:
         const {privateKey, time: accessTime} = this.jwtConfig.access;
         return this.commonService.throwInternalError(
-          JwtService.generateTokenAsync({id: user.id}, privateKey, {
+          JwtService.generateTokenAsync({id: user.id, companyId: user.activeCompany?.id}, privateKey, {
             ...jwtOptions,
             expiresIn: accessTime,
             algorithm: 'RS256',
@@ -104,6 +104,7 @@ export class JwtService {
           JwtService.generateTokenAsync(
             {
               id: user.id,
+              companyId: user.activeCompany?.id,
               version: user.credentials.version,
               tokenId: tokenId ?? v4(),
             },
@@ -119,7 +120,7 @@ export class JwtService {
         const {secret, time} = this.jwtConfig[tokenType];
         return this.commonService.throwInternalError(
           JwtService.generateTokenAsync(
-            {id: user.id, version: user.credentials.version},
+            {id: user.id, companyId: user.activeCompany?.id, version: user.credentials.version},
             secret,
             {
               ...jwtOptions,
@@ -163,7 +164,7 @@ export class JwtService {
   }
 
   public async generateAuthTokens(
-    user: IUser,
+    user: UserEntity,
     domain?: string,
     tokenId?: string,
   ): Promise<[ string, string ]> {

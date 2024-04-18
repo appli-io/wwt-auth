@@ -2,6 +2,7 @@ import { ApiProperty }            from '@nestjs/swagger';
 import { IAuthResponse }          from '../interfaces/auth-response.interface';
 import { IAuthResult }            from '../interfaces/auth-result.interface';
 import { AuthResponseUserMapper } from './auth-response-user.mapper';
+import { ResponseCompanyMapper }  from '@modules/company/mapper/response-company.mapper';
 
 export class AuthResponseMapper implements IAuthResponse {
   @ApiProperty({
@@ -9,6 +10,8 @@ export class AuthResponseMapper implements IAuthResponse {
     type: AuthResponseUserMapper,
   })
   public readonly user: AuthResponseUserMapper;
+
+  public readonly company?: ResponseCompanyMapper;
 
   @ApiProperty({
     description: 'Access token',
@@ -18,6 +21,7 @@ export class AuthResponseMapper implements IAuthResponse {
   })
   public readonly accessToken: string;
 
+
   constructor(values: IAuthResponse) {
     Object.assign(this, values);
   }
@@ -25,6 +29,7 @@ export class AuthResponseMapper implements IAuthResponse {
   public static map(result: IAuthResult): AuthResponseMapper {
     return new AuthResponseMapper({
       user: AuthResponseUserMapper.map(result.user),
+      company: result.company ? ResponseCompanyMapper.map(result.company) : undefined,
       accessToken: result.accessToken,
     });
   }

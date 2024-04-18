@@ -32,7 +32,7 @@ import { ResponseCompanyMemberMapper }     from '@modules/company/mapper/respons
 import { CompanyEntity }                   from '@modules/company/entities/company.entity';
 import { CurrentCompanyId }                from '@modules/company/decorators/company-id.decorator';
 import { AddUserToCompanyDto }             from '@modules/company/dtos/add-user-to-company.dto';
-import { ResponseCompanyMapper }           from '@modules/company/response-company.mapper';
+import { ResponseCompanyMapper }           from '@modules/company/mapper/response-company.mapper';
 import { RoleEnum }                        from '@modules/company-user/enums/role.enum';
 import { CompanyUserService }              from '@modules/company-user/company-user.service';
 

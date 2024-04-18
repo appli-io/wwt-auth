@@ -3,8 +3,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ContactDto } from '@modules/users/dtos/contact.dto';
 import { UserEntity } from '@modules/users/entities/user.entity';
 
-import { IUser }                     from '../interfaces/user.interface';
-import { ResponseCompanyUserMapper } from '@modules/auth/mappers/response-company-user.mapper';
+import { IUser }                   from '../interfaces/user.interface';
+import { ResponsePositionsMapper } from '@modules/auth/mappers/response-positions.mapper';
 
 export class ResponseFullUserMapper implements Partial<IUser> {
   @ApiProperty({
@@ -52,12 +52,19 @@ export class ResponseFullUserMapper implements Partial<IUser> {
   public avatar: string;
 
   @ApiProperty({
+    description: 'User portrait image',
+    example: 'https://www.example.com/image.jpg',
+    type: String
+  })
+  public portrait: string;
+
+  @ApiProperty({
     description: 'User positions by company',
     minLength: 3,
     maxLength: 255,
     type: Object,
   })
-  public positions: ResponseCompanyUserMapper[];
+  public positions: ResponsePositionsMapper[];
 
   @ApiProperty({
     description: 'User location',
@@ -67,13 +74,6 @@ export class ResponseFullUserMapper implements Partial<IUser> {
     type: String,
   })
   public location: string;
-
-  @ApiProperty({
-    description: 'User settings',
-    example: {},
-    type: Object,
-  })
-  public settings: Record<string, any>;
 
   @ApiProperty({
     description: 'User contacts',
@@ -91,9 +91,9 @@ export class ResponseFullUserMapper implements Partial<IUser> {
       username: user.username,
       email: user.email,
       avatar: user.avatar,
-      positions: user.companyUsers.map((companyUser) => ({position: companyUser.position, companyId: companyUser.company.id})),
+      portrait: user.portrait,
+      positions: user.companyUsers.map(ResponsePositionsMapper.map),
       location: user.location,
-      settings: user.settings,
       contacts: user.companyUsers.map(cu => cu.contacts.map(c => ContactDto.fromEntity(c))).flat(),
     });
   }

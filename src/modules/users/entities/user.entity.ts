@@ -1,5 +1,5 @@
-import { Collection, Embedded, Entity, ManyToMany, OneToMany, PrimaryKey, Property, } from '@mikro-orm/core';
-import { IsBoolean, IsEmail, IsOptional, IsString, IsUrl, Length, Matches }           from 'class-validator';
+import { Collection, Embedded, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, } from '@mikro-orm/core';
+import { IsBoolean, IsEmail, IsOptional, IsString, IsUrl, Length, Matches }                      from 'class-validator';
 
 import { BCRYPT_HASH_OR_UNSET, NAME_REGEX, SLUG_REGEX, } from '@common/consts/regex.const';
 import { CompanyEntity }                                 from '@modules/company/entities/company.entity';
@@ -78,6 +78,9 @@ export class UserEntity implements IUser {
 
   @Property({onUpdate: () => new Date()})
   public updatedAt: Date = new Date();
+
+  @ManyToOne(() => CompanyEntity, {nullable: true})
+  public activeCompany: CompanyEntity;
 
   @OneToMany(() => OAuthProviderEntity, (oauth) => oauth.user)
   public oauthProviders = new Collection<OAuthProviderEntity, UserEntity>(this);

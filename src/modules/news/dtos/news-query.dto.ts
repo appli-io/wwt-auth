@@ -42,4 +42,18 @@ export class NewsQueryDto implements Partial<INews> {
   @IsString()
   @IsOptional()
   authorName?: string;
+
+  @ApiProperty({
+    description: 'Category slug',
+    example: 'science-and-technology',
+    type: String
+  })
+  category?: string;
+
+  @ApiProperty({
+    description: 'Highlight news',
+    type: Boolean
+  })
+  @IsOptional()
+  highlighted?: boolean;
 }

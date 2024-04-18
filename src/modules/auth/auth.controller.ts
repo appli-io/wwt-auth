@@ -31,6 +31,8 @@ import { IOAuthProvidersResponse }      from './interfaces/oauth-provider-respon
 import { AuthResponseUserMapper }       from './mappers/auth-response-user.mapper';
 import { AuthResponseMapper }           from './mappers/auth-response.mapper';
 import { OAuthProvidersResponseMapper } from './mappers/oauth-provider-response.mapper';
+import { ResponsePositionsMapper }      from '@modules/auth/mappers/response-positions.mapper';
+import { CompanyUserService }           from '@modules/company-user/company-user.service';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -44,6 +46,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly companyUsersService: CompanyUserService,
     private readonly configService: ConfigService,
   ) {
     this.cookieName = this.configService.get<string>('REFRESH_COOKIE');
@@ -233,8 +236,30 @@ export class AuthController {
     description: 'The user is not logged in.',
   })
   public async getMe(@CurrentUser() id: number): Promise<IAuthResponseUser> {
-    const user = await this.usersService.findOneById(id);
+    const user = await this.usersService.findOneById(id, [ 'assignedCompanies', 'companyUsers' ]);
     return AuthResponseUserMapper.map(user);
+  }
+
+  @Post('/active-company')
+  @ApiOkResponse({
+    type: ResponsePositionsMapper,
+    description: 'Update the active company and return the new access token with the active company in the payload.',
+  })
+  public async updateUserActiveCompany(
+    @CurrentUser() id: number,
+    @Body('companyId') companyId: string,
+    @Req() req: FastifyRequest,
+    @Res() res: FastifyReply,
+  ) {
+    await this.authService.setActiveCompanyAndRefreshToken(id, companyId);
+    const token = this.refreshTokenFromReq(req);
+    const result = await this.authService.refreshTokenAccess(
+      token,
+      req.headers.origin,
+    );
+    this.saveRefreshCookie(res, result.refreshToken)
+      .status(HttpStatus.OK)
+      .send(AuthResponseMapper.map(result));
   }
 
   @Get('/providers')

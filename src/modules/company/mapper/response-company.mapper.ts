@@ -3,7 +3,6 @@ import { v4 }          from 'uuid';
 
 import { ICompanyResponse }   from '@modules/company/interfaces/company-response.interface';
 import { CompanyEntity }      from '@modules/company/entities/company.entity';
-import { UserEntity }         from '@modules/users/entities/user.entity';
 import { ResponseUserMapper } from '@modules/users/mappers/response-user.mapper';
 
 export class ResponseCompanyMapper implements ICompanyResponse {
@@ -85,13 +84,6 @@ export class ResponseCompanyMapper implements ICompanyResponse {
   public owner: ResponseUserMapper;
 
   @ApiProperty({
-    description: 'Company users',
-    example: 'User',
-    type: [ Object ],
-  })
-  public users: ResponseUserMapper[];
-
-  @ApiProperty({
     description: 'Company is verified',
     example: true,
     type: Boolean,
@@ -136,7 +128,6 @@ export class ResponseCompanyMapper implements ICompanyResponse {
       email: company.email,
       website: company.website,
       owner: ResponseUserMapper.map(company.owner),
-      users: company.users.map((user: UserEntity) => ResponseUserMapper.map(user)),
       isVerified: company.isVerified,
       isActive: company.isActive,
       country: company.country,

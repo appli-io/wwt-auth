@@ -48,6 +48,14 @@ export class CompanyUserService {
     return users;
   }
 
+  public async findOne(userId: number, companyId: string) {
+    return this._userCompanyRepository.findOne({user: userId, company: companyId});
+  }
+
+  public async getUserAssignedCompanies(userId: number) {
+    return this._userCompanyRepository.find({user: userId});
+  }
+
   public async assignCompanyToUser(companyId: string, {userId, role}: AddUserToCompanyDto) {
     const isUserInCompany: boolean = await this.isUserInCompany(companyId, userId);
 

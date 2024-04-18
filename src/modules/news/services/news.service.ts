@@ -27,6 +27,7 @@ export class NewsService {
     if (query.slug) whereClause['slug'] = {$ilike: `%${ query.slug }%`};
     if (query.authorId) whereClause['createdBy.id'] = {$ilike: `%${ query.authorId }%`};
     if (query.authorName) whereClause['createdBy.name'] = {$ilike: `%${ query.authorName }%`};
+    if (query.category) whereClause['category.slug'] = {$eq: `${ query.category }`};
 
     return await new PageFactory(
       pageable,
@@ -49,7 +50,7 @@ export class NewsService {
 
   public async findOneBySlugOrId(slugOrId: string): Promise<NewsEntity> {
     if (isUUID(slugOrId)) return this._newsRepository.findOne({id: slugOrId});
-    else return this._newsRepository.findOne({slug: slugOrId});
+    else return this._newsRepository.findOne({slug: slugOrId}, {populate: [ 'createdBy', 'company' ]});
   }
 
   public async create(newsDto: CreateNewsDto, userId: number, companyId: string): Promise<NewsEntity> {

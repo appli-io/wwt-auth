@@ -10,7 +10,6 @@ export interface ICompanyResponse {
   email: string;
   website?: string;
   owner: ResponseUserMapper;
-  users: ResponseUserMapper[];
   isVerified: boolean;
   isActive: boolean;
   country: string;

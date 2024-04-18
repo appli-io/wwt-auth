@@ -22,6 +22,7 @@ import { CredentialsEmbeddable } from './embeddables/credentials.embeddable';
 import { OAuthProviderEntity }   from './entities/oauth-provider.entity';
 import { UserEntity }            from './entities/user.entity';
 import { OAuthProvidersEnum }    from './enums/oauth-providers.enum';
+import { CompanyService }        from '@modules/company/company.service';
 
 @Injectable()
 export class UsersService {
@@ -30,6 +31,7 @@ export class UsersService {
     @InjectRepository(UsersContactEntity) private readonly _usersContactRepository: EntityRepository<UsersContactEntity>,
     @InjectRepository(OAuthProviderEntity) private readonly _oauthProvidersRepository: EntityRepository<OAuthProviderEntity>,
     private readonly _companyUserService: CompanyUserService,
+    private readonly _companyService: CompanyService,
     private readonly commonService: CommonService,
   ) {
   }
@@ -60,7 +62,7 @@ export class UsersService {
     const parsedValue = parseInt(idOrUsername, 10);
 
     if (!isNaN(parsedValue) && parsedValue > 0 && isInt(parsedValue)) {
-      return this.findOneById(parsedValue);
+      return this.findOneById(parsedValue, [ 'assignedCompanies', 'companyUsers.contacts' ]);
     }
 
     if (
@@ -74,8 +76,8 @@ export class UsersService {
     return this.findOneByUsername(idOrUsername);
   }
 
-  public async findOneById(id: number, polulateJoin?: any): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({id}, {populate: polulateJoin});
+  public async findOneById(id: number, populateJoin?: any): Promise<UserEntity> {
+    const user = await this._usersRepository.findOne({id}, {populate: populateJoin});
     this.commonService.checkEntityExistence(user, 'User');
 
     return user;
@@ -111,7 +113,7 @@ export class UsersService {
   }
 
   public async findOneByCredentials(id: number, version: number,): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({id}, {populate: [ 'assignedCompanies', 'companyUsers.company' ]});
+    const user = await this._usersRepository.findOne({id}, {populate: [ 'assignedCompanies', 'companyUsers.company', 'activeCompany' ]});
     this.throwUnauthorizedException(user);
 
     if (user.credentials.version !== version) {
@@ -268,11 +270,18 @@ export class UsersService {
     );
   }
 
-  async updateAvatar(id: number, dto: { avatar: string }) {
+  public async updateAvatar(id: number, dto: { avatar: string }) {
     const user = await this.findOneById(id);
     user.avatar = dto.avatar;
     await this.commonService.saveEntity(user);
     return user;
+  }
+
+  public async setActiveCompany(userId: number, companyId: string) {
+    const user = await this.findOneById(userId);
+    user.activeCompany = await this._companyService.findById(companyId);
+
+    await this.commonService.saveEntity(user);
   }
 
   private async changePassword(user: UserEntity, password: string,): Promise<UserEntity> {

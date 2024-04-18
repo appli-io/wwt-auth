@@ -1,8 +1,8 @@
-import { ApiProperty }               from '@nestjs/swagger';
-import { IAuthResponseUser }         from '../interfaces/auth-response-user.interface';
-import { ResponseCompanyUserMapper } from '@modules/auth/mappers/response-company-user.mapper';
-import { UserEntity }                from '@modules/users/entities/user.entity';
-import { CompanyEntity }             from '@modules/company/entities/company.entity';
+import { ApiProperty }             from '@nestjs/swagger';
+import { IAuthResponseUser }       from '../interfaces/auth-response-user.interface';
+import { ResponsePositionsMapper } from '@modules/auth/mappers/response-positions.mapper';
+import { UserEntity }              from '@modules/users/entities/user.entity';
+import { CompanyEntity }           from '@modules/company/entities/company.entity';
 
 export class AuthResponseUserMapper implements IAuthResponseUser {
   @ApiProperty({
@@ -69,7 +69,7 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
       position: 'Software Engineer'
     }
   })
-  public positions?: ResponseCompanyUserMapper[];
+  public positions?: ResponsePositionsMapper[];
 
   @ApiProperty({
     description: 'User location',
@@ -91,8 +91,13 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
       username: user.username,
       avatar: user.avatar,
       email: user.email,
-      positions: user.companyUsers.map((companyUser) => ({position: companyUser.position, companyId: companyUser.company.id})),
-      assignedCompanies: user.assignedCompanies.map((company) => ({id: company.id, name: company.name})),
+      positions: user.companyUsers.map(ResponsePositionsMapper.map),
+      assignedCompanies: user.assignedCompanies.map((company) => ({
+        id: company.id,
+        name: company.name,
+        username: company.username,
+        logo: company.logo
+      } as Partial<CompanyEntity>)),
       settings: user.settings,
       location: user.location,
     });
