@@ -60,7 +60,7 @@ export class AuthGuard implements CanActivate {
     if (isUndefined(token) || isNull(token) || !isJWT(token))
       return isPublic;
 
-    const origin = req.headers?.origin;
+    const origin = req.headers?.host;
 
     try {
       const {id} = await this._jwtService.verifyToken(

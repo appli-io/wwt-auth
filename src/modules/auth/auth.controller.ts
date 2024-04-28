@@ -116,7 +116,7 @@ export class AuthController {
     const token = this.refreshTokenFromReq(req);
     const result = await this.authService.refreshTokenAccess(
       token,
-      req.headers.origin,
+      req.headers.host,
     );
     this.saveRefreshCookie(res, result.refreshToken)
       .status(HttpStatus.OK)
@@ -255,7 +255,7 @@ export class AuthController {
     const token = this.refreshTokenFromReq(req);
     const result = await this.authService.refreshTokenAccess(
       token,
-      req.headers.origin,
+      req.headers.host,
     );
     this.saveRefreshCookie(res, result.refreshToken)
       .status(HttpStatus.OK)

@@ -65,6 +65,7 @@ export class AuthService {
     const {id, version} = await this.jwtService.verifyToken<IEmailToken>(
       confirmationToken,
       TokenTypeEnum.CONFIRMATION,
+      domain
     );
     const user = await this.usersService.confirmEmail(id, version);
     const [ accessToken, refreshToken ] =
@@ -104,6 +105,7 @@ export class AuthService {
       await this.jwtService.verifyToken<IRefreshToken>(
         refreshToken,
         TokenTypeEnum.REFRESH,
+        domain
       );
     await this.checkIfTokenIsBlacklisted(id, tokenId);
     const user = await this.usersService.findOneByCredentials(id, version);

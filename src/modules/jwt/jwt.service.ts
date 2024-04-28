@@ -136,8 +136,9 @@ export class JwtService {
   >(token: string, tokenType: TokenTypeEnum, origin?: string): Promise<T> {
     const jwtOptions: jwt.VerifyOptions = {
       issuer: this.issuer,
-      audience: origin ? new RegExp(origin) : new RegExp(this.domain),
     };
+
+    if (origin) jwtOptions.audience = new RegExp(origin);
 
     switch (tokenType) {
       case TokenTypeEnum.ACCESS:

@@ -176,7 +176,7 @@ export class UsersService {
       await this.validateAndUpdateContactInfo(user, dto.contacts);
 
     await this.commonService.saveEntity(user);
-    console.log(user);
+
     return this.findOneById(userId, [ 'assignedCompanies', 'companyUsers.contacts' ]);
   }
 
@@ -349,7 +349,6 @@ export class UsersService {
     if (!await this._companyUserService.isActiveUserInCompanies(user.id, Array.from(uniqueCompaniesIds)))
       throw new UnauthorizedException('You not belong to one of the companies you are trying to add contacts to or you are not active in one of them');
 
-    // console.log('uniqueCompaniesIds', uniqueCompaniesIds);
     const existingContacts = await this._usersContactRepository.createQueryBuilder('uc')
       .leftJoinAndSelect('uc.companyUser', 'cu')
       .leftJoinAndSelect('cu.user', 'u')
@@ -358,7 +357,6 @@ export class UsersService {
       .populate([ {field: 'companyUser', all: true} ])
       .getResultList();
 
-    console.log(existingContacts);
     const contactsToAdd: ContactDto[] = [];
     const contactsToRemove = existingContacts.filter(contact =>
       !contactInfoDtos.find(dto =>
