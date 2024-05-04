@@ -6,7 +6,6 @@ import { DocumentBuilder, SwaggerModule }         from '@nestjs/swagger';
 
 import fastifyCsrfProtection from '@fastify/csrf-protection';
 import fastifyCookie         from '@fastify/cookie';
-import fastifyCors           from '@fastify/cors';
 import fastifyHelmet         from '@fastify/helmet';
 
 import { AppModule } from './app.module';
@@ -25,17 +24,18 @@ async function bootstrap() {
   });
   await app.register(fastifyHelmet as any);
   await app.register(fastifyCsrfProtection as any, {cookieOpts: {signed: true}});
-  await app.register(fastifyCors as any, {
-    credentials: true,
-    origin: '*'
-  });
-
-  // app.enableCors({
+  // await app.register(fastifyCors as any, {
   //   credentials: true,
-  //   preflightContinue: true,
-  //   origin: '*',
-  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  //   origin: '*'
   // });
+
+  app.enableCors({
+    credentials: true,
+    preflightContinue: true,
+    origin: '*',
+    allowedHeaders: 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Observe',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
