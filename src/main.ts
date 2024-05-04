@@ -30,11 +30,12 @@ async function bootstrap() {
     origin: configService.get<string>('domain')
   });
 
-  // app.enableCors({
-  //   credentials: true,
-  //   origin: configService.get<string>('domain'),
-  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  // })
+  app.enableCors({
+    credentials: true,
+    preflightContinue: true,
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
