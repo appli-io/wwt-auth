@@ -55,7 +55,7 @@ async function bootstrap() {
 
   await app.listen(
     configService.get<number>('port'),
-    configService.get<boolean>('testing') ? '0.0.0.0' : '0.0.0.0'
+    '::'
   );
 }
 
