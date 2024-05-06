@@ -304,7 +304,7 @@ export class AuthController {
         signed: true,
         path: this.cookiePath,
         expires: new Date(Date.now() + this.refreshTime * 1000),
-        sameSite: 'none'
+        domain: '.railway.app' // TODO: this should be configurable
       })
       .header('Content-Type', 'application/json');
   }
