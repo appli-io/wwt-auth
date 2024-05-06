@@ -299,11 +299,12 @@ export class AuthController {
   ): FastifyReply {
     return res
       .cookie(this.cookieName, refreshToken, {
-        secure: false,
+        secure: true,
         httpOnly: true,
         signed: true,
         path: this.cookiePath,
         expires: new Date(Date.now() + this.refreshTime * 1000),
+        sameSite: 'none'
       })
       .header('Content-Type', 'application/json');
   }
