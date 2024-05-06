@@ -9,6 +9,7 @@ import fastifyCookie         from '@fastify/cookie';
 import fastifyHelmet         from '@fastify/helmet';
 
 import { AppModule } from './app.module';
+import fastifyCors   from '@fastify/cors';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -19,23 +20,22 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.setGlobalPrefix('api');
-  await app.register(fastifyCookie as any, {
-    secret: configService.get<string>('COOKIE_SECRET')
-  });
+  await app.register(import('@fastify/compress'), {global: false});
+  await app.register(fastifyCookie as any, {secret: configService.get<string>('COOKIE_SECRET')});
   await app.register(fastifyHelmet as any);
   await app.register(fastifyCsrfProtection as any, {cookieOpts: {signed: true}});
-  // await app.register(fastifyCors as any, {
-  //   credentials: true,
-  //   origin: '*'
-  // });
-
-  app.enableCors({
+  await app.register(fastifyCors as any, {
     credentials: true,
-    preflightContinue: true,
-    origin: '*',
-    allowedHeaders: 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Observe',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    origin: '*'
   });
+
+  // app.enableCors({
+  //   credentials: true,
+  //   preflightContinue: true,
+  //   origin: '*',
+  //   allowedHeaders: 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept, Observe',
+  //   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  // });
 
   app.useGlobalPipes(
     new ValidationPipe({
