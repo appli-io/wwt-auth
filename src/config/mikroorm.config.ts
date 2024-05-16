@@ -8,6 +8,7 @@ export class MikroOrmConfig implements MikroOrmOptionsFactory {
   }
 
   public createMikroOrmOptions(): MikroOrmModuleOptions {
+    console.log(this.configService.get<MikroOrmModuleOptions>('db.clientUrl'));
     return this.configService.get<MikroOrmModuleOptions>('db');
   }
 }

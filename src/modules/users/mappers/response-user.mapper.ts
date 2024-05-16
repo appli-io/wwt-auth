@@ -1,7 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { UserEntity } from '@modules/users/entities/user.entity';
-
 import { IUser } from '../interfaces/user.interface';
 import { IFile } from '@modules/firebase/interfaces/file.interface';
 

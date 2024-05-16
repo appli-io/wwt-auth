@@ -10,7 +10,6 @@ const firebaseProvider = {
   inject: [ ConfigService ],
   useFactory: (configService: ConfigService) => {
     const {storage, ...firebaseConfig} = configService.get('firebase');
-    console.log(firebaseConfig);
     return admin.initializeApp({
       credential: admin.credential.cert(firebaseConfig),
       storageBucket: storage.bucket
