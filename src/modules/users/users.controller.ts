@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Res, } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Res, UploadedFile, UseInterceptors, } from '@nestjs/common';
 import { ConfigService }                                                 from '@nestjs/config';
 import {
   ApiBadRequestResponse,
@@ -24,6 +24,7 @@ import { UpdateUsernameDto }      from './dtos/update-username.dto';
 import { IResponseUser }          from './interfaces/response-user.interface';
 import { ResponseUserMapper }     from './mappers/response-user.mapper';
 import { UsersService }           from './users.service';
+import { FileInterceptor } from '@nest-lab/fastify-multer';
 
 @ApiTags('Users')
 @Controller('users')
@@ -44,7 +45,7 @@ export class UsersController {
     type: [ ResponseUserMapper ],
     description: 'The users are found and returned.',
   })
-  public async getUsers(): Promise<IResponseUser[]> {
+  public async getUsers(): Promise<ResponseUserMapper[]> {
     const users = await this._usersService.findAll();
     return users.map(user => ResponseUserMapper.map(user));
   }
@@ -99,7 +100,7 @@ export class UsersController {
   public async updateUsername(
     @CurrentUser() id: number,
     @Body() dto: UpdateUsernameDto,
-  ): Promise<IResponseUser> {
+  ): Promise<ResponseUserMapper> {
     const user = await this._usersService.updateUsername(id, dto);
     return ResponseUserMapper.map(user);
   }
@@ -156,11 +157,12 @@ export class UsersController {
   @ApiUnauthorizedResponse({
     description: 'The user is not logged in.',
   })
+  @UseInterceptors(FileInterceptor('file'))
   public async updateAvatar(
     @CurrentUser() id: number,
-    @Body() dto: { avatar: string },
-  ): Promise<IResponseUser> {
-    const user = await this._usersService.updateAvatar(id, dto);
+    @UploadedFile() file: Express.Multer.File
+  ): Promise<ResponseUserMapper> {
+    const user = await this._usersService.updateAvatar(id, file);
     return ResponseUserMapper.map(user);
   }
 }

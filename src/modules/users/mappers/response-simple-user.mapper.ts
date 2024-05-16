@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IUser }       from '../interfaces/user.interface';
+import { IFile } from '@modules/firebase/interfaces/file.interface';
 
 export class ResponseSimpleUserMapper implements Partial<IUser> {
   @ApiProperty({
@@ -35,7 +36,7 @@ export class ResponseSimpleUserMapper implements Partial<IUser> {
     maxLength: 255,
     type: String,
   })
-  public avatar: string;
+  public avatar: string | IFile;
 
   constructor(values: ResponseSimpleUserMapper) {
     Object.assign(this, values);

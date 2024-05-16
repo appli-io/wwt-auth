@@ -23,6 +23,8 @@ import { OAuthProviderEntity }   from './entities/oauth-provider.entity';
 import { UserEntity }            from './entities/user.entity';
 import { OAuthProvidersEnum }    from './enums/oauth-providers.enum';
 import { CompanyService }        from '@modules/company/company.service';
+import { StorageService } from '@modules/firebase/services/storage.service';
+import { IUser } from './interfaces/user.interface';
 
 @Injectable()
 export class UsersService {
@@ -32,6 +34,7 @@ export class UsersService {
     @InjectRepository(OAuthProviderEntity) private readonly _oauthProvidersRepository: EntityRepository<OAuthProviderEntity>,
     private readonly _companyUserService: CompanyUserService,
     private readonly _companyService: CompanyService,
+    private readonly _storageService: StorageService,
     private readonly commonService: CommonService,
   ) {
   }
@@ -270,11 +273,14 @@ export class UsersService {
     );
   }
 
-  public async updateAvatar(id: number, dto: { avatar: string }) {
+  public async updateAvatar(id: number, file: Express.Multer.File): Promise<IUser> {
     const user = await this.findOneById(id);
-    user.avatar = dto.avatar;
+    const path = `users/${ id }/avatar`;
+    const {filepath} = await this._storageService.uploadImage(path, file);
+    user.avatar = filepath;
     await this.commonService.saveEntity(user);
-    return user;
+    const avatar = await this._storageService.getOneImage(filepath);
+    return { ...user, avatar };
   }
 
   public async setActiveCompany(userId: number, companyId: string) {

@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { UserEntity } from '@modules/users/entities/user.entity';
 
 import { IUser } from '../interfaces/user.interface';
+import { IFile } from '@modules/firebase/interfaces/file.interface';
 
 export class ResponseUserMapper implements Partial<IUser> {
   @ApiProperty({
@@ -47,7 +48,7 @@ export class ResponseUserMapper implements Partial<IUser> {
     maxLength: 255,
     type: String,
   })
-  public avatar: string;
+  public avatar: string | IFile;
 
   @ApiProperty({
     description: 'User position',
@@ -71,14 +72,14 @@ export class ResponseUserMapper implements Partial<IUser> {
     Object.assign(this, values);
   }
 
-  public static map(user: UserEntity, companyPosition?: string): ResponseUserMapper {
+  public static map(user: IUser): ResponseUserMapper {
     return new ResponseUserMapper({
       id: user.id,
       name: user.name,
       username: user.username,
       email: user.email,
       avatar: user.avatar,
-      position: companyPosition && undefined,
+      position: undefined,
       location: user.location
     });
   }

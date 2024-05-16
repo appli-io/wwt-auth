@@ -8,6 +8,7 @@ import { CompanyUserEntity }                             from '@modules/company-
 import { CredentialsEmbeddable } from '../embeddables/credentials.embeddable';
 import { IUser }                 from '../interfaces/user.interface';
 import { OAuthProviderEntity }   from './oauth-provider.entity';
+import { IFile } from '@modules/firebase/interfaces/file.interface';
 
 @Entity({tableName: 'users'})
 export class UserEntity implements IUser {
@@ -52,14 +53,12 @@ export class UserEntity implements IUser {
   // User profile picture
   @Property({columnType: 'varchar', length: 255, nullable: true})
   @IsString()
-  @IsUrl()
   @IsOptional()
-  public avatar?: string;
+  public avatar?: string | IFile;
 
   // User portrait picture
   @Property({columnType: 'varchar', length: 255, nullable: true})
   @IsString()
-  @IsUrl()
   @IsOptional()
   public portrait?: string;
 
