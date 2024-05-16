@@ -31,4 +31,18 @@ export const validationSchema = Joi.object({
   FACEBOOK_CLIENT_SECRET: Joi.string().optional(),
   GITHUB_CLIENT_ID: Joi.string().optional(),
   GITHUB_CLIENT_SECRET: Joi.string().optional(),
+  // firebase config
+  TYPE: Joi.string().required(),
+  PROJECT_ID: Joi.string().required(),
+  PRIVATE_KEY_ID: Joi.string().required(),
+  PRIVATE_KEY: Joi.string().required(),
+  CLIENT_EMAIL: Joi.string().required(),
+  CLIENT_ID: Joi.string().required(),
+  AUTH_URI: Joi.string().required(),
+  TOKEN_URI: Joi.string().required(),
+  AUTH_PROVIDER_X509_CERT_URL: Joi.string().required(),
+  CLIENT_X509_CERT_URL: Joi.string().required(),
+  UNIVERSE_DOMAIN: Joi.string().required(),
+  // firebase storage
+  STORAGE_BUCKET: Joi.string().required(),
 });

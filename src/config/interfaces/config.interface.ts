@@ -17,4 +17,5 @@ export interface IConfig {
   readonly throttler: ThrottlerOptions;
   readonly testing: boolean;
   readonly oauth2: IOAuth2;
+  readonly firebase: any;
 }

@@ -50,6 +50,7 @@
     "class-validator" : "^0.14.1",
     "dayjs": "^1.11.10",
     "fastify" : "^4.26.2",
+    "firebase-admin" : "^12.1.0",
     "google-auth-library" : "^9.7.0",
     "googleapis" : "^134.0.0",
     "handlebars": "^4.7.8",

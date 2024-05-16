@@ -1,5 +1,5 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { Reflector }                                                        from '@nestjs/core';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import { Reflector }                                                     from '@nestjs/core';
 
 import { Observable } from 'rxjs';
 
@@ -32,7 +32,7 @@ export class MemberGuard implements CanActivate {
     const companyId = request.headers['x-company-id'] as string;
 
     if (!userId || !companyId) {
-      throw new UnauthorizedException('Invalid permissions');
+      throw new ForbiddenException('Invalid permissions');
     }
 
     return this._companyUserService.isUserInCompany(companyId, userId);
