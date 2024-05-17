@@ -97,6 +97,9 @@ export class UsersService {
       this.commonService.checkEntityExistence(user, 'User');
     }
 
+    if (user.avatar)
+      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
+
     return user;
   }
 

@@ -63,11 +63,17 @@ export class NewsService {
   }
 
   public async findOneBySlugOrId(slugOrId: string): Promise<NewsEntity> {
-    if (isUUID(slugOrId)) return this._newsRepository.findOne({id: slugOrId});
-    else return this._newsRepository.findOne({slug: slugOrId}, {populate: [ 'createdBy', 'company' ]});
+    let response;
+    if (isUUID(slugOrId)) response = await this._newsRepository.findOne({id: slugOrId}, {populate: [ 'createdBy', 'company' ]});
+    else response = await this._newsRepository.findOne({slug: slugOrId}, {populate: [ 'createdBy', 'company' ]});
+
+    if (!response) throw new NotFoundException('News not found');
+    if (response.createdBy) response.createdBy.avatar = await this._storageService.getSignedUrl(response.createdBy.avatar as string);
+
+    return response;
   }
 
-  public async create(newsDto: CreateNewsDto, userId: number, companyId: string): Promise<NewsEntity> {
+  public async create(newsDto: CreateNewsDto, images: Express.Multer.File[], portraitImage: Express.Multer.File, userId: number, companyId: string): Promise<NewsEntity> {
     if (!newsDto.slug) newsDto.slug = await this.generateSlug(newsDto.headline, companyId);
     else {
       const count: number = await this.countBySlugLike(newsDto.slug, companyId);
@@ -76,6 +82,7 @@ export class NewsService {
     }
 
     const category = await this._newsCategoryService.findOneBySlugOrId(newsDto.categorySlug, companyId);
+
 
     if (!category) throw new BadRequestException('Category not found');
 

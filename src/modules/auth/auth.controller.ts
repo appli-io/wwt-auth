@@ -91,7 +91,6 @@ export class AuthController {
     @Body() singInDto: SignInDto,
   ): Promise<void> {
     const result = await this._authService.signIn(singInDto, origin);
-    result.user.avatar = await this._storageService.getSignedUrl(result.user.avatar as string);
     this.saveRefreshCookie(res, result.refreshToken)
       .status(HttpStatus.OK)
       .send(AuthResponseMapper.map(result));

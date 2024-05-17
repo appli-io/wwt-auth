@@ -10,30 +10,31 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
+  UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors
 }                  from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { Page, Pageable, PageableDefault } from '@lib/pageable';
-import { CurrentUser }                     from '@modules/auth/decorators/current-user.decorator';
-import { MemberGuard }                     from '@modules/auth/guards/member.guard';
-import { CommentService }                  from '@modules/comment/comment.service';
-import { CurrentCompanyId }                from '@modules/company/decorators/company-id.decorator';
-import { CompanyUserService }              from '@modules/company-user/company-user.service';
-import { RoleEnum }                        from '@modules/company-user/enums/role.enum';
-import { StorageService }                  from '@modules/firebase/services/storage.service';
-import { LikeService }                     from '@modules/likes/like.service';
-import { CreateNewsDto }                   from '@modules/news/dtos/create-news.dto';
-import { ResponseAllNewsMapper }           from '@modules/news/mappers/response-all-news.mapper';
-import { NewsService }                     from '@modules/news/services/news.service';
-import { ContentType }                     from '@modules/shared/enums/content-type.enum';
-import { ResponseFullNewsMapper }          from '@modules/news/mappers/response-full-news.mapper';
-import { NewsQueryDto }                    from '@modules/news/dtos/news-query.dto';
-import { FilesInterceptor }                from '@nest-lab/fastify-multer';
+import { Page, Pageable, PageableDefault }   from '@lib/pageable';
+import { CurrentUser }                       from '@modules/auth/decorators/current-user.decorator';
+import { MemberGuard }                       from '@modules/auth/guards/member.guard';
+import { CommentService }                    from '@modules/comment/comment.service';
+import { CurrentCompanyId }                  from '@modules/company/decorators/company-id.decorator';
+import { CompanyUserService }                from '@modules/company-user/company-user.service';
+import { RoleEnum }                          from '@modules/company-user/enums/role.enum';
+import { StorageService }                    from '@modules/firebase/services/storage.service';
+import { LikeService }                       from '@modules/likes/like.service';
+import { CreateNewsDto }                     from '@modules/news/dtos/create-news.dto';
+import { ResponseAllNewsMapper }             from '@modules/news/mappers/response-all-news.mapper';
+import { NewsService }                       from '@modules/news/services/news.service';
+import { ContentType }                       from '@modules/shared/enums/content-type.enum';
+import { ResponseFullNewsMapper }            from '@modules/news/mappers/response-full-news.mapper';
+import { NewsQueryDto }                      from '@modules/news/dtos/news-query.dto';
+import { FileInterceptor, FilesInterceptor } from '@nest-lab/fastify-multer';
 
-const MAX_HIGHLIGHTED_NEWS = 10;
+const MAX_HIGHLIGHTED_NEWS = 5;
 
 @ApiTags('News')
 @Controller('news')
@@ -69,7 +70,6 @@ export class NewsController {
 
     if (!news) throw new NotFoundException('News not found');
 
-    if (news.createdBy) news.createdBy.avatar = await this._storageService.getSignedUrl(news.createdBy.avatar as string);
     return ResponseFullNewsMapper.map(news);
   }
 
@@ -84,16 +84,17 @@ export class NewsController {
   }
 
   @Post()
-  @UseInterceptors(FilesInterceptor('images'))
+  @UseInterceptors(FilesInterceptor('images'), FileInterceptor('portraitImage'))
   public async create(
     @CurrentUser() userId: number,
     @CurrentCompanyId() companyId: string,
     @UploadedFiles() images: Express.Multer.File[],
+    @UploadedFile() portraitImage: Express.Multer.File,
     @Body() news: CreateNewsDto,
   ) {
     console.log(images);
     console.log(news);
-    const createdNews = await this._newsService.create(news, userId, companyId);
+    const createdNews = await this._newsService.create(news, images, portraitImage, userId, companyId);
     return createdNews.id;
   }
 

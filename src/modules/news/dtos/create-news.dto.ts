@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsArray, IsOptional, IsString, Length } from 'class-validator';
+import { IsOptional, IsString, Length } from 'class-validator';
 
 import { INews } from '@modules/news/interfaces/news.interface';
 
@@ -49,8 +49,4 @@ export class CreateNewsDto implements Partial<INews> {
   })
   @IsString()
   categorySlug!: string;
-
-  @IsArray()
-  @IsOptional()
-  images?: string[];
 }
