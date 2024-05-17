@@ -53,11 +53,11 @@ export class NewsController {
     @PageableDefault() pageable: Pageable,
     @Query() query: NewsQueryDto,
   ) {
-    const news = await this._newsService.findAll(query, pageable, companyId);
+    const pageableNews = await this._newsService.findAll(query, pageable, companyId);
 
     return {
-      ...news,
-      content: news.content.map(ResponseAllNewsMapper.map)
+      ...pageableNews,
+      content: pageableNews.content.map(ResponseAllNewsMapper.map),
     } as Page<ResponseAllNewsMapper>;
   }
 

@@ -11,6 +11,7 @@ import { NewsEntity }                  from '@modules/news/entities/news.entity'
 import { CreateNewsDto }               from '@modules/news/dtos/create-news.dto';
 import { NewsQueryDto }                from '@modules/news/dtos/news-query.dto';
 import { NewsCategoryService }         from '@modules/news/services/news-category.service';
+import { StorageService }              from '@modules/firebase/services/storage.service';
 
 @Injectable()
 export class NewsService {
@@ -19,6 +20,7 @@ export class NewsService {
     @InjectRepository(NewsEntity) private readonly _newsRepository: EntityRepository<NewsEntity>,
     private readonly _newsCategoryService: NewsCategoryService,
     private readonly _commonService: CommonService,
+    private readonly _storageService: StorageService
   ) {}
 
   public async findAll(query: NewsQueryDto, pageable: Pageable, companyId: string): Promise<Page<NewsEntity>> {
@@ -31,7 +33,7 @@ export class NewsService {
     if (query.authorName) whereClause['createdBy.name'] = {$ilike: `%${ query.authorName }%`};
     if (query.category) whereClause['category.slug'] = {$eq: `${ query.category }`};
 
-    return await new PageFactory(
+    const result = await new PageFactory(
       pageable,
       this._newsRepository,
       {
@@ -48,6 +50,16 @@ export class NewsService {
         ]
       }
     ).create();
+
+    const mappedContent = await Promise.all(result.content.map(async news => {
+      news.createdBy.avatar = await this._storageService.getSignedUrl(news.createdBy?.avatar as string);
+      return news;
+    }));
+
+    return {
+      ...result,
+      content: mappedContent
+    };
   }
 
   public async findOneBySlugOrId(slugOrId: string): Promise<NewsEntity> {
