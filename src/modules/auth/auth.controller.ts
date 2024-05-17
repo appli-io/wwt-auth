@@ -32,7 +32,7 @@ import { AuthResponseUserMapper }       from './mappers/auth-response-user.mappe
 import { AuthResponseMapper }           from './mappers/auth-response.mapper';
 import { OAuthProvidersResponseMapper } from './mappers/oauth-provider-response.mapper';
 import { ResponsePositionsMapper }      from '@modules/auth/mappers/response-positions.mapper';
-import { CompanyUserService }           from '@modules/company-user/company-user.service';
+import { StorageService }               from '@modules/firebase/services/storage.service';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -44,14 +44,14 @@ export class AuthController {
   private readonly testing: boolean;
 
   constructor(
-    private readonly authService: AuthService,
-    private readonly usersService: UsersService,
-    private readonly companyUsersService: CompanyUserService,
-    private readonly configService: ConfigService,
+    private readonly _authService: AuthService,
+    private readonly _usersService: UsersService,
+    private readonly _storageService: StorageService,
+    private readonly _configService: ConfigService,
   ) {
-    this.cookieName = this.configService.get<string>('REFRESH_COOKIE');
-    this.refreshTime = this.configService.get<number>('jwt.refresh.time');
-    this.testing = this.configService.get<boolean>('testing');
+    this.cookieName = this._configService.get<string>('REFRESH_COOKIE');
+    this.refreshTime = this._configService.get<number>('jwt.refresh.time');
+    this.testing = this._configService.get<boolean>('testing');
   }
 
   @Public()
@@ -70,7 +70,7 @@ export class AuthController {
     @Origin() origin: string | undefined,
     @Body() signUpDto: SignUpDto,
   ): Promise<IMessage> {
-    return await this.authService.signUp(signUpDto, origin);
+    return await this._authService.signUp(signUpDto, origin);
   }
 
   @Public()
@@ -90,7 +90,8 @@ export class AuthController {
     @Origin() origin: string | undefined,
     @Body() singInDto: SignInDto,
   ): Promise<void> {
-    const result = await this.authService.signIn(singInDto, origin);
+    const result = await this._authService.signIn(singInDto, origin);
+    result.user.avatar = await this._storageService.getSignedUrl(result.user.avatar as string);
     this.saveRefreshCookie(res, result.refreshToken)
       .status(HttpStatus.OK)
       .send(AuthResponseMapper.map(result));
@@ -114,10 +115,11 @@ export class AuthController {
     @Res() res: FastifyReply,
   ): Promise<void> {
     const token = this.refreshTokenFromReq(req);
-    const result = await this.authService.refreshTokenAccess(
+    const result = await this._authService.refreshTokenAccess(
       token,
       req.headers.host,
     );
+    result.user.avatar = await this._storageService.getSignedUrl(result.user.avatar as string);
     this.saveRefreshCookie(res, result.refreshToken)
       .status(HttpStatus.OK)
       .send(AuthResponseMapper.map(result));
@@ -139,7 +141,7 @@ export class AuthController {
     @Res() res: FastifyReply,
   ): Promise<void> {
     const token = this.refreshTokenFromReq(req);
-    const message = await this.authService.logout(token);
+    const message = await this._authService.logout(token);
     res
       .clearCookie(this.cookieName, {path: this.cookiePath})
       .header('Content-Type', 'application/json')
@@ -165,7 +167,7 @@ export class AuthController {
     @Body() confirmEmailDto: ConfirmEmailDto,
     @Res() res: FastifyReply,
   ): Promise<void> {
-    const result = await this.authService.confirmEmail(confirmEmailDto);
+    const result = await this._authService.confirmEmail(confirmEmailDto);
     this.saveRefreshCookie(res, result.refreshToken)
       .status(HttpStatus.OK)
       .send(AuthResponseMapper.map(result));
@@ -183,7 +185,7 @@ export class AuthController {
     @Origin() origin: string | undefined,
     @Body() emailDto: EmailDto,
   ): Promise<IMessage> {
-    return this.authService.resetPasswordEmail(emailDto, origin);
+    return this._authService.resetPasswordEmail(emailDto, origin);
   }
 
   @Public()
@@ -200,7 +202,7 @@ export class AuthController {
   public async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<IMessage> {
-    return this.authService.resetPassword(resetPasswordDto);
+    return this._authService.resetPassword(resetPasswordDto);
   }
 
   @Patch('/update-password')
@@ -217,7 +219,7 @@ export class AuthController {
     @Body() changePasswordDto: ChangePasswordDto,
     @Res() res: FastifyReply,
   ): Promise<void> {
-    const result = await this.authService.updatePassword(
+    const result = await this._authService.updatePassword(
       userId,
       changePasswordDto,
       origin,
@@ -236,7 +238,7 @@ export class AuthController {
     description: 'The user is not logged in.',
   })
   public async getMe(@CurrentUser() id: number): Promise<IAuthResponseUser> {
-    const user = await this.usersService.findOneById(id, [ 'assignedCompanies', 'companyUsers' ]);
+    const user = await this._usersService.findOneById(id, [ 'assignedCompanies', 'companyUsers' ]);
     return AuthResponseUserMapper.map(user);
   }
 
@@ -251,9 +253,9 @@ export class AuthController {
     @Req() req: FastifyRequest,
     @Res() res: FastifyReply,
   ) {
-    await this.authService.setActiveCompanyAndRefreshToken(id, companyId);
+    await this._authService.setActiveCompanyAndRefreshToken(id, companyId);
     const token = this.refreshTokenFromReq(req);
-    const result = await this.authService.refreshTokenAccess(
+    const result = await this._authService.refreshTokenAccess(
       token,
       req.headers.host,
     );
@@ -273,7 +275,7 @@ export class AuthController {
   public async getOAuthProviders(
     @CurrentUser() id: number,
   ): Promise<IOAuthProvidersResponse> {
-    const providers = await this.usersService.findOAuthProviders(id);
+    const providers = await this._usersService.findOAuthProviders(id);
     return OAuthProvidersResponseMapper.map(providers);
   }
 

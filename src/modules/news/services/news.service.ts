@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 
 import { QBFilterQuery }    from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -10,12 +10,14 @@ import { Page, Pageable, PageFactory } from '@lib/pageable';
 import { NewsEntity }                  from '@modules/news/entities/news.entity';
 import { CreateNewsDto }               from '@modules/news/dtos/create-news.dto';
 import { NewsQueryDto }                from '@modules/news/dtos/news-query.dto';
+import { NewsCategoryService }         from '@modules/news/services/news-category.service';
 
 @Injectable()
 export class NewsService {
 
   constructor(
     @InjectRepository(NewsEntity) private readonly _newsRepository: EntityRepository<NewsEntity>,
+    private readonly _newsCategoryService: NewsCategoryService,
     private readonly _commonService: CommonService,
   ) {}
 
@@ -61,9 +63,13 @@ export class NewsService {
       if (count > 0) throw new ConflictException('Slug already exists');
     }
 
+    const category = await this._newsCategoryService.findOneBySlugOrId(newsDto.categorySlug, companyId);
+
+    if (!category) throw new BadRequestException('Category not found');
+
     const news: NewsEntity = this._newsRepository.create({
       ...newsDto,
-      category: newsDto.categoryId,
+      category: category.id,
       createdBy: userId,
       company: companyId,
     });

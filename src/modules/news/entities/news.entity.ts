@@ -6,7 +6,7 @@ import { CompanyEntity }      from '@modules/company/entities/company.entity';
 import { NewsCategoryEntity } from '@modules/news/entities/news-category.entity';
 import { INews }              from '@modules/news/interfaces/news.interface';
 import { UserEntity }         from '@modules/users/entities/user.entity';
-import { v4 } from 'uuid';
+import { v4 }                 from 'uuid';
 
 @Entity({tableName: 'news'})
 export class NewsEntity implements INews {
@@ -20,7 +20,7 @@ export class NewsEntity implements INews {
   @Property({columnType: 'varchar', length: 106})
   @IsString()
   @Length(3, 106)
-  @Matches(SLUG_REGEX, {message: 'Username must be a valid slug'})
+  @Matches(SLUG_REGEX, {message: 'Headline must be a valid slug'})
   public slug: string;
 
   @Property({columnType: 'text'})

@@ -23,8 +23,8 @@ import { OAuthProviderEntity }   from './entities/oauth-provider.entity';
 import { UserEntity }            from './entities/user.entity';
 import { OAuthProvidersEnum }    from './enums/oauth-providers.enum';
 import { CompanyService }        from '@modules/company/company.service';
-import { StorageService } from '@modules/firebase/services/storage.service';
-import { IUser } from './interfaces/user.interface';
+import { StorageService }        from '@modules/firebase/services/storage.service';
+import { IUser }                 from './interfaces/user.interface';
 
 @Injectable()
 export class UsersService {
@@ -279,7 +279,7 @@ export class UsersService {
     const {filepath} = await this._storageService.uploadImage(path, file);
     user.avatar = filepath;
     await this.commonService.saveEntity(user);
-    const avatar = await this._storageService.getOneImage(filepath);
+    const avatar = await this._storageService.getSignedUrl(filepath);
     return { ...user, avatar };
   }
 

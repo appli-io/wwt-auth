@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Res, UploadedFile, UseInterceptors, } from '@nestjs/common';
-import { ConfigService }                                                 from '@nestjs/config';
+import { ConfigService }                                                                                from '@nestjs/config';
 import {
   ApiBadRequestResponse,
   ApiNoContentResponse,
@@ -7,7 +7,7 @@ import {
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
-}                                                                        from '@nestjs/swagger';
+}                                                                                                       from '@nestjs/swagger';
 
 import { FastifyReply } from 'fastify';
 
@@ -21,10 +21,10 @@ import { ChangeEmailDto }         from './dtos/change-email.dto';
 import { GetUserParams }          from './dtos/get-user.params';
 import { PasswordDto }            from './dtos/password.dto';
 import { UpdateUsernameDto }      from './dtos/update-username.dto';
-import { IResponseUser }          from './interfaces/response-user.interface';
 import { ResponseUserMapper }     from './mappers/response-user.mapper';
 import { UsersService }           from './users.service';
-import { FileInterceptor } from '@nest-lab/fastify-multer';
+import { FileInterceptor }        from '@nest-lab/fastify-multer';
+import { StorageService }         from '@modules/firebase/services/storage.service';
 
 @ApiTags('Users')
 @Controller('users')
@@ -35,6 +35,7 @@ export class UsersController {
   constructor(
     private readonly _usersService: UsersService,
     private readonly _configService: ConfigService,
+    private readonly _storageService: StorageService,
   ) {
     this.cookieName = this._configService.get<string>('REFRESH_COOKIE');
   }
@@ -64,6 +65,7 @@ export class UsersController {
   })
   public async getUser(@Param() params: GetUserParams): Promise<ResponseFullUserMapper> {
     const user = await this._usersService.findOneByIdOrUsername(params.idOrUsername);
+    user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
     return ResponseFullUserMapper.map(user);
   }
 

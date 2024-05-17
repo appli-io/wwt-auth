@@ -5,7 +5,7 @@ import { getStorage }         from 'firebase-admin/storage';
 import { GetSignedUrlConfig } from '@google-cloud/storage/build/cjs/src/file';
 import { Express }            from 'express';
 import { v4 }                 from 'uuid';
-import { IFile } from '../interfaces/file.interface';
+import { IFile }              from '../interfaces/file.interface';
 
 @Injectable()
 export class StorageService {
@@ -52,7 +52,7 @@ export class StorageService {
     return {filepath};
   }
 
-  async getOneImage(path: string): Promise<IFile> {
+  async getSignedUrl(path: string): Promise<IFile> {
     if (!this._storage)
       this._storage = getStorage().bucket();
 

@@ -10,7 +10,9 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
-  UseGuards
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors
 }                  from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -21,6 +23,7 @@ import { CommentService }                  from '@modules/comment/comment.servic
 import { CurrentCompanyId }                from '@modules/company/decorators/company-id.decorator';
 import { CompanyUserService }              from '@modules/company-user/company-user.service';
 import { RoleEnum }                        from '@modules/company-user/enums/role.enum';
+import { StorageService }                  from '@modules/firebase/services/storage.service';
 import { LikeService }                     from '@modules/likes/like.service';
 import { CreateNewsDto }                   from '@modules/news/dtos/create-news.dto';
 import { ResponseAllNewsMapper }           from '@modules/news/mappers/response-all-news.mapper';
@@ -28,6 +31,7 @@ import { NewsService }                     from '@modules/news/services/news.ser
 import { ContentType }                     from '@modules/shared/enums/content-type.enum';
 import { ResponseFullNewsMapper }          from '@modules/news/mappers/response-full-news.mapper';
 import { NewsQueryDto }                    from '@modules/news/dtos/news-query.dto';
+import { FilesInterceptor }                from '@nest-lab/fastify-multer';
 
 const MAX_HIGHLIGHTED_NEWS = 10;
 
@@ -39,7 +43,8 @@ export class NewsController {
     private readonly _newsService: NewsService,
     private readonly _companyUserService: CompanyUserService,
     private readonly _likeService: LikeService,
-    private readonly _commentService: CommentService
+    private readonly _commentService: CommentService,
+    private readonly _storageService: StorageService
   ) {}
 
   @Get()
@@ -64,6 +69,7 @@ export class NewsController {
 
     if (!news) throw new NotFoundException('News not found');
 
+    if (news.createdBy) news.createdBy.avatar = await this._storageService.getSignedUrl(news.createdBy.avatar as string);
     return ResponseFullNewsMapper.map(news);
   }
 
@@ -78,11 +84,15 @@ export class NewsController {
   }
 
   @Post()
+  @UseInterceptors(FilesInterceptor('images'))
   public async create(
     @CurrentUser() userId: number,
     @CurrentCompanyId() companyId: string,
+    @UploadedFiles() images: Express.Multer.File[],
     @Body() news: CreateNewsDto,
   ) {
+    console.log(images);
+    console.log(news);
     const createdNews = await this._newsService.create(news, userId, companyId);
     return createdNews.id;
   }

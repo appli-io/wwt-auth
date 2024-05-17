@@ -6,6 +6,7 @@ import { EntityRepository } from '@mikro-orm/postgresql';
 import { CommonService }           from '@common/common.service';
 import { NewsCategoryEntity }      from '@modules/news/entities/news-category.entity';
 import { CreateNewsCategoriesDto } from '@modules/news/dtos/create-news-categories.dto';
+import { isUUID }                  from 'class-validator';
 
 @Injectable()
 export class NewsCategoryService {
@@ -29,7 +30,7 @@ export class NewsCategoryService {
   public async findOneBySlugOrId(slugOrId: string, companyId: string): Promise<NewsCategoryEntity> {
     return this._newsCategoryRepository.findOne({
       $or: [
-        {id: slugOrId},
+        {id: isUUID(slugOrId) ? slugOrId : undefined},
         {slug: slugOrId}
       ],
       $and: [
