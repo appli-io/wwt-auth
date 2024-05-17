@@ -108,6 +108,10 @@ export class UsersService {
       email: email.toLowerCase(),
     }, {populate});
     this.throwUnauthorizedException(user);
+
+    if (user.avatar)
+      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
+
     return user;
   }
 
@@ -126,6 +130,9 @@ export class UsersService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (user.avatar)
+      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
+
     return user;
   }
 
@@ -139,6 +146,10 @@ export class UsersService {
     user.confirmed = true;
     user.credentials.updateVersion();
     await this.commonService.saveEntity(user);
+
+    if (user.avatar)
+      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
+
     return user;
   }
 
@@ -165,6 +176,10 @@ export class UsersService {
     }
 
     await this.commonService.saveEntity(user);
+
+    if (user.avatar)
+      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
+
     return user;
   }
 

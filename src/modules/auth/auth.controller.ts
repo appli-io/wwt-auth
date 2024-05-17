@@ -118,7 +118,6 @@ export class AuthController {
       token,
       req.headers.host,
     );
-    result.user.avatar = await this._storageService.getSignedUrl(result.user.avatar as string);
     this.saveRefreshCookie(res, result.refreshToken)
       .status(HttpStatus.OK)
       .send(AuthResponseMapper.map(result));
