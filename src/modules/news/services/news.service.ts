@@ -12,6 +12,7 @@ import { CreateNewsDto }               from '@modules/news/dtos/create-news.dto'
 import { NewsQueryDto }                from '@modules/news/dtos/news-query.dto';
 import { NewsCategoryService }         from '@modules/news/services/news-category.service';
 import { StorageService }              from '@modules/firebase/services/storage.service';
+import { INewsImage }                  from '@modules/news/interfaces/news.interface';
 
 @Injectable()
 export class NewsService {
@@ -52,7 +53,8 @@ export class NewsService {
     ).create();
 
     const mappedContent = await Promise.all(result.content.map(async news => {
-      news.createdBy.avatar = await this._storageService.getSignedUrl(news.createdBy?.avatar as string);
+      if (news.createdBy?.avatar) news.createdBy.avatar = await this._storageService.getSignedUrl(news.createdBy?.avatar as string);
+      if (news.portraitImage?.file) news.portraitImage.file = await this._storageService.getSignedUrl(news.portraitImage.file.url);
       return news;
     }));
 
@@ -63,12 +65,20 @@ export class NewsService {
   }
 
   public async findOneBySlugOrId(slugOrId: string): Promise<NewsEntity> {
-    let response;
+    let response: NewsEntity;
     if (isUUID(slugOrId)) response = await this._newsRepository.findOne({id: slugOrId}, {populate: [ 'createdBy', 'company' ]});
-    else response = await this._newsRepository.findOne({slug: slugOrId}, {populate: [ 'createdBy', 'company' ]});
+    else response = await this._newsRepository.findOne({slug: slugOrId}, {populate: [ 'createdBy', 'company' ]}) as NewsEntity;
 
-    if (!response) throw new NotFoundException('News not found');
+    if (!response) throw new NotFoundException('NEWS_NOT_FOUND');
+
     if (response.createdBy) response.createdBy.avatar = await this._storageService.getSignedUrl(response.createdBy.avatar as string);
+    if (response.portraitImage?.file) response.portraitImage.file = await this._storageService.getSignedUrl(response.portraitImage.filepath);
+    if (response.images?.length) response.images = await Promise.all(response.images.map(async (image: INewsImage) => ({
+      ...image,
+      file: await this._storageService.getSignedUrl(image.filepath as string)
+    })));
+
+    console.log(response);
 
     return response;
   }
@@ -83,7 +93,6 @@ export class NewsService {
 
     const category = await this._newsCategoryService.findOneBySlugOrId(newsDto.categorySlug, companyId);
 
-
     if (!category) throw new BadRequestException('Category not found');
 
     const news: NewsEntity = this._newsRepository.create({
@@ -92,6 +101,22 @@ export class NewsService {
       createdBy: userId,
       company: companyId,
     });
+
+    const basePath = this.buildNewsImageFilepath(companyId, news.id);
+
+    if (images?.length > 0)
+      news.images = await Promise.all(images.map(async (image) => {
+        const {filepath} = await this._storageService.uploadImage(basePath, image);
+
+        console.log(filepath);
+        return {name: image.originalname, filepath, contentType: image.mimetype};
+      }));
+
+    if (portraitImage) {
+      const {filepath} = await this._storageService.uploadImage(basePath, portraitImage);
+
+      news.portraitImage = {name: portraitImage.originalname, filepath, contentType: portraitImage.mimetype};
+    }
 
     await this._commonService.saveEntity(news, true);
     return news;
@@ -127,4 +152,6 @@ export class NewsService {
       company: {$eq: companyId,},
     });
   }
+
+  private buildNewsImageFilepath = (companyId: string, newsId: string) => `companies/${ companyId }/news/${ newsId }/images`;
 }
