@@ -28,7 +28,7 @@ export class NewsCategoryController {
 
   @Post()
   public async create(
-    @CurrentUser() userId: number,
+    @CurrentUser() userId: string,
     @CurrentCompanyId() companyId: string,
     @Body() createNewsCategoriesDto: CreateNewsCategoriesDto
   ) {

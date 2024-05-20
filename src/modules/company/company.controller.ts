@@ -93,7 +93,7 @@ export class CompanyController {
   @Post()
   @MemberUnneeded()
   public async create(
-    @CurrentUser() userId: number,
+    @CurrentUser() userId: string,
     @Body() createCompanyDto: CreateCompanyDto,
   ) {
     const company = await this._companyService.create(createCompanyDto, userId);
@@ -128,7 +128,7 @@ export class CompanyController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequiredRole(RoleEnum.ADMIN)
   public async removeUserFromCompany(
-    @Param('id', ParseIntPipe) memberId: number,
+    @Param('id', ParseIntPipe) memberId: string,
     @CurrentCompanyId() companyId: string
   ) {
     if (!memberId) throw new BadRequestException('Member id is required');

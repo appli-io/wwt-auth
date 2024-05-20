@@ -85,7 +85,7 @@ export class NewsController {
   @Post()
   @UseInterceptors(AnyFilesInterceptor())
   public async create(
-    @CurrentUser() userId: number,
+    @CurrentUser() userId: string,
     @CurrentCompanyId() companyId: string,
     @UploadedFiles() files: Express.Multer.File[],
     @Body() news: CreateNewsDto,
@@ -103,7 +103,7 @@ export class NewsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   public async delete(
-    @CurrentUser() userId: number,
+    @CurrentUser() userId: string,
     @CurrentCompanyId() companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
@@ -138,7 +138,7 @@ export class NewsController {
 
   @Post(':id/like')
   public async like(
-    @CurrentUser() userId: number,
+    @CurrentUser() userId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     await this._likeService.create({

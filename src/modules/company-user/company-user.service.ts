@@ -48,11 +48,11 @@ export class CompanyUserService {
     return users;
   }
 
-  public async findOne(userId: number, companyId: string) {
+  public async findOne(userId: string, companyId: string) {
     return this._userCompanyRepository.findOne({user: userId, company: companyId});
   }
 
-  public async getUserAssignedCompanies(userId: number) {
+  public async getUserAssignedCompanies(userId: string) {
     return this._userCompanyRepository.find({user: userId});
   }
 
@@ -71,7 +71,7 @@ export class CompanyUserService {
     await this._commonService.saveEntity(userCompany, true);
   }
 
-  public async removeCompanyFromUser(companyId: string, userId: number): Promise<boolean> {
+  public async removeCompanyFromUser(companyId: string, userId: string): Promise<boolean> {
     this.loggerService.log('Removing company from user');
 
     const userCompany = await this._userCompanyRepository.findOneOrFail({user: userId, company: companyId})
@@ -84,7 +84,7 @@ export class CompanyUserService {
     return true;
   }
 
-  public async disableUserInCompany(companyId: string, userId: number): Promise<boolean> {
+  public async disableUserInCompany(companyId: string, userId: string): Promise<boolean> {
     this.loggerService.log('Disabling user in company');
 
     const userCompany = await this._userCompanyRepository.findOneOrFail({user: userId, company: companyId})
@@ -99,7 +99,7 @@ export class CompanyUserService {
     return true;
   }
 
-  public async getUserRole(companyId: string, userId: number, requiredRoles: RoleEnum[]) {
+  public async getUserRole(companyId: string, userId: string, requiredRoles: RoleEnum[]) {
     const qb = this._userCompanyRepository
       .getEntityManager()
       .createQueryBuilder(CompanyUserEntity);
@@ -114,11 +114,11 @@ export class CompanyUserService {
     return roles;
   }
 
-  public isUserInCompany = (companyId: string, userId: number) =>
+  public isUserInCompany = (companyId: string, userId: string) =>
     this._userCompanyRepository.count({user: userId, company: companyId})
       .then(userCompany => userCompany > 0);
 
-  public async isActiveUserInCompanies(id: number, companiesIds: string[]) {
+  public async isActiveUserInCompanies(id: string, companiesIds: string[]) {
     const userCompany = await this._userCompanyRepository.count({user: id, company: {$in: companiesIds}, isActive: true});
     return companiesIds.length === userCompany;
   }

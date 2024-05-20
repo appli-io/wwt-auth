@@ -28,7 +28,7 @@ export class MemberGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const userId = request.user as number;
+    const userId = request.user as string;
     const companyId = request.headers['x-company-id'] as string;
 
     if (!userId || !companyId) {

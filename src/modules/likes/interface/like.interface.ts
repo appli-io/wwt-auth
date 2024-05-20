@@ -3,7 +3,7 @@ import { ContentType } from '@modules/shared/enums/content-type.enum';
 
 export interface ILike {
   id: string;
-  createdBy: IUser | number;
+  createdBy: IUser | string;
   contentType: ContentType;
   contentId: string;
   isDeleted?: boolean;

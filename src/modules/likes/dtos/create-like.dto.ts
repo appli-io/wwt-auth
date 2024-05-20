@@ -13,7 +13,7 @@ export class CreateLikeDto {
     type: Number,
   })
   @IsNumber()
-  public userId: number;
+  public userId: string;
 
   @ApiProperty({
     description: 'Content type',

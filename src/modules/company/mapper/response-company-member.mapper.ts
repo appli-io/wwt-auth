@@ -1,10 +1,10 @@
 import { CompanyUserEntity } from '@modules/company-user/entities/company-user.entity';
 import { RoleEnum }          from '@modules/company-user/enums/role.enum';
-import { IFile } from '@modules/firebase/interfaces/file.interface';
+import { IFile }             from '@modules/firebase/interfaces/file.interface';
 import { UserEntity }        from '@modules/users/entities/user.entity';
 
 export class ResponseCompanyMemberMapper implements Partial<CompanyUserEntity>, Partial<UserEntity> {
-  public id: number;
+  public id: string;
   public name: string;
   public username: string;
   public email: string;

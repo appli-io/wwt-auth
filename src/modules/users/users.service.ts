@@ -5,7 +5,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 
 import { compare, hash } from 'bcrypt';
-import { isInt }         from 'class-validator';
+import { isUUID }        from 'class-validator';
 
 import { CommonService }       from '@common/common.service';
 import { SLUG_REGEX }          from '@common/consts/regex.const';
@@ -62,10 +62,8 @@ export class UsersService {
   }
 
   public async findOneByIdOrUsername(idOrUsername: string,): Promise<UserEntity> {
-    const parsedValue = parseInt(idOrUsername, 10);
-
-    if (!isNaN(parsedValue) && parsedValue > 0 && isInt(parsedValue)) {
-      return this.findOneById(parsedValue, [ 'assignedCompanies', 'companyUsers.contacts' ]);
+    if (isUUID(idOrUsername)) {
+      return this.findOneById(idOrUsername, [ 'assignedCompanies', 'companyUsers.contacts' ]);
     }
 
     if (
@@ -79,7 +77,7 @@ export class UsersService {
     return this.findOneByUsername(idOrUsername);
   }
 
-  public async findOneById(id: number, populateJoin?: any): Promise<UserEntity> {
+  public async findOneById(id: string, populateJoin?: any): Promise<UserEntity> {
     const user = await this._usersRepository.findOne({id}, {populate: populateJoin});
     this.commonService.checkEntityExistence(user, 'User');
 
@@ -122,7 +120,7 @@ export class UsersService {
     });
   }
 
-  public async findOneByCredentials(id: number, version: number,): Promise<UserEntity> {
+  public async findOneByCredentials(id: string, version: number,): Promise<UserEntity> {
     const user = await this._usersRepository.findOne({id}, {populate: [ 'assignedCompanies', 'companyUsers.company', 'activeCompany' ]});
     this.throwUnauthorizedException(user);
 
@@ -136,7 +134,7 @@ export class UsersService {
     return user;
   }
 
-  public async confirmEmail(userId: number, version: number,): Promise<UserEntity> {
+  public async confirmEmail(userId: string, version: number,): Promise<UserEntity> {
     const user = await this.findOneByCredentials(userId, version);
 
     if (user.confirmed) {
@@ -153,7 +151,7 @@ export class UsersService {
     return user;
   }
 
-  public async updateUsername(userId: number, dto: UpdateUsernameDto): Promise<UserEntity> {
+  public async updateUsername(userId: string, dto: UpdateUsernameDto): Promise<UserEntity> {
     const user = await this.findOneById(userId);
     const {name, username} = dto;
 
@@ -183,7 +181,7 @@ export class UsersService {
     return user;
   }
 
-  public async updateUserInfo(userId: number, dto: UpdateUserInfoDto): Promise<UserEntity> {
+  public async updateUserInfo(userId: string, dto: UpdateUserInfoDto): Promise<UserEntity> {
     const {avatar, location} = dto;
     const user = await this.findOneById(userId);
 
@@ -201,7 +199,7 @@ export class UsersService {
     return this.findOneById(userId, [ 'assignedCompanies', 'companyUsers.contacts' ]);
   }
 
-  public async updatePassword(userId: number, newPassword: string, password?: string,): Promise<UserEntity> {
+  public async updatePassword(userId: string, newPassword: string, password?: string,): Promise<UserEntity> {
     const user = await this.findOneById(userId);
 
     if (user.password === 'UNSET') {
@@ -221,12 +219,12 @@ export class UsersService {
     return await this.changePassword(user, newPassword);
   }
 
-  public async resetPassword(userId: number, version: number, password: string,): Promise<UserEntity> {
+  public async resetPassword(userId: string, version: number, password: string,): Promise<UserEntity> {
     const user = await this.findOneByCredentials(userId, version);
     return await this.changePassword(user, password);
   }
 
-  public async updateEmail(userId: number, dto: ChangeEmailDto,): Promise<UserEntity> {
+  public async updateEmail(userId: string, dto: ChangeEmailDto,): Promise<UserEntity> {
     const user = await this.findOneById(userId);
     const {email, password} = dto;
 
@@ -246,7 +244,7 @@ export class UsersService {
     return user;
   }
 
-  public async delete(userId: number, dto: PasswordDto): Promise<UserEntity> {
+  public async delete(userId: string, dto: PasswordDto): Promise<UserEntity> {
     const user = await this.findOneById(userId);
 
     if (!(await compare(dto.password, user.password))) {
@@ -282,7 +280,7 @@ export class UsersService {
     return user;
   }
 
-  public async findOAuthProviders(userId: number,): Promise<OAuthProviderEntity[]> {
+  public async findOAuthProviders(userId: string,): Promise<OAuthProviderEntity[]> {
     return await this._oauthProvidersRepository.find(
       {
         user: userId,
@@ -291,7 +289,7 @@ export class UsersService {
     );
   }
 
-  public async updateAvatar(id: number, file: Express.Multer.File): Promise<IUser> {
+  public async updateAvatar(id: string, file: Express.Multer.File): Promise<IUser> {
     const user = await this.findOneById(id);
     const path = `users/${ id }/avatar`;
     const {filepath} = await this._storageService.uploadImage(path, file);
@@ -301,7 +299,7 @@ export class UsersService {
     return { ...user, avatar };
   }
 
-  public async setActiveCompany(userId: number, companyId: string) {
+  public async setActiveCompany(userId: string, companyId: string) {
     const user = await this.findOneById(userId);
     user.activeCompany = await this._companyService.findById(companyId);
 
@@ -358,7 +356,7 @@ export class UsersService {
     return pointSlug;
   }
 
-  private async createOAuthProvider(provider: OAuthProvidersEnum, userId: number,): Promise<OAuthProviderEntity> {
+  private async createOAuthProvider(provider: OAuthProvidersEnum, userId: string,): Promise<OAuthProviderEntity> {
     const oauthProvider = this._oauthProvidersRepository.create({
       provider,
       user: userId,

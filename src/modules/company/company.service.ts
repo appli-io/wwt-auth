@@ -20,7 +20,7 @@ export class CompanyService {
     private readonly _commonService: CommonService
   ) {}
 
-  public async create(createCompanyDto: CreateCompanyDto, userId: number) {
+  public async create(createCompanyDto: CreateCompanyDto, userId: string) {
     await this.checkIfCompanyExists(createCompanyDto.nationalId, createCompanyDto.country);
     await this.checkUsernameUniqueness(createCompanyDto.username);
     await this.checkEmailUniqueness(createCompanyDto.email);

@@ -8,10 +8,10 @@ export class CreateCommentDto {
     description: 'User id',
     example: 123,
     minimum: 1,
-    type: Number,
+    type: String,
   })
   @IsNumber()
-  public userId: number;
+  public userId: string;
 
   @ApiProperty({
     description: 'Content type',

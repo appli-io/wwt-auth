@@ -1,8 +1,8 @@
-import { IFile } from '@modules/firebase/interfaces/file.interface';
+import { IFile }        from '@modules/firebase/interfaces/file.interface';
 import { ICredentials } from './credentials.interface';
 
 export interface IUser {
-  id: number;
+  id: string;
   name: string;
   username: string;
   email: string;

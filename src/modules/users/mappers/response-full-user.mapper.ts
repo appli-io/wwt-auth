@@ -5,16 +5,16 @@ import { UserEntity } from '@modules/users/entities/user.entity';
 
 import { IUser }                   from '../interfaces/user.interface';
 import { ResponsePositionsMapper } from '@modules/auth/mappers/response-positions.mapper';
-import { IFile } from '@modules/firebase/interfaces/file.interface';
+import { IFile }                   from '@modules/firebase/interfaces/file.interface';
 
 export class ResponseFullUserMapper implements Partial<IUser> {
   @ApiProperty({
     description: 'User id',
     example: 123,
     minimum: 1,
-    type: Number,
+    type: String,
   })
-  public id: number;
+  public id: string;
 
   @ApiProperty({
     description: 'User name',

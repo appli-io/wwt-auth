@@ -153,7 +153,7 @@ export class AuthService {
   }
 
   public async updatePassword(
-    userId: number,
+    userId: string,
     dto: ChangePasswordDto,
     domain?: string,
   ): Promise<IAuthResult> {
@@ -169,7 +169,7 @@ export class AuthService {
     return {user, accessToken, refreshToken};
   }
 
-  public async setActiveCompanyAndRefreshToken(userId: number, companyId: string) {
+  public async setActiveCompanyAndRefreshToken(userId: string, companyId: string) {
     const findMember = await this.companyUserService.findOne(userId, companyId);
 
     if (!findMember) throw new ForbiddenException('USER_NOT_IN_COMPANY');
@@ -219,7 +219,7 @@ export class AuthService {
   }
 
   private async checkIfTokenIsBlacklisted(
-    userId: number,
+    userId: string,
     tokenId: string,
   ): Promise<void> {
     const time = await this.cacheManager.get<number>(
@@ -232,7 +232,7 @@ export class AuthService {
   }
 
   private async blacklistToken(
-    userId: number,
+    userId: string,
     tokenId: string,
     exp: number,
   ): Promise<void> {

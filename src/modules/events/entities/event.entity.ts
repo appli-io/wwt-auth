@@ -61,7 +61,7 @@ export class EventEntity {
   @Property({columnType: 'timestamptz', onUpdate: () => new Date()})
   public updatedAt: Date = new Date();
 
-  @ManyToOne({entity: () => UserEntity, columnType: 'int', nullable: false})
+  @ManyToOne({entity: () => UserEntity, nullable: false})
   public createdBy: UserEntity;
 
   @ManyToOne({entity: () => CompanyEntity, nullable: false})

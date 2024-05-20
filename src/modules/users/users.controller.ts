@@ -81,7 +81,7 @@ export class UsersController {
     description: 'The user is not logged in.',
   })
   public async update(
-    @CurrentUser() id: number,
+    @CurrentUser() id: string,
     @Body() dto: UpdateUserInfoDto,
   ): Promise<ResponseFullUserMapper> {
     const user = await this._usersService.updateUserInfo(id, dto);
@@ -100,7 +100,7 @@ export class UsersController {
     description: 'The user is not logged in.',
   })
   public async updateUsername(
-    @CurrentUser() id: number,
+    @CurrentUser() id: string,
     @Body() dto: UpdateUsernameDto,
   ): Promise<ResponseUserMapper> {
     const user = await this._usersService.updateUsername(id, dto);
@@ -119,7 +119,7 @@ export class UsersController {
     description: 'The user is not logged in.',
   })
   public async updateEmail(
-    @CurrentUser() id: number,
+    @CurrentUser() id: string,
     @Body() dto: ChangeEmailDto,
   ): Promise<IAuthResponseUser> {
     const user = await this._usersService.updateEmail(id, dto);
@@ -137,7 +137,7 @@ export class UsersController {
     description: 'The user is not logged in.',
   })
   public async deleteUser(
-    @CurrentUser() id: number,
+    @CurrentUser() id: string,
     @Body() dto: PasswordDto,
     @Res() res: FastifyReply,
   ): Promise<void> {
@@ -161,7 +161,7 @@ export class UsersController {
   })
   @UseInterceptors(FileInterceptor('file'))
   public async updateAvatar(
-    @CurrentUser() id: number,
+    @CurrentUser() id: string,
     @UploadedFile() file: Express.Multer.File
   ): Promise<ResponseUserMapper> {
     const user = await this._usersService.updateAvatar(id, file);

@@ -1,9 +1,9 @@
 import { ResponsePositionsMapper } from '@modules/auth/mappers/response-positions.mapper';
 import { CompanyEntity }           from '@modules/company/entities/company.entity';
-import { IFile } from '@modules/firebase/interfaces/file.interface';
+import { IFile }                   from '@modules/firebase/interfaces/file.interface';
 
 export interface IAuthResponseUser {
-  id: number;
+  id: string;
   name: string;
   username: string;
   avatar: string | IFile;

@@ -10,9 +10,9 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
     description: 'User id',
     example: 123,
     minimum: 1,
-    type: Number,
+    type: String,
   })
-  public id: number;
+  public id: string;
 
   @ApiProperty({
     description: 'User name',

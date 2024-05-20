@@ -1,15 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IUser }       from '../interfaces/user.interface';
-import { IFile } from '@modules/firebase/interfaces/file.interface';
+import { IFile }       from '@modules/firebase/interfaces/file.interface';
 
 export class ResponseSimpleUserMapper implements Partial<IUser> {
   @ApiProperty({
     description: 'User id',
     example: 123,
     minimum: 1,
-    type: Number,
+    type: String,
   })
-  public id: number;
+  public id: string;
 
   @ApiProperty({
     description: 'User name',

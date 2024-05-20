@@ -87,7 +87,7 @@ export class NewsService {
     return response;
   }
 
-  public async create(newsDto: CreateNewsDto, images: Express.Multer.File[], portraitImage: Express.Multer.File, userId: number, companyId: string): Promise<NewsEntity> {
+  public async create(newsDto: CreateNewsDto, images: Express.Multer.File[], portraitImage: Express.Multer.File, userId: string, companyId: string): Promise<NewsEntity> {
     if (!newsDto.slug) newsDto.slug = await this.generateSlug(newsDto.headline, companyId);
     else {
       const count: number = await this.countBySlugLike(newsDto.slug, companyId);
@@ -126,7 +126,7 @@ export class NewsService {
     return news;
   }
 
-  public async delete(id: string, userId: number, companyId: string, isAdmin: boolean): Promise<void> {
+  public async delete(id: string, userId: string, companyId: string, isAdmin: boolean): Promise<void> {
     const news: NewsEntity = await this._newsRepository.findOne({id, company: companyId}, {populate: [ 'createdBy' ]});
 
     if (!news)

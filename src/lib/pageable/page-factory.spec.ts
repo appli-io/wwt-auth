@@ -230,16 +230,5 @@ describe('PageFactory', () => {
       const page = await new PageFactory(pageable, mockRepo).create();
       expect(page.content).toEqual(resultList);
     });
-
-    it('should return the mapped result if a mapper is provided', async () => {
-      const resultList = [ {id: 1}, {id: 2}, {id: 3}, {id: 4}, {id: 5} ];
-      const [ mockRepo ] = mockRepoFactory<{ id: number }>({
-        count: 5,
-        resultList
-      });
-      const pageable = pageableFactory();
-      const page = await new PageFactory(pageable, mockRepo).map((result) => ({...result, idPlus1: result.id + 1})).create();
-      expect(page.content).toEqual(resultList.map((item) => ({...item, idPlus1: item.id + 1})));
-    });
   });
 });

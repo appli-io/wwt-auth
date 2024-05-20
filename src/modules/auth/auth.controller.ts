@@ -212,7 +212,7 @@ export class AuthController {
     description: 'The user is not logged in.',
   })
   public async updatePassword(
-    @CurrentUser() userId: number,
+    @CurrentUser() userId: string,
     @Origin() origin: string | undefined,
     @Body() changePasswordDto: ChangePasswordDto,
     @Res() res: FastifyReply,
@@ -235,7 +235,7 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'The user is not logged in.',
   })
-  public async getMe(@CurrentUser() id: number): Promise<IAuthResponseUser> {
+  public async getMe(@CurrentUser() id: string): Promise<IAuthResponseUser> {
     const user = await this._usersService.findOneById(id, [ 'assignedCompanies', 'companyUsers' ]);
     return AuthResponseUserMapper.map(user);
   }
@@ -246,7 +246,7 @@ export class AuthController {
     description: 'Update the active company and return the new access token with the active company in the payload.',
   })
   public async updateUserActiveCompany(
-    @CurrentUser() id: number,
+    @CurrentUser() id: string,
     @Body('companyId') companyId: string,
     @Req() req: FastifyRequest,
     @Res() res: FastifyReply,
@@ -271,7 +271,7 @@ export class AuthController {
     description: 'The user is not logged in.',
   })
   public async getOAuthProviders(
-    @CurrentUser() id: number,
+    @CurrentUser() id: string,
   ): Promise<IOAuthProvidersResponse> {
     const providers = await this._usersService.findOAuthProviders(id);
     return OAuthProvidersResponseMapper.map(providers);

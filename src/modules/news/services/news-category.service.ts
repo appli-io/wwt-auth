@@ -48,7 +48,7 @@ export class NewsCategoryService {
    *
    * @returns Promise<NewsCategoryEntity>
    */
-  public async create(createNewsCategoriesDto: CreateNewsCategoriesDto, companyId: string, userId: number): Promise<NewsCategoryEntity> {
+  public async create(createNewsCategoriesDto: CreateNewsCategoriesDto, companyId: string, userId: string): Promise<NewsCategoryEntity> {
     if (!createNewsCategoriesDto.slug) createNewsCategoriesDto.slug = await this.generateSlug(createNewsCategoriesDto.name, companyId);
 
     const count: number = await this.countBySlug(createNewsCategoriesDto.slug, companyId);

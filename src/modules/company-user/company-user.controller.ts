@@ -9,7 +9,7 @@ export class CompanyUserController {
   @Get('/:companyId/validate-user')
   public async validateUser(
     @Param('companyId') companyId: string,
-    @CurrentUser() userId: number
+    @CurrentUser() userId: string
   ) {
     return await this._companyUserService.isUserInCompany(companyId, userId);
   }

@@ -1,7 +1,7 @@
 import { ITokenBase } from './token-base.interface';
 
 export interface IAccessPayload {
-  id: number;
+  id: string;
   companyId?: string;
 }
 
