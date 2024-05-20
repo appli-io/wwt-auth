@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, forwardRef, Inject, Injectable } from '@nestjs/common';
 
 import { QBFilterQuery }    from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -11,13 +11,15 @@ import { CreateCompanyDto }            from '@modules/company/dtos/create-compan
 import { CompanyQueryDto }             from '@modules/company/dtos/company-query.dto';
 import { CompanyUserService }          from '@modules/company-user/company-user.service';
 import { RoleEnum }                    from '@modules/company-user/enums/role.enum';
+import { UsersService }                from '@modules/users/users.service';
 
 @Injectable()
 export class CompanyService {
   constructor(
     @InjectRepository(CompanyEntity) private readonly _companyRepository: EntityRepository<CompanyEntity>,
+    @Inject(forwardRef(() => UsersService)) private readonly _userService: UsersService,
     private readonly _companyUserService: CompanyUserService,
-    private readonly _commonService: CommonService
+    private readonly _commonService: CommonService,
   ) {}
 
   public async create(createCompanyDto: CreateCompanyDto, userId: string) {
@@ -32,6 +34,7 @@ export class CompanyService {
 
     await this._commonService.saveEntity(company, true);
     await this._companyUserService.assignCompanyToUser(company.id, {userId, role: RoleEnum.ADMIN});
+    await this._userService.setActiveCompany(userId, company.id);
 
     return this.findById(company.id);
   }

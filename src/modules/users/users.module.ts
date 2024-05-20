@@ -1,5 +1,5 @@
-import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { Module }         from '@nestjs/common';
+import { MikroOrmModule }     from '@mikro-orm/nestjs';
+import { forwardRef, Module } from '@nestjs/common';
 
 import { CompanyUserModule }  from '@modules/company-user/company-user.module';
 import { UsersContactEntity } from '@modules/company-user/entities/users-contact.entity';
@@ -18,7 +18,7 @@ import { CompanyModule }       from '@modules/company/company.module';
       UsersContactEntity
     ]),
     CompanyUserModule,
-    CompanyModule
+    forwardRef(() => CompanyModule)
   ],
   providers: [ UsersService ],
   exports: [ UsersService ],
