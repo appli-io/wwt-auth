@@ -34,6 +34,12 @@ export class NewsService {
     if (query.authorName) whereClause['createdBy.name'] = {$ilike: `%${ query.authorName }%`};
     if (query.category) whereClause['category.slug'] = {$eq: `${ query.category }`};
 
+    pageable.sort.push({
+      property: 'publishedAt',
+      direction: 'desc',
+      nullsFirst: false
+    });
+
     const result = await new PageFactory(
       pageable,
       this._newsRepository,
@@ -72,13 +78,11 @@ export class NewsService {
     if (!response) throw new NotFoundException('NEWS_NOT_FOUND');
 
     if (response.createdBy) response.createdBy.avatar = await this._storageService.getSignedUrl(response.createdBy.avatar as string);
-    if (response.portraitImage?.file) response.portraitImage.file = await this._storageService.getSignedUrl(response.portraitImage.filepath);
+    if (response.portraitImage) response.portraitImage.file = await this._storageService.getSignedUrl(response.portraitImage.filepath);
     if (response.images?.length) response.images = await Promise.all(response.images.map(async (image: INewsImage) => ({
       ...image,
       file: await this._storageService.getSignedUrl(image.filepath as string)
     })));
-
-    console.log(response);
 
     return response;
   }
