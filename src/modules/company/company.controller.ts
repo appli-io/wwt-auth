@@ -12,7 +12,9 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
-  UseGuards
+  UploadedFile,
+  UseGuards,
+  UseInterceptors
 }                                                 from '@nestjs/common';
 import { ApiExtraModels, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
@@ -35,6 +37,7 @@ import { AddUserToCompanyDto }             from '@modules/company/dtos/add-user-
 import { ResponseCompanyMapper }           from '@modules/company/mapper/response-company.mapper';
 import { RoleEnum }                        from '@modules/company-user/enums/role.enum';
 import { CompanyUserService }              from '@modules/company-user/company-user.service';
+import { FileInterceptor }                 from '@nest-lab/fastify-multer';
 
 @ApiTags('Company')
 @Controller('company')
@@ -92,11 +95,13 @@ export class CompanyController {
 
   @Post()
   @MemberUnneeded()
+  @UseInterceptors(FileInterceptor('logo'))
   public async create(
     @CurrentUser() userId: string,
     @Body() createCompanyDto: CreateCompanyDto,
+    @UploadedFile() logo: Express.Multer.File
   ) {
-    const company = await this._companyService.create(createCompanyDto, userId);
+    const company = await this._companyService.create(createCompanyDto, logo, userId);
 
     return ResponseCompanyMapper.map(company);
   }

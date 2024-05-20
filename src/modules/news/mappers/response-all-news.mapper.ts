@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { v4 } from 'uuid';
 
 import { NewsEntity }                      from '@modules/news/entities/news.entity';
-import { INews, INewsImage }               from '@modules/news/interfaces/news.interface';
+import { IImage, INews }                   from '@modules/news/interfaces/news.interface';
 import { ResponseAllNewsCategoriesMapper } from '@modules/news/mappers/response-all-news-categories.mapper';
 import { ResponseSimpleUserMapper }        from '@modules/users/mappers/response-simple-user.mapper';
 
@@ -41,7 +41,7 @@ export class ResponseAllNewsMapper implements Partial<INews> {
     example: 'https://www.example.com/image.jpg',
     type: String,
   })
-  public portraitImage: INewsImage;
+  public portraitImage: IImage;
 
   @ApiProperty({
     description: 'Category',

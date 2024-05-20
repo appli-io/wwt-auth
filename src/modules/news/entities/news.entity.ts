@@ -4,7 +4,7 @@ import { IsString, Length, Matches }               from 'class-validator';
 import { SLUG_REGEX }         from '@common/consts/regex.const';
 import { CompanyEntity }      from '@modules/company/entities/company.entity';
 import { NewsCategoryEntity } from '@modules/news/entities/news-category.entity';
-import { INews, INewsImage }  from '@modules/news/interfaces/news.interface';
+import { IImage, INews }      from '@modules/news/interfaces/news.interface';
 import { UserEntity }         from '@modules/users/entities/user.entity';
 import { v4 }                 from 'uuid';
 
@@ -33,10 +33,10 @@ export class NewsEntity implements INews {
 
   // For images, the columnType is json as we want to store an array
   @Property({columnType: 'json', nullable: true})
-  public images?: INewsImage[];
+  public images?: IImage[];
 
   @Property({columnType: 'json', nullable: true})
-  public portraitImage?: INewsImage;
+  public portraitImage?: IImage;
 
   @Property({columnType: 'timestamptz', onCreate: () => new Date()})
   public publishedAt: Date;

@@ -37,11 +37,11 @@ export class StorageService {
 
   // reminder to self: SUBIDA DE ARCHIVOS VER LA OPCIÓN DE HACERLO POR EL FRONT
   // template para subir archivos, no retorna nada, solo sube el archivo.
-  async uploadImage(path: string, file: Express.Multer.File) {
+  async uploadImage(path: string, file: Express.Multer.File, filename?: string) {
     if (!this._storage)
       this._storage = getStorage().bucket();
 
-    const filepath = path + '/' + v4() + '.' + file.originalname.split('.').pop();
+    const filepath = path + '/' + (filename || v4()) + '.' + file.originalname.split('.').pop();
 
     await this._storage.file(filepath).save(file.buffer, {
       metadata: {
@@ -60,7 +60,7 @@ export class StorageService {
     const options: GetSignedUrlConfig = {
       version: 'v4',
       action: 'read',
-      expires: Date.now() + 3600 * 1000,
+      expires: Date.now() + 3600 * 1000, // 1 hour
     };
 
     const url = (await file.getSignedUrl(options))[0];

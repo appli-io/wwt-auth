@@ -1,4 +1,4 @@
-import { ConflictException, forwardRef, Inject, Injectable } from '@nestjs/common';
+import { ConflictException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { QBFilterQuery }    from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -11,18 +11,21 @@ import { CreateCompanyDto }            from '@modules/company/dtos/create-compan
 import { CompanyQueryDto }             from '@modules/company/dtos/company-query.dto';
 import { CompanyUserService }          from '@modules/company-user/company-user.service';
 import { RoleEnum }                    from '@modules/company-user/enums/role.enum';
+import { StorageService }              from '@modules/firebase/services/storage.service';
 import { UsersService }                from '@modules/users/users.service';
+import { IImage }                      from '@modules/news/interfaces/news.interface';
 
 @Injectable()
 export class CompanyService {
   constructor(
     @InjectRepository(CompanyEntity) private readonly _companyRepository: EntityRepository<CompanyEntity>,
     @Inject(forwardRef(() => UsersService)) private readonly _userService: UsersService,
+    private readonly _storageService: StorageService,
     private readonly _companyUserService: CompanyUserService,
     private readonly _commonService: CommonService,
   ) {}
 
-  public async create(createCompanyDto: CreateCompanyDto, userId: string) {
+  public async create(createCompanyDto: CreateCompanyDto, logo: Express.Multer.File, userId: string) {
     await this.checkIfCompanyExists(createCompanyDto.nationalId, createCompanyDto.country);
     await this.checkUsernameUniqueness(createCompanyDto.username);
     await this.checkEmailUniqueness(createCompanyDto.email);
@@ -31,6 +34,16 @@ export class CompanyService {
       ...createCompanyDto,
       owner: userId,
     });
+
+    if (logo) {
+      const basePath = `companies/${ company.id }`;
+      const {filepath} = await this._storageService.uploadImage(basePath, logo, 'logo');
+      company.logo = {
+        name: 'logo',
+        contentType: logo.mimetype,
+        filepath,
+      } as IImage;
+    }
 
     await this._commonService.saveEntity(company, true);
     await this._companyUserService.assignCompanyToUser(company.id, {userId, role: RoleEnum.ADMIN});
@@ -51,7 +64,7 @@ export class CompanyService {
     if (query.isActive) whereClause['isActive'] = query.isActive;
     if (query.isVerified) whereClause['isVerified'] = query.isVerified;
 
-    return await new PageFactory<CompanyEntity>(
+    const results = await new PageFactory<CompanyEntity>(
       pageable,
       this._companyRepository,
       {
@@ -68,10 +81,23 @@ export class CompanyService {
         ]
       }
     ).create();
+
+    await Promise.all(results.content.map(async company => {
+      if (company.logo) company.logo.file = await this._storageService.getSignedUrl(company.logo.filepath);
+    }));
+
+    return results;
   }
 
   public async findById(id: string): Promise<CompanyEntity> {
-    return this._companyRepository.findOne({id}, {populate: [ 'owner', 'users' ]});
+    const result = await this._companyRepository.findOne({id}, {populate: [ 'owner', 'users' ]});
+
+    if (!result) throw new NotFoundException('NOT_FOUND');
+
+    if (result.logo)
+      result.logo.file = await this._storageService.getSignedUrl(result.logo.filepath);
+
+    return result;
   }
 
   private async checkIfCompanyExists(nationalId: string, country: string) {

@@ -1,10 +1,12 @@
+import { IImage } from '@modules/news/interfaces/news.interface';
+
 export interface ICompany {
   id: string;
   name: string;
   username: string;
   description?: string;
   nationalId: string;
-  logo?: string;
+  logo?: IImage;
   email: string;
   website?: string;
   isVerified: boolean;

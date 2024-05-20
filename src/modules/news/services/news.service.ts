@@ -12,7 +12,7 @@ import { CreateNewsDto }               from '@modules/news/dtos/create-news.dto'
 import { NewsQueryDto }                from '@modules/news/dtos/news-query.dto';
 import { NewsCategoryService }         from '@modules/news/services/news-category.service';
 import { StorageService }              from '@modules/firebase/services/storage.service';
-import { INewsImage }                  from '@modules/news/interfaces/news.interface';
+import { IImage }                      from '@modules/news/interfaces/news.interface';
 
 @Injectable()
 export class NewsService {
@@ -79,7 +79,7 @@ export class NewsService {
 
     if (response.createdBy) response.createdBy.avatar = await this._storageService.getSignedUrl(response.createdBy.avatar as string);
     if (response.portraitImage) response.portraitImage.file = await this._storageService.getSignedUrl(response.portraitImage.filepath);
-    if (response.images?.length) response.images = await Promise.all(response.images.map(async (image: INewsImage) => ({
+    if (response.images?.length) response.images = await Promise.all(response.images.map(async (image: IImage) => ({
       ...image,
       file: await this._storageService.getSignedUrl(image.filepath as string)
     })));
@@ -112,7 +112,6 @@ export class NewsService {
       news.images = await Promise.all(images.map(async (image) => {
         const {filepath} = await this._storageService.uploadImage(basePath, image);
 
-        console.log(filepath);
         return {name: image.originalname, filepath, contentType: image.mimetype};
       }));
 

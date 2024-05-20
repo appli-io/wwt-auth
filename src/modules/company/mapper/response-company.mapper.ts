@@ -4,6 +4,7 @@ import { v4 }          from 'uuid';
 import { ICompanyResponse }   from '@modules/company/interfaces/company-response.interface';
 import { CompanyEntity }      from '@modules/company/entities/company.entity';
 import { ResponseUserMapper } from '@modules/users/mappers/response-user.mapper';
+import { IImage }             from '@modules/news/interfaces/news.interface';
 
 export class ResponseCompanyMapper implements ICompanyResponse {
   @ApiProperty({
@@ -56,7 +57,7 @@ export class ResponseCompanyMapper implements ICompanyResponse {
     maxLength: 255,
     type: String,
   })
-  public logo: string;
+  public logo: IImage;
 
   @ApiProperty({
     description: 'Company email',

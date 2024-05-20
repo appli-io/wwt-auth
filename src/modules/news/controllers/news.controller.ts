@@ -92,11 +92,8 @@ export class NewsController {
   ) {
     const images = files.filter(file => file.fieldname === 'images');
     const portraitImage = files.find(file => file.fieldname === 'portraitImage');
-
-    console.log(portraitImage);
-    // TODO: uncomment after implementing
-
     const createdNews = await this._newsService.create(news, images, portraitImage, userId, companyId);
+
     return createdNews.id;
   }
 

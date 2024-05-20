@@ -6,6 +6,7 @@ import { NAME_REGEX, SLUG_REGEX } from '@common/consts/regex.const';
 import { ICompany }               from '@modules/company/interfaces/company.interface';
 import { CompanyUserEntity }      from '@modules/company-user/entities/company-user.entity';
 import { UserEntity }             from '@modules/users/entities/user.entity';
+import { IImage }                 from '@modules/news/interfaces/news.interface';
 
 @Entity({tableName: 'companies'})
 export class CompanyEntity implements ICompany {
@@ -40,12 +41,9 @@ export class CompanyEntity implements ICompany {
   @Length(3, 255)
   public nationalId: string;
 
-  @Property({columnType: 'varchar', length: 255, nullable: true})
+  @Property({columnType: 'json', nullable: true})
   @IsOptional()
-  @IsString()
-  @IsUrl()
-  @Length(5, 255)
-  public logo?: string;
+  public logo?: IImage;
 
   @Property({columnType: 'varchar', length: 255})
   @IsString()
