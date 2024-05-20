@@ -9,7 +9,7 @@ import { ContactTypeEnum }   from '@modules/users/enums/contact-type.enum';
 @Entity({tableName: 'users_contact'})
 @Unique({properties: [ 'companyUser', 'value', 'type' ]})
 export class UsersContactEntity {
-  @PrimaryKey()
+  @PrimaryKey({columnType: 'uuid'})
   public id: string = v4();
 
   @Property({columnType: 'text'})

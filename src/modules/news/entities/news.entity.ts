@@ -10,7 +10,7 @@ import { v4 }                 from 'uuid';
 
 @Entity({tableName: 'news'})
 export class NewsEntity implements INews {
-  @PrimaryKey()
+  @PrimaryKey({columnType: 'uuid'})
   public id: string = v4();
 
   @Property({columnType: 'text'})

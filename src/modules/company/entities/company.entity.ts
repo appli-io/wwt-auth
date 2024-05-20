@@ -9,7 +9,7 @@ import { UserEntity }             from '@modules/users/entities/user.entity';
 
 @Entity({tableName: 'companies'})
 export class CompanyEntity implements ICompany {
-  @PrimaryKey()
+  @PrimaryKey({columnType: 'uuid'})
   public id: string = v4();
 
   @Property({columnType: 'varchar', length: 100})

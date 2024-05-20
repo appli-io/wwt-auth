@@ -1,0 +1,17 @@
+export enum EventTypeEnum {
+  CONFERENCE = 'conference',
+  MEETUP = 'meetup',
+  WORKSHOP = 'workshop',
+  SEMINAR = 'seminar',
+  WEBINAR = 'webinar',
+  HACKATHON = 'hackathon',
+  CONCERT = 'concert',
+  FESTIVAL = 'festival',
+  EXHIBITION = 'exhibition',
+  FAIR = 'fair',
+  SHOW = 'show',
+  PERFORMANCE = 'performance',
+  COMPETITION = 'competition',
+  GAME = 'game',
+  SPORTS = 'sports',
+}
