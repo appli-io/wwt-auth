@@ -57,10 +57,6 @@ export class StorageService {
 
     const file = this._storage.file(path);
 
-    const url = await getDownloadURL(file);
-
-    console.log(url);
-
-    return url;
+    return await getDownloadURL(file);
   }
 }
