@@ -104,20 +104,20 @@ export class CompanyService {
     const company = await this._companyRepository.count({nationalId, country});
 
     if (company > 0)
-      throw new ConflictException('Company already exists');
+      throw new ConflictException('CONFLICT');
   }
 
   private async checkUsernameUniqueness(username: string) {
     const company = await this._companyRepository.count({username});
 
     if (company > 0)
-      throw new ConflictException('Username already exists');
+      throw new ConflictException('CONFLICT_USERNAME');
   }
 
   private async checkEmailUniqueness(email: string) {
     const company = await this._companyRepository.count({email});
 
     if (company > 0)
-      throw new ConflictException('Email already exists');
+      throw new ConflictException('CONFLICT_EMAIL');
   }
 }

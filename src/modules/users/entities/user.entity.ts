@@ -5,7 +5,6 @@ import { v4 }                                                                   
 import { BCRYPT_HASH_OR_UNSET, NAME_REGEX, SLUG_REGEX, } from '@common/consts/regex.const';
 import { CompanyEntity }                                 from '@modules/company/entities/company.entity';
 import { CompanyUserEntity }                             from '@modules/company-user/entities/company-user.entity';
-import { IFile }                                         from '@modules/firebase/interfaces/file.interface';
 
 import { CredentialsEmbeddable } from '../embeddables/credentials.embeddable';
 import { IUser }                 from '../interfaces/user.interface';
@@ -55,7 +54,7 @@ export class UserEntity implements IUser {
   @Property({columnType: 'varchar', length: 255, nullable: true})
   @IsString()
   @IsOptional()
-  public avatar?: string | IFile;
+  public avatar?: string;
 
   // User portrait picture
   @Property({columnType: 'varchar', length: 255, nullable: true})

@@ -60,7 +60,7 @@ export class NewsService {
 
     const mappedContent = await Promise.all(result.content.map(async news => {
       if (news.createdBy?.avatar) news.createdBy.avatar = await this._storageService.getSignedUrl(news.createdBy?.avatar as string);
-      if (news.portraitImage?.file) news.portraitImage.file = await this._storageService.getSignedUrl(news.portraitImage.file.url);
+      if (news.portraitImage?.file) news.portraitImage.file = await this._storageService.getSignedUrl(news.portraitImage.file);
       return news;
     }));
 

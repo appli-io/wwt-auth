@@ -5,7 +5,6 @@ import { UserEntity } from '@modules/users/entities/user.entity';
 
 import { IUser }                   from '../interfaces/user.interface';
 import { ResponsePositionsMapper } from '@modules/auth/mappers/response-positions.mapper';
-import { IFile }                   from '@modules/firebase/interfaces/file.interface';
 
 export class ResponseFullUserMapper implements Partial<IUser> {
   @ApiProperty({
@@ -50,7 +49,7 @@ export class ResponseFullUserMapper implements Partial<IUser> {
     maxLength: 255,
     type: String,
   })
-  public avatar: string | IFile;
+  public avatar: string;
 
   @ApiProperty({
     description: 'User portrait image',

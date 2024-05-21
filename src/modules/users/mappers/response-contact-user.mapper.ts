@@ -4,7 +4,6 @@ import { ContactDto } from '@modules/users/dtos/contact.dto';
 import { UserEntity } from '@modules/users/entities/user.entity';
 
 import { IUser } from '../interfaces/user.interface';
-import { IFile } from '@modules/firebase/interfaces/file.interface';
 
 export class ResponseContactUserMapper implements Partial<IUser> {
   @ApiProperty({
@@ -49,7 +48,7 @@ export class ResponseContactUserMapper implements Partial<IUser> {
     maxLength: 255,
     type: String,
   })
-  public avatar: string | IFile;
+  public avatar: string;
 
   @ApiProperty({
     description: 'User position',

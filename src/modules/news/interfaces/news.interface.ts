@@ -1,5 +1,3 @@
-import { IFile } from '@modules/firebase/interfaces/file.interface';
-
 export interface INews {
   id?: string;
   headline?: string;
@@ -17,5 +15,5 @@ export interface IImage {
   name: string,
   filepath: string,
   contentType: string,
-  file?: IFile
+  file?: string;
 }

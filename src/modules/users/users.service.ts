@@ -25,6 +25,8 @@ import { OAuthProvidersEnum }    from './enums/oauth-providers.enum';
 import { CompanyService }        from '@modules/company/company.service';
 import { StorageService }        from '@modules/firebase/services/storage.service';
 import { IUser }                 from './interfaces/user.interface';
+import { CompanyEntity }         from '@modules/company/entities/company.entity';
+import { loadImagesFromStorage } from '@common/utils/functions.util';
 
 @Injectable()
 export class UsersService {
@@ -63,7 +65,7 @@ export class UsersService {
 
   public async findOneByIdOrUsername(idOrUsername: string,): Promise<UserEntity> {
     if (isUUID(idOrUsername)) {
-      return this.findOneById(idOrUsername, [ 'assignedCompanies', 'companyUsers.contacts' ]);
+      return this.findOneById(idOrUsername, [ 'companyUsers.contacts' ]);
     }
 
     if (
@@ -85,9 +87,7 @@ export class UsersService {
   }
 
   public async findOneByUsername(username: string, forAuth = false,): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({
-      username: username.toLowerCase(),
-    });
+    const user = await this._usersRepository.findOne({username: username.toLowerCase()}, {populate: [ 'assignedCompanies', 'activeCompany', 'companyUsers' ]});
 
     if (forAuth) {
       this.throwUnauthorizedException(user);
@@ -95,8 +95,7 @@ export class UsersService {
       this.commonService.checkEntityExistence(user, 'User');
     }
 
-    if (user.avatar)
-      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
+    await this.loadUserImages(user);
 
     return user;
   }
@@ -107,8 +106,7 @@ export class UsersService {
     }, {populate});
     this.throwUnauthorizedException(user);
 
-    if (user.avatar)
-      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
+    await this.loadUserImages(user);
 
     return user;
   }
@@ -121,15 +119,14 @@ export class UsersService {
   }
 
   public async findOneByCredentials(id: string, version: number,): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({id}, {populate: [ 'assignedCompanies', 'companyUsers.company', 'activeCompany' ]});
+    const user = await this._usersRepository.findOne({id}, {populate: [ 'assignedCompanies', 'companyUsers', 'activeCompany' ]});
     this.throwUnauthorizedException(user);
 
     if (user.credentials.version !== version) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if (user.avatar)
-      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
+    await this.loadUserImages(user);
 
     return user;
   }
@@ -144,9 +141,6 @@ export class UsersService {
     user.confirmed = true;
     user.credentials.updateVersion();
     await this.commonService.saveEntity(user);
-
-    if (user.avatar)
-      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
 
     return user;
   }
@@ -296,14 +290,26 @@ export class UsersService {
     user.avatar = filepath;
     await this.commonService.saveEntity(user);
     const avatar = await this._storageService.getSignedUrl(filepath);
-    return { ...user, avatar };
+    return {...user, avatar};
   }
 
   public async setActiveCompany(userId: string, companyId: string) {
     const user = await this.findOneById(userId);
-    user.activeCompany = await this._companyService.findById(companyId);
+    user.activeCompany = {id: companyId} as CompanyEntity;
 
     await this.commonService.saveEntity(user);
+  }
+
+  private async loadUserImages(user: UserEntity) {
+    if (user.avatar)
+      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
+
+    if (user.activeCompany?.logo)
+      console.log('user.activeCompany?.logo', user.activeCompany?.logo);
+    await loadImagesFromStorage(this._storageService, user.activeCompany, 'logo');
+
+    if (user.assignedCompanies?.length > 0)
+      await loadImagesFromStorage(this._storageService, user.assignedCompanies, 'logo');
   }
 
   private async changePassword(user: UserEntity, password: string,): Promise<UserEntity> {

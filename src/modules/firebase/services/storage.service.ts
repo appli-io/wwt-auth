@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import { Bucket }             from '@google-cloud/storage';
-import { getStorage }         from 'firebase-admin/storage';
-import { GetSignedUrlConfig } from '@google-cloud/storage/build/cjs/src/file';
-import { Express }            from 'express';
-import { v4 }                 from 'uuid';
-import { IFile }              from '../interfaces/file.interface';
+import { Bucket }                     from '@google-cloud/storage';
+import { getDownloadURL, getStorage } from 'firebase-admin/storage';
+import { GetSignedUrlConfig }         from '@google-cloud/storage/build/cjs/src/file';
+import { Express }                    from 'express';
+import { v4 }                         from 'uuid';
 
 @Injectable()
 export class StorageService {
@@ -52,26 +51,16 @@ export class StorageService {
     return {filepath};
   }
 
-  async getSignedUrl(path: string): Promise<IFile> {
+  async getSignedUrl(path: string): Promise<string> {
     if (!this._storage)
       this._storage = getStorage().bucket();
 
     const file = this._storage.file(path);
-    const options: GetSignedUrlConfig = {
-      version: 'v4',
-      action: 'read',
-      expires: Date.now() + 3600 * 1000, // 1 hour
-    };
 
-    const url = (await file.getSignedUrl(options))[0];
+    const url = await getDownloadURL(file);
 
-    return {
-      name: file.name,
-      url,
-      contentType: file.metadata.contentType,
-      size: file.metadata.size,
-      timeCreated: file.metadata.timeCreated,
-      updated: file.metadata.updated,
-    };
+    console.log(url);
+
+    return url;
   }
 }
