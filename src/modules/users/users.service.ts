@@ -305,11 +305,10 @@ export class UsersService {
       user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
 
     if (user.activeCompany?.logo)
-      console.log('user.activeCompany?.logo', user.activeCompany?.logo);
-    await loadImagesFromStorage(this._storageService, user.activeCompany, 'logo');
+      await loadImagesFromStorage(this._storageService, user.activeCompany, 'logo');
 
     if (user.assignedCompanies?.length > 0)
-      await loadImagesFromStorage(this._storageService, user.assignedCompanies, 'logo');
+      await loadImagesFromStorage(this._storageService, user.assignedCompanies.getItems(), 'logo');
   }
 
   private async changePassword(user: UserEntity, password: string,): Promise<UserEntity> {
