@@ -50,7 +50,7 @@ export class MailerService {
     const domain = this.domain.includes('http') ? this.domain : `https://${ this.domain }`;
     const html = this.templates.confirmation({
       name,
-      link: `${ domain }/auth/confirm/${ token }`,
+      link: `${ domain }/confirm/${ token }`,
     });
     this.sendEmail(email, subject, html, 'A new confirmation email was sent.').then();
   }
@@ -61,7 +61,7 @@ export class MailerService {
     const domain = this.domain.includes('http') ? this.domain : `https://${ this.domain }`;
     const html = this.templates.resetPassword({
       name,
-      link: `${ domain }/auth/reset-password/${ token }`,
+      link: `${ domain }/reset-password/${ token }`,
     });
     this.sendEmail(
       email,
