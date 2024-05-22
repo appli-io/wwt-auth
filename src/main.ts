@@ -6,10 +6,11 @@ import { DocumentBuilder, SwaggerModule }         from '@nestjs/swagger';
 
 import fastifyCsrfProtection from '@fastify/csrf-protection';
 import fastifyCookie         from '@fastify/cookie';
+import fastifyCors           from '@fastify/cors';
+import fastifyCompress       from '@fastify/compress';
 import fastifyHelmet         from '@fastify/helmet';
 
 import { AppModule } from './app.module';
-import fastifyCors   from '@fastify/cors';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -20,7 +21,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.setGlobalPrefix('api');
-  await app.register(import('@fastify/compress'), {global: false});
+  await app.register(fastifyCompress as any, {global: false});
   await app.register(fastifyCookie as any, {secret: configService.get<string>('COOKIE_SECRET')});
   await app.register(fastifyHelmet as any);
   await app.register(fastifyCsrfProtection as any, {cookieOpts: {signed: true}});
