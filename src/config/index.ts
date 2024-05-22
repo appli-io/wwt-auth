@@ -1,12 +1,13 @@
 import { LoadStrategy }                   from '@mikro-orm/core';
 import { defineConfig as definePGConfig } from '@mikro-orm/postgresql';
+import { PostgreSqlOptions }              from '@mikro-orm/postgresql/PostgreSqlMikroORM';
 import { readFileSync }                   from 'fs';
+import * as process                       from 'node:process';
 import { join }                           from 'path';
 
 import { isUndefined }    from '@common/utils/validation.util';
 import { IConfig }        from './interfaces/config.interface';
 import { redisUrlParser } from './utils/redis-url-parser.util';
-import * as process       from 'node:process';
 
 export function config(): IConfig {
   const publicKey = readFileSync(
@@ -18,13 +19,13 @@ export function config(): IConfig {
     'utf-8',
   );
   const testing = process.env.NODE_ENV !== 'production';
-  const dbOptions = {
+  const dbOptions: PostgreSqlOptions = {
     entities: [ 'dist/**/*.entity.js', 'dist/**/*.embeddable.js' ],
     entitiesTs: [ 'src/**/*.entity.ts', 'src/**/*.embeddable.ts' ],
     loadStrategy: LoadStrategy.JOINED,
     allowGlobalContext: true,
     forceUtcTimezone: true,
-    ignoreUndefinedInQuery: true,
+    ignoreUndefinedInQuery: true
   };
 
   return {

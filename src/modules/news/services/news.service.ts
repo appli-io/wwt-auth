@@ -12,7 +12,7 @@ import { CreateNewsDto }               from '@modules/news/dtos/create-news.dto'
 import { NewsQueryDto }                from '@modules/news/dtos/news-query.dto';
 import { NewsCategoryService }         from '@modules/news/services/news-category.service';
 import { StorageService }              from '@modules/firebase/services/storage.service';
-import { IImage }                      from '@modules/news/interfaces/news.interface';
+import { LogMethodExecutionTime }      from '@common/decorators/log-method-execution-time.decorator';
 
 @Injectable()
 export class NewsService {
@@ -24,6 +24,7 @@ export class NewsService {
     private readonly _storageService: StorageService
   ) {}
 
+  @LogMethodExecutionTime()
   public async findAll(query: NewsQueryDto, pageable: Pageable, companyId: string): Promise<Page<NewsEntity>> {
     const whereClause: QBFilterQuery<NewsEntity> = {company: companyId};
 
@@ -59,8 +60,10 @@ export class NewsService {
     ).create();
 
     const mappedContent = await Promise.all(result.content.map(async news => {
-      if (news.createdBy?.avatar) news.createdBy.avatar = await this._storageService.getSignedUrl(news.createdBy?.avatar as string);
-      if (news.portraitImage?.file) news.portraitImage.file = await this._storageService.getSignedUrl(news.portraitImage.file);
+      if (!news.portraitImage?.fileUrl) {
+        news.portraitImage.fileUrl = await this._storageService.getSignedUrl(news.portraitImage.filepath as string);
+        this._commonService.saveEntity(news, true).then();
+      }
       return news;
     }));
 
@@ -77,12 +80,20 @@ export class NewsService {
 
     if (!response) throw new NotFoundException('NEWS_NOT_FOUND');
 
-    if (response.createdBy) response.createdBy.avatar = await this._storageService.getSignedUrl(response.createdBy.avatar as string);
-    if (response.portraitImage) response.portraitImage.file = await this._storageService.getSignedUrl(response.portraitImage.filepath);
-    if (response.images?.length) response.images = await Promise.all(response.images.map(async (image: IImage) => ({
-      ...image,
-      file: await this._storageService.getSignedUrl(image.filepath as string)
-    })));
+    if (response.portraitImage && !response.portraitImage.fileUrl) {
+      response.portraitImage.fileUrl = await this._storageService.getSignedUrl(response.portraitImage.filepath);
+      this._commonService.saveEntity(response, true).then();
+    }
+    if (response.images?.length && response.images.some(image => !image.fileUrl)) {
+      response.images = await Promise.all(response.images.map(async image => {
+        if (!image.fileUrl) {
+          image.fileUrl = await this._storageService.getSignedUrl(image.filepath);
+        }
+        return image;
+      }));
+
+      this._commonService.saveEntity(response, true).then();
+    }
 
     return response;
   }
@@ -110,15 +121,15 @@ export class NewsService {
 
     if (images?.length > 0)
       news.images = await Promise.all(images.map(async (image) => {
-        const {filepath} = await this._storageService.uploadImage(basePath, image);
+        const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, image);
 
-        return {name: image.originalname, filepath, contentType: image.mimetype};
+        return {name: image.originalname, filepath, contentType: image.mimetype, fileUrl};
       }));
 
     if (portraitImage) {
-      const {filepath} = await this._storageService.uploadImage(basePath, portraitImage);
+      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, portraitImage);
 
-      news.portraitImage = {name: portraitImage.originalname, filepath, contentType: portraitImage.mimetype};
+      news.portraitImage = {name: portraitImage.originalname, filepath, contentType: portraitImage.mimetype, fileUrl};
     }
 
     await this._commonService.saveEntity(news, true);

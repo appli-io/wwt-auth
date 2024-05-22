@@ -2,6 +2,7 @@ import { Dictionary, QBFilterQuery, QBQueryOrderMap, QueryOrder } from '@mikro-o
 import { EntityRepository, JoinType }                             from '@mikro-orm/postgresql';
 
 import { DriverName, ExtendedPageable, Page, Relation, Sort, SortDirection } from './types';
+import { LogMethodExecutionTime }                                            from '@common/decorators/log-method-execution-time.decorator';
 
 type PageFactoryConfig<T extends object> = {
   alias?: string;
@@ -32,6 +33,7 @@ export class PageFactory<TEntity extends object, TOutput extends object = TEntit
     return this;
   }
 
+  @LogMethodExecutionTime()
   async create(): Promise<TPage> {
     const {select = '*', sortable, relations, where, alias} = this._config;
     const queryBuilder = this.repo.createQueryBuilder(alias);

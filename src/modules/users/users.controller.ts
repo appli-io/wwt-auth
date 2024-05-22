@@ -65,7 +65,6 @@ export class UsersController {
   })
   public async getUser(@Param() params: GetUserParams): Promise<ResponseFullUserMapper> {
     const user = await this._usersService.findOneByIdOrUsername(params.idOrUsername);
-    user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
     return ResponseFullUserMapper.map(user);
   }
 

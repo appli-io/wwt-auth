@@ -1,5 +1,5 @@
 import { CacheModule }                            from '@nestjs/cache-manager';
-import { Module }                                 from '@nestjs/common';
+import { Module, OnModuleInit }                   from '@nestjs/common';
 import { ConfigModule, ConfigService }            from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { DevtoolsModule }                         from '@nestjs/devtools-integration';
@@ -28,9 +28,10 @@ import { Oauth2Module }            from '@modules/oauth2/oauth2.module';
 import { PermissionsModule }       from '@modules/permissions/permissions.module';
 import { UsersModule }             from '@modules/users/users.module';
 
-import { AppService }    from './app.service';
-import { config }        from './config';
-import { AppController } from './app.controller';
+import { AppService }     from './app.service';
+import { config }         from './config';
+import { AppController }  from './app.controller';
+import { MikroOrmLogger } from '@config/mikroorm.logger';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { AppController } from './app.controller';
   controllers: [ AppController ],
   providers: [
     AppService,
+    MikroOrmLogger,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
@@ -88,4 +90,10 @@ import { AppController } from './app.controller';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private readonly ormLogger: MikroOrmLogger) {}
+
+  onModuleInit() {
+    this.ormLogger.onModuleInit();
+  }
+}

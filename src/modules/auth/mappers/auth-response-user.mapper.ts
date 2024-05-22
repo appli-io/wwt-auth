@@ -4,6 +4,7 @@ import { ResponsePositionsMapper } from '@modules/auth/mappers/response-position
 import { UserEntity }              from '@modules/users/entities/user.entity';
 import { CompanyEntity }           from '@modules/company/entities/company.entity';
 import { v4 }                      from 'uuid';
+import { IImage }                  from '@modules/news/interfaces/news.interface';
 
 export class AuthResponseUserMapper implements IAuthResponseUser {
   @ApiProperty({
@@ -39,7 +40,7 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
     maxLength: 255,
     type: String,
   })
-  public avatar: string;
+  public avatar: IImage;
 
   @ApiProperty({
     description: 'User email',

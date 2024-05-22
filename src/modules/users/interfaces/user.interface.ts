@@ -1,4 +1,5 @@
 import { ICredentials } from './credentials.interface';
+import { IImage }       from '@modules/news/interfaces/news.interface';
 
 export interface IUser {
   id: string;
@@ -7,7 +8,7 @@ export interface IUser {
   email: string;
   password: string;
   confirmed: boolean;
-  avatar?: string;
+  avatar?: IImage;
   portrait?: string;
   location: string;
   settings: Record<string, any>;
