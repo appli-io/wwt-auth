@@ -35,7 +35,6 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 ### Yarn
-.pnp.*
 .yarn
 .yarn/*
 !.yarn/patches
@@ -43,7 +42,6 @@ lerna-debug.log*
 !.yarn/plugins
 !.yarn/sdks
 !.yarn/versions
-yarn.lock
 
 # dotenv environment variables file
 .env
