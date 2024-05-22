@@ -14,7 +14,7 @@ COPY --chown=node:node package*.json ./
 COPY --chown=node:node yarn.lock ./
 
 # Install app dependencies using the `yarn install --frozen-lockfile` command instead of `npm install`
-RUN yarn install --frozen-lockfile
+RUN yarn install --immutable
 
 # Bundle app source
 COPY --chown=node:node . .
@@ -45,7 +45,7 @@ RUN yarn build
 ENV NODE_ENV production
 
 # Running `yarn install --frozen-lockfile --production` ensures that only the production dependencies are installed. This ensures that the node_modules directory is as optimized as possible
-RUN yarn install --production && yarn cache clean
+RUN yarn install --immutable --production && yarn cache clean
 
 USER node
 
