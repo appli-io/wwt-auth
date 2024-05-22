@@ -45,7 +45,7 @@ RUN yarn build
 ENV NODE_ENV production
 
 # Running `yarn install --frozen-lockfile --production` ensures that only the production dependencies are installed. This ensures that the node_modules directory is as optimized as possible
-RUN yarn install --frozen-lockfile --production && yarn cache clean
+RUN yarn install --production && yarn cache clean
 
 USER node
 
