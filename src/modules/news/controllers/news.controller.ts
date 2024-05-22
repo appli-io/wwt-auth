@@ -23,7 +23,6 @@ import { CommentService }                  from '@modules/comment/comment.servic
 import { CurrentCompanyId }                from '@modules/company/decorators/company-id.decorator';
 import { CompanyUserService }              from '@modules/company-user/company-user.service';
 import { RoleEnum }                        from '@modules/company-user/enums/role.enum';
-import { StorageService }                  from '@modules/firebase/services/storage.service';
 import { LikeService }                     from '@modules/likes/like.service';
 import { CreateNewsDto }                   from '@modules/news/dtos/create-news.dto';
 import { ResponseAllNewsMapper }           from '@modules/news/mappers/response-all-news.mapper';
@@ -43,8 +42,7 @@ export class NewsController {
     private readonly _newsService: NewsService,
     private readonly _companyUserService: CompanyUserService,
     private readonly _likeService: LikeService,
-    private readonly _commentService: CommentService,
-    private readonly _storageService: StorageService
+    private readonly _commentService: CommentService
   ) {}
 
   @Get()

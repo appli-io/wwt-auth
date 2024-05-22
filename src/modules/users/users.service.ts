@@ -26,7 +26,7 @@ import { CompanyService }        from '@modules/company/company.service';
 import { StorageService }        from '@modules/firebase/services/storage.service';
 import { IUser }                 from './interfaces/user.interface';
 import { CompanyEntity }         from '@modules/company/entities/company.entity';
-import { loadImagesFromStorage } from '@common/utils/functions.util';
+import { IImage }                from '@modules/news/interfaces/news.interface';
 
 @Injectable()
 export class UsersService {
@@ -89,13 +89,10 @@ export class UsersService {
   public async findOneByUsername(username: string, forAuth = false,): Promise<UserEntity> {
     const user = await this._usersRepository.findOne({username: username.toLowerCase()}, {populate: [ 'assignedCompanies', 'activeCompany', 'companyUsers' ]});
 
-    if (forAuth) {
+    if (forAuth)
       this.throwUnauthorizedException(user);
-    } else {
+    else
       this.commonService.checkEntityExistence(user, 'User');
-    }
-
-    await this.loadUserImages(user);
 
     return user;
   }
@@ -105,8 +102,6 @@ export class UsersService {
       email: email.toLowerCase(),
     }, {populate});
     this.throwUnauthorizedException(user);
-
-    await this.loadUserImages(user);
 
     return user;
   }
@@ -122,11 +117,8 @@ export class UsersService {
     const user = await this._usersRepository.findOne({id}, {populate: [ 'assignedCompanies', 'companyUsers', 'activeCompany' ]});
     this.throwUnauthorizedException(user);
 
-    if (user.credentials.version !== version) {
+    if (user.credentials.version !== version)
       throw new UnauthorizedException('Invalid credentials');
-    }
-
-    await this.loadUserImages(user);
 
     return user;
   }
@@ -169,18 +161,12 @@ export class UsersService {
 
     await this.commonService.saveEntity(user);
 
-    if (user.avatar)
-      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
-
     return user;
   }
 
   public async updateUserInfo(userId: string, dto: UpdateUserInfoDto): Promise<UserEntity> {
-    const {avatar, location} = dto;
+    const {location} = dto;
     const user = await this.findOneById(userId);
-
-    if (!isUndefined(avatar) && !isNull(avatar) && avatar !== user.avatar)
-      user.avatar = avatar;
 
     if (!isUndefined(location) && !isNull(location) && location !== user.location)
       user.location = location;
@@ -286,11 +272,16 @@ export class UsersService {
   public async updateAvatar(id: string, file: Express.Multer.File): Promise<IUser> {
     const user = await this.findOneById(id);
     const path = `users/${ id }/avatar`;
-    const {filepath} = await this._storageService.uploadImage(path, file);
-    user.avatar = filepath;
+    const {filepath, fileUrl} = await this._storageService.uploadImage(path, file);
+    user.avatar = {
+      name: file.originalname,
+      filepath,
+      contentType: file.mimetype,
+      fileUrl,
+    } as IImage;
     await this.commonService.saveEntity(user);
-    const avatar = await this._storageService.getSignedUrl(filepath);
-    return {...user, avatar};
+
+    return user;
   }
 
   public async setActiveCompany(userId: string, companyId: string) {
@@ -298,17 +289,6 @@ export class UsersService {
     user.activeCompany = {id: companyId} as CompanyEntity;
 
     await this.commonService.saveEntity(user);
-  }
-
-  private async loadUserImages(user: UserEntity) {
-    if (user.avatar)
-      user.avatar = await this._storageService.getSignedUrl(user.avatar as string);
-
-    if (user.activeCompany?.logo)
-      await loadImagesFromStorage(this._storageService, user.activeCompany, 'logo');
-
-    if (user.assignedCompanies?.length > 0)
-      await loadImagesFromStorage(this._storageService, user.assignedCompanies.getItems(), 'logo');
   }
 
   private async changePassword(user: UserEntity, password: string,): Promise<UserEntity> {

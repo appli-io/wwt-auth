@@ -37,11 +37,12 @@ export class CompanyService {
 
     if (logo) {
       const basePath = `companies/${ company.id }`;
-      const {filepath} = await this._storageService.uploadImage(basePath, logo, 'logo');
+      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, logo, 'logo');
       company.logo = {
         name: 'logo',
         contentType: logo.mimetype,
         filepath,
+        fileUrl
       } as IImage;
     }
 
@@ -82,9 +83,13 @@ export class CompanyService {
       }
     ).create();
 
-    await Promise.all(results.content.map(async company => {
-      if (company.logo) company.logo.file = await this._storageService.getSignedUrl(company.logo.filepath);
-    }));
+    if (results.content.length > 0 && results.content.some(company => !company.logo?.fileUrl)) {
+      await Promise.all(results.content.map(async company => {
+        if (company.logo && !company.logo.fileUrl) company.logo.fileUrl = await this._storageService.getSignedUrl(company.logo.filepath);
+
+        this._commonService.saveEntity(company, true).then();
+      }));
+    }
 
     return results;
   }
@@ -93,9 +98,6 @@ export class CompanyService {
     const result = await this._companyRepository.findOne({id}, {populate: [ 'owner', 'users' ]});
 
     if (!result) throw new NotFoundException('NOT_FOUND');
-
-    if (result.logo)
-      result.logo.file = await this._storageService.getSignedUrl(result.logo.filepath);
 
     return result;
   }

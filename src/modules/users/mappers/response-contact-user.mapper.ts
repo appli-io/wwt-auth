@@ -3,7 +3,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ContactDto } from '@modules/users/dtos/contact.dto';
 import { UserEntity } from '@modules/users/entities/user.entity';
 
-import { IUser } from '../interfaces/user.interface';
+import { IUser }  from '../interfaces/user.interface';
+import { IImage } from '@modules/news/interfaces/news.interface';
 
 export class ResponseContactUserMapper implements Partial<IUser> {
   @ApiProperty({
@@ -48,7 +49,7 @@ export class ResponseContactUserMapper implements Partial<IUser> {
     maxLength: 255,
     type: String,
   })
-  public avatar: string;
+  public avatar: IImage;
 
   @ApiProperty({
     description: 'User position',

@@ -1,6 +1,6 @@
 import { ValidationPipe }                         from '@nestjs/common';
 import { ConfigService }                          from '@nestjs/config';
-import { NestFactory }                            from '@nestjs/core';
+import { NestFactory, Reflector }                 from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule }         from '@nestjs/swagger';
 
@@ -10,7 +10,8 @@ import fastifyCors           from '@fastify/cors';
 import fastifyCompress       from '@fastify/compress';
 import fastifyHelmet         from '@fastify/helmet';
 
-import { AppModule } from './app.module';
+import { AppModule }              from './app.module';
+import { HttpLoggingInterceptor } from '@common/interceptors/http-logging.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -43,6 +44,8 @@ async function bootstrap() {
       transform: true
     })
   );
+
+  app.useGlobalInterceptors(new HttpLoggingInterceptor(new Reflector()));
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('NestJS Authentication API')

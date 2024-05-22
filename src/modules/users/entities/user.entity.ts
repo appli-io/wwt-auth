@@ -9,6 +9,7 @@ import { CompanyUserEntity }                             from '@modules/company-
 import { CredentialsEmbeddable } from '../embeddables/credentials.embeddable';
 import { IUser }                 from '../interfaces/user.interface';
 import { OAuthProviderEntity }   from './oauth-provider.entity';
+import { IImage }                from '@modules/news/interfaces/news.interface';
 
 @Entity({tableName: 'users'})
 export class UserEntity implements IUser {
@@ -51,10 +52,9 @@ export class UserEntity implements IUser {
   public credentials: CredentialsEmbeddable = new CredentialsEmbeddable();
 
   // User profile picture
-  @Property({columnType: 'varchar', length: 255, nullable: true})
-  @IsString()
+  @Property({columnType: 'json', length: 255, nullable: true})
   @IsOptional()
-  public avatar?: string;
+  public avatar?: IImage;
 
   // User portrait picture
   @Property({columnType: 'varchar', length: 255, nullable: true})

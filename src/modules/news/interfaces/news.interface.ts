@@ -15,5 +15,5 @@ export interface IImage {
   name: string,
   filepath: string,
   contentType: string,
-  file?: string;
+  fileUrl?: string;
 }
