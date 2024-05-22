@@ -27,10 +27,10 @@ export class NewsService {
   public async findAll(query: NewsQueryDto, pageable: Pageable, companyId: string): Promise<Page<NewsEntity>> {
     const whereClause: QBFilterQuery<NewsEntity> = {company: companyId};
 
-    if (query.id) whereClause['id'] = {$ilike: `%${ query.id }%`};
+    if (query.id) whereClause['id'] = {$eq: query.id};
     if (query.headline) whereClause['headline'] = {$ilike: `%${ query.headline }%`};
     if (query.slug) whereClause['slug'] = {$ilike: `%${ query.slug }%`};
-    if (query.authorId) whereClause['createdBy.id'] = {$ilike: `%${ query.authorId }%`};
+    if (query.authorId) whereClause['createdBy.id'] = {$eq: query.authorId};
     if (query.authorName) whereClause['createdBy.name'] = {$ilike: `%${ query.authorName }%`};
     if (query.category) whereClause['category.slug'] = {$eq: `${ query.category }`};
 
