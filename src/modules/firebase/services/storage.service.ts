@@ -22,7 +22,6 @@ export class StorageService {
   }
 
   async getSignedUrl(path: string): Promise<string> {
-    console.log(path);
     if (!this._storage)
       this._storage = getStorage().bucket();
 
