@@ -80,7 +80,7 @@ export class NewsService {
 
     if (!response) throw new NotFoundException('NEWS_NOT_FOUND');
 
-    if (response.portraitImage) {
+    if (response.portraitImage && !response.portraitImage.fileUrl) {
       response.portraitImage.fileUrl = await this._storageService.getSignedUrl(response.portraitImage.filepath);
       this._commonService.saveEntity(response, true).then();
     }
