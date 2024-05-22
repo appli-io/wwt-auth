@@ -12,7 +12,6 @@ import { CreateNewsDto }               from '@modules/news/dtos/create-news.dto'
 import { NewsQueryDto }                from '@modules/news/dtos/news-query.dto';
 import { NewsCategoryService }         from '@modules/news/services/news-category.service';
 import { StorageService }              from '@modules/firebase/services/storage.service';
-import { LogMethodExecutionTime }      from '@common/decorators/log-method-execution-time.decorator';
 
 @Injectable()
 export class NewsService {
@@ -24,7 +23,6 @@ export class NewsService {
     private readonly _storageService: StorageService
   ) {}
 
-  @LogMethodExecutionTime()
   public async findAll(query: NewsQueryDto, pageable: Pageable, companyId: string): Promise<Page<NewsEntity>> {
     const whereClause: QBFilterQuery<NewsEntity> = {company: companyId};
 
