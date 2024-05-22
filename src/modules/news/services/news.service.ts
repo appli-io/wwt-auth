@@ -77,6 +77,8 @@ export class NewsService {
 
     if (!response) throw new NotFoundException('NEWS_NOT_FOUND');
 
+    console.log(response);
+
     if (response.createdBy) response.createdBy.avatar = await this._storageService.getSignedUrl(response.createdBy.avatar as string);
     if (response.portraitImage) response.portraitImage.file = await this._storageService.getSignedUrl(response.portraitImage.filepath);
     if (response.images?.length) response.images = await Promise.all(response.images.map(async (image: IImage) => ({
