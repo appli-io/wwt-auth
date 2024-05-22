@@ -1,41 +1,11 @@
-import { Injectable } from '@nestjs/common';
-
-import { Bucket }                     from '@google-cloud/storage';
+import { Injectable }                 from '@nestjs/common';
 import { getDownloadURL, getStorage } from 'firebase-admin/storage';
-import { GetSignedUrlConfig }         from '@google-cloud/storage/build/cjs/src/file';
-import { Express }                    from 'express';
 import { v4 }                         from 'uuid';
 
 @Injectable()
 export class StorageService {
-  private _storage: Bucket;
+  private _storage: any;
 
-  async getFiles() {
-    if (!this._storage)
-      this._storage = getStorage().bucket();
-
-    const options: GetSignedUrlConfig = {
-      version: 'v4',
-      action: 'read',
-      expires: Date.now() + 3600 * 1000,
-    };
-
-    const files = (await this._storage.getFiles())[0];
-
-    return await Promise.all(
-      files.map(async file => ({
-        name: file.name,
-        url: (await file.getSignedUrl(options))[0], // Accede al primer elemento del array
-        contentType: file.metadata.contentType,
-        size: file.metadata.size,
-        timeCreated: file.metadata.timeCreated,
-        updated: file.metadata.updated,
-      }))
-    );
-  }
-
-  // reminder to self: SUBIDA DE ARCHIVOS VER LA OPCIÓN DE HACERLO POR EL FRONT
-  // template para subir archivos, no retorna nada, solo sube el archivo.
   async uploadImage(path: string, file: Express.Multer.File, filename?: string) {
     if (!this._storage)
       this._storage = getStorage().bucket();
