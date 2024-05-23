@@ -20,6 +20,9 @@ export class EventEntity {
   @Property({columnType: 'text'})
   public description: string;
 
+  @Property({columnType: 'boolean'})
+  public isAllDay: boolean = false;
+
   @Property({columnType: 'timestamptz'})
   public startDate: Date;
 
