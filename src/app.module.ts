@@ -32,6 +32,7 @@ import { AppService }     from './app.service';
 import { config }         from './config';
 import { AppController }  from './app.controller';
 import { MikroOrmLogger } from '@config/mikroorm.logger';
+import { BioBioModule }   from '@modules/biobio/biobio.module';
 
 @Module({
   imports: [
@@ -70,7 +71,8 @@ import { MikroOrmLogger } from '@config/mikroorm.logger';
     Oauth2Module,
     PermissionsModule,
     NewsModule,
-    LikeModule
+    LikeModule,
+    BioBioModule
   ],
   controllers: [ AppController ],
   providers: [
