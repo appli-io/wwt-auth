@@ -17,6 +17,7 @@ import { MikroOrmConfig }          from '@config/mikroorm.config';
 import { ThrottlerConfig }         from '@config/throttler.config';
 import { AuthModule }              from '@modules/auth/auth.module';
 import { AuthGuard }               from '@modules/auth/guards/auth.guard';
+import { BioBioModule }            from '@modules/biobio/biobio.module';
 import { CompanyModule }           from '@modules/company/company.module';
 import { CompanyUserModule }       from '@modules/company-user/company-user.module';
 import { FirebaseModule }          from '@modules/firebase/firebase.module';
@@ -32,7 +33,7 @@ import { AppService }     from './app.service';
 import { config }         from './config';
 import { AppController }  from './app.controller';
 import { MikroOrmLogger } from '@config/mikroorm.logger';
-import { BioBioModule }   from '@modules/biobio/biobio.module';
+import { ImagesModule }   from '@modules/images/images.module';
 
 @Module({
   imports: [
@@ -72,7 +73,8 @@ import { BioBioModule }   from '@modules/biobio/biobio.module';
     PermissionsModule,
     NewsModule,
     LikeModule,
-    BioBioModule
+    BioBioModule,
+    ImagesModule
   ],
   controllers: [ AppController ],
   providers: [

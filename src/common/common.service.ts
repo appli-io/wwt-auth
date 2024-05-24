@@ -63,6 +63,7 @@ export class CommonService {
   public async saveEntity<T extends Dictionary>(
     entity: T,
     isNew = false,
+    flush = true
   ): Promise<void> {
     await this.validateEntity(entity);
 
@@ -70,6 +71,11 @@ export class CommonService {
       this._em.persist(entity);
     }
 
+    if (flush)
+      await this.throwDuplicateError(this._em.flush());
+  }
+
+  public async flush() {
     await this.throwDuplicateError(this._em.flush());
   }
 
