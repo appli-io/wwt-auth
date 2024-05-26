@@ -14,6 +14,7 @@ import { RoleEnum }                    from '@modules/company-user/enums/role.en
 import { StorageService }              from '@modules/firebase/services/storage.service';
 import { UsersService }                from '@modules/users/users.service';
 import { IImage }                      from '@modules/news/interfaces/news.interface';
+import * as path                       from 'node:path';
 
 @Injectable()
 export class CompanyService {
@@ -37,7 +38,8 @@ export class CompanyService {
 
     if (logo) {
       const basePath = `companies/${ company.id }`;
-      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, logo, 'logo');
+      logo.originalname = 'logo' + path.extname(logo.originalname);
+      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, logo, true);
       company.logo = {
         name: 'logo',
         contentType: logo.mimetype,

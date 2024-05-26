@@ -15,19 +15,19 @@ export class StorageService {
    *
    * @param {string} path - Path to store the image
    * @param {Express.Multer.File} file - File to upload
-   * @param {string=} filename - Optional | Filename to store the image
+   * @param {boolean=} useFilename - Optional | Use the original filename, if false, generate by a v4 uuid
    *
    * @returns {Promise<{filepath: string, fileUrl: string}>} filepath and fileUrl
    */
   async uploadImage(
     path: string,
     file: Express.Multer.File,
-    filename?: string
+    useFilename: boolean = false
   ): Promise<{ filepath: string; fileUrl: string; fileName?: string }> {
     if (!this._storage)
       this._storage = getStorage().bucket(this._cs.get('firebase.storage.bucket'));
 
-    const fileName = filename || v4() + '.' + file.originalname.split('.').pop();
+    const fileName = useFilename ? file.originalname : v4() + '.' + file.originalname.split('.').pop();
     const filepath = path + '/' + fileName;
     const fileRef = this._storage.file(filepath);
     const fileToken = v4();

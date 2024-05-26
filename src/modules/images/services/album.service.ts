@@ -37,8 +37,9 @@ export class AlbumService {
     });
 
     if (cover) {
-      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, cover, 'cover');
-      album.cover = generateImageObject({...cover, originalname: 'cover.webp'}, filepath, fileUrl);
+      cover.originalname = 'cover.webp';
+      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, cover, true);
+      album.cover = generateImageObject(cover, filepath, fileUrl);
 
       // generate thumbnail
       const coverPhotoThumbnail = await generateThumbnail(cover.buffer, {width: 250}).webp().toBuffer();
@@ -47,7 +48,7 @@ export class AlbumService {
         buffer: coverPhotoThumbnail,
         originalname: 'cover-thumbnail.webp',
         mimetype: 'image/webp'
-      };
+      } as Express.Multer.File;
       const {
         filepath: thumbFilepath,
         fileUrl: thumbFileUrl

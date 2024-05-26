@@ -2,16 +2,17 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { InjectRepository }                from '@mikro-orm/nestjs';
 import { EntityRepository, QBFilterQuery } from '@mikro-orm/core';
+import * as path                           from 'node:path';
+import { v4 }                              from 'uuid';
 
 import { CommonService }     from '@common/common.service';
+import { generateThumbnail } from '@common/utils/file.utils';
 import { StorageService }    from '@modules/firebase/services/storage.service';
+import { QueryImagesDto }    from '@modules/images/dtos/query-images.dto';
 import { UserEntity }        from '@modules/users/entities/user.entity';
 import { IImage }            from '@modules/news/interfaces/news.interface';
 import { ImageEntity }       from '../entities/image.entity';
 import { CreateImageDto }    from '../dtos/create-image.dto';
-import { generateThumbnail } from '@common/utils/file.utils';
-import { v4 }                from 'uuid';
-import { QueryImagesDto }    from '@modules/images/dtos/query-images.dto';
 
 @Injectable()
 export class ImageService {
@@ -37,8 +38,9 @@ export class ImageService {
       });
 
       image.uploadedBy = {id: userId} as UserEntity;
+      file.originalname = image.id + path.extname(file.originalname);
 
-      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, file, image.id);
+      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, file, true);
 
       image.original = this.createImageObject(file, filepath, fileUrl);
 
@@ -48,7 +50,7 @@ export class ImageService {
         ...file,
         buffer: thumbnailBuffer,
         originalname: `${ image.id }-thumbnail.webp`,
-      }, `${ image.id }-thumbnail`);
+      }, true);
 
       image.thumbnail = this.createImageObject(file, thumbnailFilepath, thumbnailUrl, thumbnailBuffer.length);
       image.size = file.buffer.length + thumbnailBuffer.length;
