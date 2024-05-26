@@ -11,11 +11,13 @@ import { FastifyMulterModule } from '@nest-lab/fastify-multer';
 import { CommonModule }            from '@common/common.module';
 import { HttpExceptionFilter }     from '@common/filters/http-exception.filter';
 import { HttpResponseInterceptor } from '@common/interceptors/http-response.interceptor';
+import { MikroOrmLogger }          from '@config/mikroorm.logger';
 import { CacheConfig }             from '@config/cache.config';
 import { validationSchema }        from '@config/config.schema';
 import { MikroOrmConfig }          from '@config/mikroorm.config';
 import { ThrottlerConfig }         from '@config/throttler.config';
 import { AuthModule }              from '@modules/auth/auth.module';
+import { AlbumModule }             from '@modules/images/album.module';
 import { AuthGuard }               from '@modules/auth/guards/auth.guard';
 import { BioBioModule }            from '@modules/biobio/biobio.module';
 import { CompanyModule }           from '@modules/company/company.module';
@@ -29,11 +31,9 @@ import { Oauth2Module }            from '@modules/oauth2/oauth2.module';
 import { PermissionsModule }       from '@modules/permissions/permissions.module';
 import { UsersModule }             from '@modules/users/users.module';
 
-import { AppService }     from './app.service';
-import { config }         from './config';
-import { AppController }  from './app.controller';
-import { MikroOrmLogger } from '@config/mikroorm.logger';
-import { ImagesModule }   from '@modules/images/images.module';
+import { AppService }    from './app.service';
+import { config }        from './config';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -74,7 +74,7 @@ import { ImagesModule }   from '@modules/images/images.module';
     NewsModule,
     LikeModule,
     BioBioModule,
-    ImagesModule
+    AlbumModule
   ],
   controllers: [ AppController ],
   providers: [

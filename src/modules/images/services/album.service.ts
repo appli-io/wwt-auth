@@ -1,15 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { InjectRepository }                from '@mikro-orm/nestjs';
 import { EntityRepository, QBFilterQuery } from '@mikro-orm/core';
+import * as path                           from 'node:path';
 import { v4 }                              from 'uuid';
 
 import { CommonService }                          from '@common/common.service';
 import { generateImageObject, generateThumbnail } from '@common/utils/file.utils';
 import { StorageService }                         from '@modules/firebase/services/storage.service';
+import { QueryAlbumDto }                          from '@modules/images/dtos/query-album.dto';
 import { CreateAlbumDto }                         from '../dtos/create-album.dto';
 import { AlbumEntity }                            from '../entities/album.entity';
-import { QueryAlbumDto }                          from '@modules/images/dtos/query-album.dto';
 
 @Injectable()
 export class AlbumService {
@@ -27,9 +28,9 @@ export class AlbumService {
   ): Promise<AlbumEntity> {
     await this._checkAlbumExists(createAlbumDto.name);
 
-    const albumId = v4();
-    const basePath = `companies/${ companyId }/media/albums/${ albumId }`;
-    const album = this.albumRepository.create({
+    const albumId: string = v4();
+    const basePath: string = `companies/${ companyId }/media/albums/${ albumId }`;
+    const album: AlbumEntity = this.albumRepository.create({
       ...createAlbumDto,
       id: albumId,
       company: companyId,
@@ -37,7 +38,7 @@ export class AlbumService {
     });
 
     if (cover) {
-      cover.originalname = 'cover.webp';
+      cover.originalname = 'cover' + path.extname(cover.originalname);
       const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, cover, true);
       album.cover = generateImageObject(cover, filepath, fileUrl);
 
@@ -52,7 +53,7 @@ export class AlbumService {
       const {
         filepath: thumbFilepath,
         fileUrl: thumbFileUrl
-      } = await this._storageService.uploadImage(basePath, coverThumbnailFile);
+      } = await this._storageService.uploadImage(basePath, coverThumbnailFile, true);
 
       album.coverThumbnail = generateImageObject(coverThumbnailFile, thumbFilepath, thumbFileUrl);
     }
@@ -76,12 +77,19 @@ export class AlbumService {
     return this.albumRepository.findAll({where: whereFilter});
   }
 
-  async findOne(id: string): Promise<AlbumEntity> {
-    return this.albumRepository.findOneOrFail({id});
+  async findOne(id: string, companyId: string): Promise<AlbumEntity> {
+    const album = await this.albumRepository.findOne({id, company: {id: companyId}});
+
+    if (!album) throw new NotFoundException('ALBUM_NOT_FOUND');
+
+    return album;
   }
 
   async remove(id: string): Promise<void> {
-    const album = await this.albumRepository.findOneOrFail({id});
+    const album = await this.albumRepository.findOne({id});
+
+    if (!album) throw new NotFoundException('ALBUM_NOT_FOUND');
+
     await this._commonService.removeEntity(album);
   }
 

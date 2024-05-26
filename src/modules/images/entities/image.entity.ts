@@ -18,9 +18,6 @@ export class ImageEntity {
   thumbnail: IImage;
 
   @Property()
-  contentType: string;
-
-  @Property()
   size: number;
 
   @ManyToOne(() => UserEntity)

@@ -17,7 +17,7 @@ export class StorageService {
    * @param {Express.Multer.File} file - File to upload
    * @param {boolean=} useFilename - Optional | Use the original filename, if false, generate by a v4 uuid
    *
-   * @returns {Promise<{filepath: string, fileUrl: string}>} filepath and fileUrl
+   * @returns {Promise<{filepath: string, fileUrl: string}>} filepath, fileUrl and fileName
    */
   async uploadImage(
     path: string,
