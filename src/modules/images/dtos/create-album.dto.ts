@@ -7,5 +7,5 @@ export class CreateAlbumDto {
 
   @IsNotEmpty()
   @IsString()
-  description: string;
+  description?: string;
 }

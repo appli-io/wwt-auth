@@ -15,19 +15,14 @@ export class ImageController {
   constructor(private imageService: ImageService) {}
 
   @Post()
-  @UseInterceptors(FilesInterceptor('files'))
+  @UseInterceptors(FilesInterceptor('images'))
   async uploadImages(
     @CurrentUser() userId: string,
     @CurrentCompanyId() companyId: string,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() images: Express.Multer.File[],
     @Body() createImageDto: CreateImageDto
   ): Promise<ImageEntity[]> {
-    return this.imageService.create(createImageDto, files, companyId, userId);
-  }
-
-  @Get()
-  async findAll() {
-    return this.imageService.findAll();
+    return this.imageService.create(createImageDto, images, companyId, userId);
   }
 
   @Get(':id')

@@ -17,7 +17,10 @@ export class AlbumEntity {
   description: string;
 
   @Property({type: 'json', nullable: true})
-  coverImage: IImage;
+  cover: IImage;
+
+  @Property({type: 'json', nullable: true})
+  coverThumbnail: IImage;
 
   @OneToMany(() => ImageEntity, image => image.album)
   images = new Collection<ImageEntity>(this);

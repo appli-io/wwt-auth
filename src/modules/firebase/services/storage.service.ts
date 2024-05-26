@@ -23,11 +23,12 @@ export class StorageService {
     path: string,
     file: Express.Multer.File,
     filename?: string
-  ): Promise<{ filepath: string; fileUrl: string; }> {
+  ): Promise<{ filepath: string; fileUrl: string; fileName?: string }> {
     if (!this._storage)
       this._storage = getStorage().bucket(this._cs.get('firebase.storage.bucket'));
 
-    const filepath = path + '/' + (filename || v4()) + '.' + file.originalname.split('.').pop();
+    const fileName = filename || v4() + '.' + file.originalname.split('.').pop();
+    const filepath = path + '/' + fileName;
     const fileRef = this._storage.file(filepath);
     const fileToken = v4();
 
@@ -43,7 +44,7 @@ export class StorageService {
 
     const fileUrl = `https://firebasestorage.googleapis.com/v0/b/${ this._cs.get('firebase.storage.bucket') }/o/${ encodeURIComponent(filepath) }?alt=media&token=${ fileToken }`;
 
-    return {filepath, fileUrl};
+    return {filepath, fileUrl, fileName};
   }
 
   async getDownloadUrl(path: string): Promise<string> {

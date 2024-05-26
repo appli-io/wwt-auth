@@ -31,4 +31,10 @@ export class ImageEntity {
 
   @ManyToOne(() => AlbumEntity)
   album: AlbumEntity;
+
+  @Property({onCreate: () => new Date()})
+  public createdAt: Date = new Date();
+
+  @Property({onUpdate: () => new Date()})
+  public updatedAt: Date = new Date();
 }

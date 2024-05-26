@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository } from '@mikro-orm/core';
+import { InjectRepository }                from '@mikro-orm/nestjs';
+import { EntityRepository, QBFilterQuery } from '@mikro-orm/core';
 
 import { CommonService }     from '@common/common.service';
 import { StorageService }    from '@modules/firebase/services/storage.service';
@@ -11,6 +11,7 @@ import { ImageEntity }       from '../entities/image.entity';
 import { CreateImageDto }    from '../dtos/create-image.dto';
 import { generateThumbnail } from '@common/utils/file.utils';
 import { v4 }                from 'uuid';
+import { QueryImagesDto }    from '@modules/images/dtos/query-images.dto';
 
 @Injectable()
 export class ImageService {
@@ -22,17 +23,17 @@ export class ImageService {
 
   async create(
     createImageDto: CreateImageDto,
-    files: Express.Multer.File[],
+    images: Express.Multer.File[],
     companyId: string,
     userId: string
   ): Promise<ImageEntity[]> {
     const basePath = `companies/${ companyId }/media/albums/${ createImageDto.albumId }`;
 
-    const uploadPromises = files.map(async (file) => {
+    const uploadPromises = images.map(async (file) => {
       const image = this._imageRepository.create({
         id: v4(),
-        album: {id: createImageDto.albumId},
-        uploadedBy: {id: userId} as UserEntity,
+        album: createImageDto.albumId,
+        uploadedBy: userId,
       });
 
       image.uploadedBy = {id: userId} as UserEntity;
@@ -60,14 +61,24 @@ export class ImageService {
       }
     });
 
-    const images = await Promise.all(uploadPromises);
+    const imageEntities = await Promise.all(uploadPromises);
     await this._commonService.flush();
 
-    return images;
+    return imageEntities;
   }
 
-  async findAll(): Promise<ImageEntity[]> {
-    return this._imageRepository.findAll();
+  async findAll(query: QueryImagesDto, companyId: string): Promise<ImageEntity[]> {
+    const whereFilter: QBFilterQuery<ImageEntity> = {};
+
+    Object.keys(query).forEach(key => {
+      if (query[key]) {
+        whereFilter[key] = {$eq: query[key]};
+      }
+    });
+
+    whereFilter.company = {id: companyId};
+
+    return this._imageRepository.findAll({where: whereFilter});
   }
 
   async findOne(id: string): Promise<ImageEntity> {
