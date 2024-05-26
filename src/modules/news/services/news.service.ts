@@ -59,7 +59,7 @@ export class NewsService {
 
     const mappedContent = await Promise.all(result.content.map(async news => {
       if (!news.portraitImage?.fileUrl) {
-        news.portraitImage.fileUrl = await this._storageService.getSignedUrl(news.portraitImage.filepath as string);
+        news.portraitImage.fileUrl = await this._storageService.getDownloadUrl(news.portraitImage.filepath as string);
         this._commonService.saveEntity(news, true).then();
       }
       return news;
@@ -79,13 +79,13 @@ export class NewsService {
     if (!response) throw new NotFoundException('NEWS_NOT_FOUND');
 
     if (response.portraitImage && !response.portraitImage.fileUrl) {
-      response.portraitImage.fileUrl = await this._storageService.getSignedUrl(response.portraitImage.filepath);
+      response.portraitImage.fileUrl = await this._storageService.getDownloadUrl(response.portraitImage.filepath);
       this._commonService.saveEntity(response, true).then();
     }
     if (response.images?.length && response.images.some(image => !image.fileUrl)) {
       response.images = await Promise.all(response.images.map(async image => {
         if (!image.fileUrl) {
-          image.fileUrl = await this._storageService.getSignedUrl(image.filepath);
+          image.fileUrl = await this._storageService.getDownloadUrl(image.filepath);
         }
         return image;
       }));

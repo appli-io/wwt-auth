@@ -85,7 +85,7 @@ export class CompanyService {
 
     if (results.content.length > 0 && results.content.some(company => !company.logo?.fileUrl)) {
       await Promise.all(results.content.map(async company => {
-        if (company.logo && !company.logo.fileUrl) company.logo.fileUrl = await this._storageService.getSignedUrl(company.logo.filepath);
+        if (company.logo && !company.logo.fileUrl) company.logo.fileUrl = await this._storageService.getDownloadUrl(company.logo.filepath);
 
         this._commonService.saveEntity(company, true).then();
       }));

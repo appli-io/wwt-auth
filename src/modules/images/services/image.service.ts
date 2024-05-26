@@ -2,14 +2,15 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/core';
-import sharp                from 'sharp';
 
-import { CommonService }  from '@common/common.service';
-import { StorageService } from '@modules/firebase/services/storage.service';
-import { UserEntity }     from '@modules/users/entities/user.entity';
-import { IImage }         from '@modules/news/interfaces/news.interface';
-import { ImageEntity }    from './entities/image.entity';
-import { CreateImageDto } from './dtos/create-image.dto';
+import { CommonService }     from '@common/common.service';
+import { StorageService }    from '@modules/firebase/services/storage.service';
+import { UserEntity }        from '@modules/users/entities/user.entity';
+import { IImage }            from '@modules/news/interfaces/news.interface';
+import { ImageEntity }       from '../entities/image.entity';
+import { CreateImageDto }    from '../dtos/create-image.dto';
+import { generateThumbnail } from '@common/utils/file.utils';
+import { v4 }                from 'uuid';
 
 @Injectable()
 export class ImageService {
@@ -25,24 +26,30 @@ export class ImageService {
     companyId: string,
     userId: string
   ): Promise<ImageEntity[]> {
-    const basePath = `companies/${ companyId }/images/${ createImageDto.albumId }`;
+    const basePath = `companies/${ companyId }/media/albums/${ createImageDto.albumId }`;
 
     const uploadPromises = files.map(async (file) => {
-      const image = new ImageEntity();
+      const image = this._imageRepository.create({
+        id: v4(),
+        album: {id: createImageDto.albumId},
+        uploadedBy: {id: userId} as UserEntity,
+      });
+
       image.uploadedBy = {id: userId} as UserEntity;
 
-      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, file);
+      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, file, image.id);
 
       image.original = this.createImageObject(file, filepath, fileUrl);
 
       const thumbnailPath = `${ basePath }/thumbnails`;
-      const thumbnailBuffer = await this.generateThumbnail(file.buffer);
+      const thumbnailBuffer = await generateThumbnail(file.buffer).toBuffer();
       const {fileUrl: thumbnailUrl, filepath: thumbnailFilepath} = await this._storageService.uploadImage(thumbnailPath, {
         ...file,
-        buffer: thumbnailBuffer
-      });
-      image.thumbnail = this.createImageObject(file, thumbnailFilepath, thumbnailUrl, thumbnailBuffer.length);
+        buffer: thumbnailBuffer,
+        originalname: `${ image.id }-thumbnail.webp`,
+      }, `${ image.id }-thumbnail`);
 
+      image.thumbnail = this.createImageObject(file, thumbnailFilepath, thumbnailUrl, thumbnailBuffer.length);
       image.size = file.buffer.length + thumbnailBuffer.length;
 
       try {
@@ -80,9 +87,5 @@ export class ImageService {
       contentType: file.mimetype,
       size: size ?? file.buffer.length,
     };
-  }
-
-  private async generateThumbnail(buffer: Buffer): Promise<Buffer> {
-    return sharp(buffer).resize(200, 200).toBuffer();
   }
 }

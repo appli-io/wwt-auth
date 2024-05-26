@@ -7,14 +7,14 @@ import { MemberGuard }      from '@modules/auth/guards/member.guard';
 import { CurrentCompanyId } from '@modules/company/decorators/company-id.decorator';
 import { CreateImageDto }   from '@modules/images/dtos/create-image.dto';
 import { ImageEntity }      from '@modules/images/entities/image.entity';
-import { ImageService }     from './image.service';
+import { ImageService }     from '../services/image.service';
 
 @Controller('images')
 @UseGuards(MemberGuard)
 export class ImageController {
   constructor(private imageService: ImageService) {}
 
-  @Post('upload')
+  @Post()
   @UseInterceptors(FilesInterceptor('files'))
   async uploadImages(
     @CurrentUser() userId: string,
