@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -81,6 +82,7 @@ export class AlbumController {
   ): Promise<ImageEntity[]> {
     const album = await this.albumService.findOne(albumId, companyId);
 
+    if (!images || images.length === 0) throw new BadRequestException('NO_IMAGES');
     if (!album) throw new NotFoundException('ALBUM_NOT_FOUND');
 
     return this.imageService.create(albumId, images, companyId, userId);

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { InjectRepository }                from '@mikro-orm/nestjs';
 import { EntityRepository, QBFilterQuery } from '@mikro-orm/core';
@@ -11,11 +11,13 @@ import { StorageService }                         from '@modules/firebase/servic
 import { QueryAlbumDto }                          from '@modules/images/dtos/query-album.dto';
 import { CreateAlbumDto }                         from '../dtos/create-album.dto';
 import { AlbumEntity }                            from '../entities/album.entity';
+import { ImageService }                           from '@modules/images/services/image.service';
 
 @Injectable()
 export class AlbumService {
   constructor(
     @InjectRepository(AlbumEntity) private albumRepository: EntityRepository<AlbumEntity>,
+    @Inject(forwardRef(() => ImageService)) private readonly _imageService: ImageService,
     private readonly _commonService: CommonService,
     private readonly _storageService: StorageService
   ) {}
@@ -74,7 +76,16 @@ export class AlbumService {
       if (query[key]) whereFilter[key] = {$eq: query[key]};
     });
 
-    return this.albumRepository.findAll({where: whereFilter});
+    const albumResults = this.albumRepository.findAll({where: whereFilter});
+
+    return Promise.all((await albumResults).map(async album => {
+      const imagesCount = await this._imageService.countImagesByAlbumId(album.id);
+
+      return {
+        ...album,
+        imagesCount
+      };
+    }));
   }
 
   async findOne(id: string, companyId: string): Promise<AlbumEntity> {

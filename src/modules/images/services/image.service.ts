@@ -94,6 +94,10 @@ export class ImageService {
     await this._commonService.removeEntity(image);
   }
 
+  async countImagesByAlbumId(albumId: string): Promise<number> {
+    return this._imageRepository.count({album: {id: albumId}});
+  }
+
   private createImageObject(file: Express.Multer.File, filepath: string, fileUrl: string, size?: number): IImage {
     return {
       name: file.originalname,
