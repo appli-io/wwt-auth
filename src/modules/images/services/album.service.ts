@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
 
 import { InjectRepository }                from '@mikro-orm/nestjs';
 import { EntityRepository, QBFilterQuery } from '@mikro-orm/core';
@@ -9,11 +9,11 @@ import { CommonService }                          from '@common/common.service';
 import { generateImageObject, generateThumbnail } from '@common/utils/file.utils';
 import { StorageService }                         from '@modules/firebase/services/storage.service';
 import { QueryAlbumDto }                          from '@modules/images/dtos/query-album.dto';
+import { ImageService }                           from '@modules/images/services/image.service';
 import { CreateAlbumDto }                         from '../dtos/create-album.dto';
 import { AlbumEntity }                            from '../entities/album.entity';
-import { ImageService }                           from '@modules/images/services/image.service';
 
-@Injectable()
+@Injectable({scope: Scope.REQUEST})
 export class AlbumService {
   constructor(
     @InjectRepository(AlbumEntity) private albumRepository: EntityRepository<AlbumEntity>,

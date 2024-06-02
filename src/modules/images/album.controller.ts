@@ -8,6 +8,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Scope,
   UploadedFile,
   UploadedFiles,
   UseGuards,
@@ -27,7 +28,10 @@ import { ResponseImageMapper } from '@modules/images/mappers/response-image.mapp
 import { CreateAlbumDto }      from './dtos/create-album.dto';
 import { AlbumService }        from './services/album.service';
 
-@Controller('albums')
+@Controller({
+  path: 'albums',
+  scope: Scope.REQUEST
+})
 @UseGuards(MemberGuard)
 export class AlbumController {
   constructor(

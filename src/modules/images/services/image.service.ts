@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Scope } from '@nestjs/common';
 
 import { InjectRepository }                from '@mikro-orm/nestjs';
 import { EntityRepository, QBFilterQuery } from '@mikro-orm/core';
@@ -13,7 +13,7 @@ import { UserEntity }        from '@modules/users/entities/user.entity';
 import { IImage }            from '@modules/news/interfaces/news.interface';
 import { ImageEntity }       from '../entities/image.entity';
 
-@Injectable()
+@Injectable({scope: Scope.REQUEST})
 export class ImageService {
   constructor(
     @InjectRepository(ImageEntity) private readonly _imageRepository: EntityRepository<ImageEntity>,
