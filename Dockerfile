@@ -47,4 +47,4 @@ COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
 COPY --chown=node:node keys ./keys
 
-CMD [ "node", "--max-old-space-size=250", "--gc-interval=100", "--optimize-for-size", "dist/main.js" ]
+CMD [ "node", "--max_old_space_size=250", "--gc_interval=100", "--optimize-for-size", "dist/main.js" ]
