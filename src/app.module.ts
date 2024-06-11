@@ -34,6 +34,7 @@ import { UsersModule }             from '@modules/users/users.module';
 import { AppService }    from './app.service';
 import { config }        from './config';
 import { AppController } from './app.controller';
+import { EventsModule } from '@modules/events/events.module';
 
 @Module({
   imports: [
@@ -74,7 +75,8 @@ import { AppController } from './app.controller';
     NewsModule,
     LikeModule,
     BioBioModule,
-    AlbumModule
+    AlbumModule,
+    EventsModule
   ],
   controllers: [ AppController ],
   providers: [

@@ -26,19 +26,19 @@ export class EventEntity {
   @Property({columnType: 'timestamptz'})
   public startDate: Date;
 
-  @Property({columnType: 'timestamptz'})
+  @Property({columnType: 'timestamptz', nullable: true})
   public endDate: Date;
 
   @Property({columnType: 'text'})
   public location: string;
 
-  @Property({columnType: 'json'})
+  @Property({columnType: 'json', nullable: true})
   public url: IEventUrl[];
 
-  @Property({columnType: 'text'})
+  @Property({columnType: 'text', nullable: true})
   public image: string;
 
-  @Property({columnType: 'int'})
+  @Property({columnType: 'int', nullable: true})
   public capacity: number;
 
   @Property({columnType: 'json'})
