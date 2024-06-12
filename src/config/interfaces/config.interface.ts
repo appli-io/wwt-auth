@@ -6,6 +6,7 @@ import { IOAuth2 }               from './oauth2.interface';
 import { ThrottlerOptions }      from '@nestjs/throttler/dist/throttler-module-options.interface';
 
 export interface IConfig {
+  readonly env: string;
   readonly id: string;
   readonly url: string;
   readonly port: number;

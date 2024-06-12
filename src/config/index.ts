@@ -29,6 +29,7 @@ export function config(): IConfig {
   };
 
   return {
+    env: process.env.NODE_ENV,
     id: process.env.APP_ID,
     url: process.env.URL,
     port: parseInt(process.env.PORT, 10),

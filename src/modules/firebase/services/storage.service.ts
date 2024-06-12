@@ -27,8 +27,9 @@ export class StorageService {
     if (!this._storage)
       this._storage = getStorage().bucket(this._cs.get('firebase.storage.bucket'));
 
+    const environment = this._cs.get('env');
     const fileName = useFilename ? file.originalname : v4() + '.' + file.originalname.split('.').pop();
-    const filepath = path + '/' + fileName;
+    const filepath = environment + '/' + path + '/' + fileName;
     const fileRef = this._storage.file(filepath);
     const fileToken = v4();
 

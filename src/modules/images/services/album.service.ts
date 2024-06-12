@@ -76,7 +76,7 @@ export class AlbumService {
       if (query[key]) whereFilter[key] = {$eq: query[key]};
     });
 
-    const albumResults = this.albumRepository.findAll({where: whereFilter});
+    const albumResults = this.albumRepository.findAll({where: whereFilter, orderBy: {createdAt: 'DESC'}});
 
     return Promise.all((await albumResults).map(async album => {
       const imagesCount = await this._imageService.countImagesByAlbumId(album.id);

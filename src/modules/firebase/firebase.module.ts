@@ -1,11 +1,11 @@
-import { Global, Module } from '@nestjs/common';
-import { ConfigService }  from '@nestjs/config';
-import * as admin         from 'firebase-admin';
-import { StorageService } from '@modules/firebase/services/storage.service';
+import { Global, Module, Provider } from '@nestjs/common';
+import { ConfigService }            from '@nestjs/config';
+import * as admin                   from 'firebase-admin';
+import { StorageService }           from '@modules/firebase/services/storage.service';
 
 const FIREBASE_PROVIDER_KEY = 'FIREBASE_APP';
 
-const firebaseProvider = {
+const firebaseProvider: Provider = {
   provide: FIREBASE_PROVIDER_KEY,
   inject: [ ConfigService ],
   useFactory: (configService: ConfigService) => {

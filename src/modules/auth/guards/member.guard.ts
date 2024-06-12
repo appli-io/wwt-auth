@@ -7,6 +7,7 @@ import { memberUnneededKey }  from '@modules/auth/decorators/member-unneeded.dec
 import { CompanyUserService } from '@modules/company-user/company-user.service';
 import { RoleEnum }           from '@modules/company-user/enums/role.enum';
 import { requiredRolesKey }   from '@modules/auth/decorators/requierd-role.decorator';
+import { FastifyRequest }     from 'fastify';
 
 @Injectable()
 export class MemberGuard implements CanActivate {
@@ -27,9 +28,9 @@ export class MemberGuard implements CanActivate {
       return true; // if memberUnneeded or requiredRoles is true, then no need to check if user is part of company
     }
 
-    const request = context.switchToHttp().getRequest();
-    const userId = request.user as string;
-    const companyId = request.headers['x-company-id'] as string;
+    const request: FastifyRequest = context.switchToHttp().getRequest<FastifyRequest>();
+    const userId = request.user;
+    const companyId = request.companyId;
 
     if (!userId || !companyId) {
       throw new ForbiddenException('Invalid permissions');
