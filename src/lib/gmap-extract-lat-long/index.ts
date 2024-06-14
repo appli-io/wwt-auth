@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios                   from 'axios';
+import { BadRequestException } from '@nestjs/common';
 
 /**
  * Extracts the latitude and longitude from a Google Maps shortened URL
@@ -8,6 +9,12 @@ import axios from 'axios';
  * @param url
  */
 export async function getCoordinates(url: string): Promise<{ lat: number; lng: number }> {
+  if (!url.includes('goo.gl') && url.includes('!3d') && url.includes('!4d')) {
+    return extractCoordinates(url);
+  } else if (!url.includes('goo.gl')) {
+    throw new BadRequestException('INVALID_GMAPS_URL');
+  }
+
   const expandedUrl = await expandShortUrl(url);
   const coordinates = extractCoordinates(expandedUrl);
 
