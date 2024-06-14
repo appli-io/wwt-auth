@@ -69,7 +69,7 @@ export class UserEntity implements IUser {
   public location: string;
 
   @Property({columnType: 'date', nullable: true})
-  public birthday: Date;
+  public birthday?: Date;
 
   // JSON of user's settings
   @Property({columnType: 'json', nullable: true})
