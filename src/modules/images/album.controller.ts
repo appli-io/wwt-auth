@@ -27,6 +27,7 @@ import { ImageService }        from '@modules/images/services/image.service';
 import { ResponseImageMapper } from '@modules/images/mappers/response-image.mapper';
 import { CreateAlbumDto }      from './dtos/create-album.dto';
 import { AlbumService }        from './services/album.service';
+import { ResponseAlbumMapper } from '@modules/images/mappers/response-album.mapper';
 
 @Controller({
   path: 'albums',
@@ -63,7 +64,11 @@ export class AlbumController {
     @CurrentCompanyId() companyId: string,
     @Param('id', ParseUUIDPipe) id: string
   ) {
-    return this.albumService.findOne(id, companyId);
+    const album = await this.albumService.findOne(id, companyId);
+
+    if (!album) throw new NotFoundException('ALBUM_NOT_FOUND');
+
+    return ResponseAlbumMapper.map(album);
   }
 
   @Get(':id/images')

@@ -45,7 +45,7 @@ export class AlbumService {
       album.cover = generateImageObject(cover, filepath, fileUrl);
 
       // generate thumbnail
-      const coverPhotoThumbnail = await generateThumbnail(cover.buffer, {width: 250}).webp().toBuffer();
+      const coverPhotoThumbnail = await generateThumbnail(cover.buffer, {width: 500}).webp().toBuffer();
       const coverThumbnailFile = {
         ...cover,
         buffer: coverPhotoThumbnail,
@@ -76,7 +76,11 @@ export class AlbumService {
       if (query[key]) whereFilter[key] = {$eq: query[key]};
     });
 
-    const albumResults = this.albumRepository.findAll({where: whereFilter, orderBy: {createdAt: 'DESC'}});
+    const albumResults = this.albumRepository.findAll({
+      where: whereFilter,
+      orderBy: {createdAt: 'DESC'},
+      populate: [ 'createdBy' ]
+    });
 
     return Promise.all((await albumResults).map(async album => {
       const imagesCount = await this._imageService.countImagesByAlbumId(album.id);
@@ -89,7 +93,7 @@ export class AlbumService {
   }
 
   async findOne(id: string, companyId: string): Promise<AlbumEntity> {
-    const album = await this.albumRepository.findOne({id, company: {id: companyId}});
+    const album = await this.albumRepository.findOne({id, company: {id: companyId}}, {populate: [ 'createdBy', 'images' ]});
 
     if (!album) throw new NotFoundException('ALBUM_NOT_FOUND');
 
