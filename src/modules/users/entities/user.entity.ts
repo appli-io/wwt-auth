@@ -68,6 +68,9 @@ export class UserEntity implements IUser {
   @IsOptional()
   public location: string;
 
+  @Property({columnType: 'date', nullable: true})
+  public birthday: Date;
+
   // JSON of user's settings
   @Property({columnType: 'json', nullable: true})
   public settings: Record<string, any>;

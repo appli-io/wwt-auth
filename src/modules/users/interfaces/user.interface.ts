@@ -11,6 +11,7 @@ export interface IUser {
   avatar?: IImage;
   portrait?: string;
   location: string;
+  birthday: Date;
   settings: Record<string, any>;
   credentials: ICredentials;
   createdAt: Date;

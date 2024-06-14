@@ -1,12 +1,13 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { EventEntity } from "./entities/event.entity";
-import { EventQueryDto } from "./dtos/event-query.dto";
-import { QBFilterQuery } from "@mikro-orm/core";
-import { InjectRepository } from "@mikro-orm/nestjs";
-import { EntityRepository } from "@mikro-orm/postgresql";
-import { CreateEventDto } from './dtos/create-event.dto';
-import { v4 } from "uuid";
-import { CommonService } from "@common/common.service";
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { EventEntity }                     from './entities/event.entity';
+import { EventQueryDto }                   from './dtos/event-query.dto';
+import { QBFilterQuery }                   from '@mikro-orm/core';
+import { InjectRepository }                from '@mikro-orm/nestjs';
+import { EntityRepository }                from '@mikro-orm/postgresql';
+import { CreateEventDto }                  from './dtos/create-event.dto';
+import { v4 }                              from 'uuid';
+import { CommonService }                   from '@common/common.service';
+import { getCoordinates }                  from '@lib/gmap-extract-lat-long';
 
 @Injectable()
 export class EventService {
@@ -44,6 +45,19 @@ export class EventService {
       createdBy: user,
     });
 
+    if (event.url?.some(url => url.platform === 'maps')) {
+      await Promise.all(
+        event.url.map(async url => {
+          if (url.platform === 'maps' && url.url) {
+            const {lat, lng} = await getCoordinates(url.url);
+            url.latitude = lat;
+            url.longitude = lng;
+          }
+
+          return url;
+        })
+      );
+    }
 
     try {
       await this._commonService.saveEntity(event, true);
