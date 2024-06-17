@@ -13,6 +13,6 @@ import { CompanyUserController } from '@modules/company-user/company-user.contro
   ],
   providers: [ CompanyUserService ],
   controllers: [ CompanyUserController ],
-  exports: [ CompanyUserService ],
+  exports: [ CompanyUserService, MikroOrmModule ],
 })
 export class CompanyUserModule {}

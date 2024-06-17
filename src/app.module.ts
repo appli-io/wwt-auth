@@ -22,6 +22,7 @@ import { AuthGuard }               from '@modules/auth/guards/auth.guard';
 import { BioBioModule }            from '@modules/biobio/biobio.module';
 import { CompanyModule }           from '@modules/company/company.module';
 import { CompanyUserModule }       from '@modules/company-user/company-user.module';
+import { EventsModule }            from '@modules/events/events.module';
 import { FirebaseModule }          from '@modules/firebase/firebase.module';
 import { JwtModule }               from '@modules/jwt/jwt.module';
 import { LikeModule }              from '@modules/likes/like.module';
@@ -29,12 +30,12 @@ import { MailerModule }            from '@modules/mailer/mailer.module';
 import { NewsModule }              from '@modules/news/news.module';
 import { Oauth2Module }            from '@modules/oauth2/oauth2.module';
 import { PermissionsModule }       from '@modules/permissions/permissions.module';
+import { ScrumboardModule }        from '@modules/scrumboard/scrumboard.module';
 import { UsersModule }             from '@modules/users/users.module';
 
+import { AppController } from './app.controller';
 import { AppService }    from './app.service';
 import { config }        from './config';
-import { AppController } from './app.controller';
-import { EventsModule } from '@modules/events/events.module';
 
 @Module({
   imports: [
@@ -76,7 +77,8 @@ import { EventsModule } from '@modules/events/events.module';
     LikeModule,
     BioBioModule,
     AlbumModule,
-    EventsModule
+    EventsModule,
+    ScrumboardModule
   ],
   controllers: [ AppController ],
   providers: [

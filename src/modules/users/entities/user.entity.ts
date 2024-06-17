@@ -5,11 +5,11 @@ import { v4 }                                                                   
 import { BCRYPT_HASH_OR_UNSET, NAME_REGEX, SLUG_REGEX, } from '@common/consts/regex.const';
 import { CompanyEntity }                                 from '@modules/company/entities/company.entity';
 import { CompanyUserEntity }                             from '@modules/company-user/entities/company-user.entity';
+import { IImage }                                        from '@modules/news/interfaces/news.interface';
 
 import { CredentialsEmbeddable } from '../embeddables/credentials.embeddable';
 import { IUser }                 from '../interfaces/user.interface';
 import { OAuthProviderEntity }   from './oauth-provider.entity';
-import { IImage }                from '@modules/news/interfaces/news.interface';
 
 @Entity({tableName: 'users'})
 export class UserEntity implements IUser {
@@ -81,9 +81,6 @@ export class UserEntity implements IUser {
   @Property({onUpdate: () => new Date()})
   public updatedAt: Date = new Date();
 
-  @ManyToOne(() => CompanyEntity, {nullable: true})
-  public activeCompany: CompanyEntity;
-
   @OneToMany(() => OAuthProviderEntity, (oauth) => oauth.user)
   public oauthProviders = new Collection<OAuthProviderEntity, UserEntity>(this);
 
@@ -92,6 +89,9 @@ export class UserEntity implements IUser {
 
   @OneToMany(() => CompanyUserEntity, companyUser => companyUser.user)
   public companyUsers = new Collection<CompanyUserEntity>(this);
+
+  @ManyToOne(() => CompanyEntity, {nullable: true})
+  public activeCompany: CompanyEntity;
 
   @ManyToMany({entity: () => CompanyEntity, mappedBy: c => c.users})
   public assignedCompanies = new Collection<CompanyEntity>(this);

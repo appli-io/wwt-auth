@@ -25,7 +25,6 @@ export async function getCoordinates(url: string): Promise<{ lat: number; lng: n
 }
 
 async function expandShortUrl(shortUrl: string): Promise<string> {
-  // Usa un servicio para expandir la URL corta a una URL completa
   const response = await axios.get(shortUrl);
   return response.request.res.responseUrl;
 }
