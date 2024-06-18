@@ -1,8 +1,9 @@
 import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 
+import { v4 } from 'uuid';
+
 import { BoardEntity } from './board.entity';
 import { CardEntity }  from './card.entity';
-import { v4 }          from 'uuid';
 
 @Entity({tableName: 'scrumboard_list'})
 export class ListEntity {

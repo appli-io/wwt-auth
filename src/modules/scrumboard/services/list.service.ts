@@ -14,9 +14,15 @@ export class ListService {
     private readonly _em: EntityManager,
   ) {}
 
-  create(createListDto: CreateListDto) {
-    const list = this.listRepository.create(createListDto);
-    return this._em.persistAndFlush(list);
+  async create(createListDto: CreateListDto) {
+    const list = this.listRepository.create({
+      title: createListDto.title,
+      board: createListDto.boardId,
+      position: createListDto.position,
+    });
+    await this._em.persistAndFlush(list);
+
+    return list;
   }
 
   findAll() {

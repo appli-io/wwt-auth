@@ -1,12 +1,13 @@
-import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { IsEmail, IsOptional, IsString, IsUrl, Length, Matches }           from 'class-validator';
-import { v4 }                                                              from 'uuid';
+import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { IsEmail, IsOptional, IsString, IsUrl, Length, Matches }                      from 'class-validator';
+import { v4 }                                                                         from 'uuid';
 
 import { NAME_REGEX, SLUG_REGEX } from '@common/consts/regex.const';
 import { ICompany }               from '@modules/company/interfaces/company.interface';
 import { CompanyUserEntity }      from '@modules/company-user/entities/company-user.entity';
 import { UserEntity }             from '@modules/users/entities/user.entity';
 import { IImage }                 from '@modules/news/interfaces/news.interface';
+import { BoardEntity }            from '@modules/scrumboard/entities/board.entity';
 
 @Entity({tableName: 'companies'})
 export class CompanyEntity implements ICompany {
@@ -74,6 +75,9 @@ export class CompanyEntity implements ICompany {
 
   @ManyToMany({entity: () => UserEntity, pivotEntity: () => CompanyUserEntity})
   public users = new Collection<UserEntity>(this);
+
+  @OneToMany(() => BoardEntity, board => board.company)
+  public boards = new Collection<BoardEntity>(this);
 
   @Property({onCreate: () => new Date()})
   public createdAt: Date = new Date();

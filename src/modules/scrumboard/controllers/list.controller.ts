@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 
+import { MemberGuard }   from '@modules/auth/guards/member.guard';
 import { CreateListDto } from '../dtos/create-list.dto';
 import { UpdateListDto } from '../dtos/update-list.dto';
 import { ListService }   from '../services/list.service';
 
-@Controller('scrumboard/lists')
+@Controller('scrumboard/list')
+@UseGuards(MemberGuard)
 export class ListController {
   constructor(private readonly listService: ListService) {}
 
@@ -21,6 +23,11 @@ export class ListController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.listService.findOne(id);
+  }
+
+  @Patch(':id')
+  patch(@Param('id') id: string, @Body() updateListDto: UpdateListDto) {
+    return this.listService.update(id, updateListDto);
   }
 
   @Put(':id')
