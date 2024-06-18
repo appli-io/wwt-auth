@@ -9,9 +9,11 @@ import fastifyCookie         from '@fastify/cookie';
 import fastifyCors           from '@fastify/cors';
 import fastifyCompress       from '@fastify/compress';
 import fastifyHelmet         from '@fastify/helmet';
+import fastifyWebsocket      from '@fastify/websocket';
 
 import { AppModule }              from './app.module';
 import { HttpLoggingInterceptor } from '@common/interceptors/http-logging.interceptor';
+import { RedisIoAdapter }         from '@config/adapters/redis-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -23,6 +25,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
   await app.register(fastifyCompress as any, {global: false});
+  await app.register(fastifyWebsocket as any);
   await app.register(fastifyCookie as any, {secret: configService.get<string>('COOKIE_SECRET')});
   await app.register(fastifyHelmet as any);
   await app.register(fastifyCsrfProtection as any, {cookieOpts: {signed: true}});
@@ -47,6 +50,9 @@ async function bootstrap() {
   );
 
   app.useGlobalInterceptors(new HttpLoggingInterceptor(new Reflector()));
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis();
+  app.useWebSocketAdapter(redisIoAdapter);
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('NestJS Authentication API')

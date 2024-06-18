@@ -14,6 +14,7 @@ import { CardService }       from './services/card.service';
 import { ListService }       from './services/list.service';
 import { MemberService }     from './services/member.service';
 import { CompanyUserModule } from '@modules/company-user/company-user.module';
+import { BoardGateway }      from '@modules/scrumboard/gateways/board.gateway';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { CompanyUserModule } from '@modules/company-user/company-user.module';
     BoardService,
     CardService,
     ListService,
-    MemberService
+    MemberService,
+    BoardGateway
   ],
 })
 export class ScrumboardModule {}
