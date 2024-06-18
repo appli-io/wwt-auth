@@ -1,4 +1,4 @@
-import { ValidationPipe }                         from '@nestjs/common';
+import { Logger, ValidationPipe }                 from '@nestjs/common';
 import { ConfigService }                          from '@nestjs/config';
 import { NestFactory, Reflector }                 from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -17,6 +17,7 @@ import { AppModule }              from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {snapshot: true});
   const configService = app.get(ConfigService);
+  const logger: Logger = new Logger('Bootstrap');
 
   app.setGlobalPrefix('api');
   await app.register(fastifyCompress as any, {global: false});
@@ -50,9 +51,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(
-    configService.get<number>('port')
-  );
+  await app.listen(configService.get<number>('port'));
+  logger.log(`Application is running on: ${ await app.getUrl() }`);
 }
 
 bootstrap().then();
