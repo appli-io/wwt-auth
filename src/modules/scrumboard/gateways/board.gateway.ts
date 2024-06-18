@@ -3,13 +3,14 @@ import { from, Observable }                                                     
 import { map }                                                                           from 'rxjs/operators';
 import { Server }                                                                        from 'socket.io';
 
-@WebSocketGateway(8080, {cors: {origin: '*'}})
+@WebSocketGateway(8080, {cors: {origin: '*'}, namespace: 'board'})
 export class BoardGateway {
   @WebSocketServer()
   server: Server;
 
   @SubscribeMessage('events')
   findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
+    console.log(data);
     return from([ 1, 2, 3 ]).pipe(map(item => ({event: 'events', data: item})));
   }
 
