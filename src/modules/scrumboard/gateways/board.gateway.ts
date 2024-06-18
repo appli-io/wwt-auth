@@ -3,7 +3,7 @@ import { from, Observable }                                                     
 import { map }                                                                           from 'rxjs/operators';
 import { Server }                                                                        from 'socket.io';
 
-@WebSocketGateway(5050, {cors: {origin: '*'}, namespace: 'board'})
+@WebSocketGateway({cors: {origin: '*'}, namespace: 'ws/board'})
 export class BoardGateway {
   @WebSocketServer()
   server: Server;
