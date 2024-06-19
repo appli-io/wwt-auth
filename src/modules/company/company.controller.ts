@@ -106,7 +106,7 @@ export class CompanyController {
     return ResponseCompanyMapper.map(company);
   }
 
-  @Get('member')
+  @Get('members')
   public async getMembers(
     @CurrentCompanyId() companyId: string,
     @PageableDefault({unpaged: true}) pageable: Pageable,
