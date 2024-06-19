@@ -70,6 +70,6 @@ export class CardService {
     return {
       deleted: true,
       card
-    };
+    }
   }
 }

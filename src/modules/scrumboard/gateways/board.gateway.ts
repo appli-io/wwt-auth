@@ -28,12 +28,14 @@ export class BoardGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const {userId, companyId} = await this.decodeToken(client);
 
+      console.log(userId);
+
       if (!this.connectedUsers.has(userId)) {
         this.connectedUsers.set(userId, []);
       }
 
       this.connectedUsers.get(userId).push(client);
-      this.logger.log(Array.from(this.connectedUsers).map(([ key, value ]): string => (`boardId: ${ key }, users connected: ${ value.length }`)));
+      this.logger.log(Array.from(this.connectedUsers).map(([ key, value ]) => ({userId: key, socketConnections: value.length})));
     } catch (e) {
       console.error(e);
       client.disconnect();
@@ -65,6 +67,7 @@ export class BoardGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private async decodeToken(client: Socket) {
+    console.log(client.handshake.auth.token);
     const decoded = await this.jwtService.verifyToken(client.handshake.auth.token, TokenTypeEnum.ACCESS, client.handshake['host']);
 
     return {
