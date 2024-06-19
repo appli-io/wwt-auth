@@ -1,11 +1,10 @@
-import { Enum } from "@mikro-orm/core";
-import { ApiProperty } from "@nestjs/swagger";
-import { EventTypeEnum } from "../enums/event-type.enum";
-import { EventStatusEnum } from "../enums/event-status.enum";
-import { IEventUrl } from "../interfaces/event-url.interface";
-import { IEventOrganizer } from "../interfaces/event-organizer.interface";
-import { IsBoolean, IsDate, IsNumber, IsOptional, IsString, Length, Min } from "class-validator";
-import { Transform, Type } from "class-transformer";
+import { ApiProperty }                                                                   from '@nestjs/swagger';
+import { EventTypeEnum }                                                                 from '../enums/event-type.enum';
+import { EventStatusEnum }                                                               from '../enums/event-status.enum';
+import { IEventUrl }                                                                     from '../interfaces/event-url.interface';
+import { IEventOrganizer }                                                               from '../interfaces/event-organizer.interface';
+import { Allow, IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsString, Length, Min } from 'class-validator';
+import { Transform, Type }                                                               from 'class-transformer';
 
 export class CreateEventDto {
   @ApiProperty({
@@ -14,21 +13,21 @@ export class CreateEventDto {
   })
   @IsString()
   @Length(3, 100)
-  public title!: string;
+  public title: string;
 
   @ApiProperty({
-    description: 'Event description', 
+    description: 'Event description',
   })
   @IsString()
   @Length(3, 255)
-  public description!: string;
+  public description: string;
 
   @ApiProperty({
     description: 'Event is all day',
     type: Boolean
   })
   @IsBoolean()
-  public isAllDay!: boolean;
+  public isAllDay: boolean;
 
   @ApiProperty({
     description: 'Event start date',
@@ -36,7 +35,7 @@ export class CreateEventDto {
   })
   @Type(() => Date)
   @IsDate()
-  public startDate!: Date;
+  public startDate: Date;
 
   @ApiProperty({
     description: 'Event end date',
@@ -53,7 +52,7 @@ export class CreateEventDto {
   })
   @IsString()
   @Length(3, 255)
-  public location!: string;
+  public location: string;
 
   @ApiProperty({
     description: 'Event url',
@@ -83,24 +82,24 @@ export class CreateEventDto {
     description: 'Event organizer',
     type: String
   })
-  public organizer!: IEventOrganizer;
+  @Allow()
+  public organizer: IEventOrganizer;
 
   @ApiProperty({
     description: 'Event type',
     type: String,
     enum: EventTypeEnum
   })
-  @Transform(({ value }) => value.toLowerCase())
-  @Enum(() => EventTypeEnum)
-  public type!: EventTypeEnum;
+  @Transform(({value}) => value.toLowerCase())
+  @IsEnum(EventTypeEnum)
+  public type: EventTypeEnum;
 
   @ApiProperty({
     description: 'Event status',
     type: String,
     enum: EventStatusEnum
   })
-  @Transform(({ value }) => value.toLowerCase())
-  @Enum(() => EventStatusEnum)
-  public status!: EventStatusEnum;
-
+  @Transform(({value}) => value.toLowerCase())
+  @IsEnum(EventStatusEnum)
+  public status: EventStatusEnum;
 }
