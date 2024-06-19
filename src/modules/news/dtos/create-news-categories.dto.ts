@@ -20,6 +20,7 @@ export class CreateNewsCategoriesDto implements Partial<NewsCategoryEntity> {
     example: 'Science And Technology news articles',
     type: String
   })
+  @IsString()
   description: string;
 
   @ApiProperty({
