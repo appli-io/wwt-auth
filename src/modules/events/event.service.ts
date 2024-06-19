@@ -5,7 +5,6 @@ import { QBFilterQuery }                   from '@mikro-orm/core';
 import { InjectRepository }                from '@mikro-orm/nestjs';
 import { EntityRepository }                from '@mikro-orm/postgresql';
 import { CreateEventDto }                  from './dtos/create-event.dto';
-import { v4 }                              from 'uuid';
 import { CommonService }                   from '@common/common.service';
 import { getCoordinates }                  from '@lib/gmap-extract-lat-long';
 
@@ -34,15 +33,10 @@ export class EventService {
 
 
   public async create(createEventDto: CreateEventDto, userId: string, companyId: string): Promise<EventEntity>{
-    const user = userId;
-    const company = companyId;
-    const eventId: string = v4();
-
     const event: EventEntity = this._eventRepository.create({
       ...createEventDto,
-      id: eventId,
-      company: company,
-      createdBy: user,
+      company: companyId,
+      createdBy: userId,
     });
 
     if (event.url?.some(url => url.platform === 'maps')) {
@@ -63,7 +57,7 @@ export class EventService {
       await this._commonService.saveEntity(event, true);
       return event;
     } catch (error) {
-      throw new BadRequestException('Failed to create event due to a database error');
+      throw new BadRequestException('Failed to create event due to a database error: ' + error.message);
     }
     
   }
