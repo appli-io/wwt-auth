@@ -14,6 +14,6 @@ export class MemberService {
   }
 
   findOne(userId: string, companyId: string) {
-    return this.memberRepository.findOne({user: {id: userId}, company: {id: companyId}});
+    return this.memberRepository.findOne({user: {id: userId}, company: {id: companyId}}, {populate: [ 'user' ]});
   }
 }

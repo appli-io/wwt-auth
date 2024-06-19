@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository }                from '@mikro-orm/nestjs';
@@ -33,11 +33,34 @@ export class ListService {
     return this.listRepository.findOne(id);
   }
 
-  update(id: string, updateListDto: UpdateListDto) {
-    return this.listRepository.nativeUpdate({id}, updateListDto);
+  async update(id: string, updateListDto: UpdateListDto) {
+    const list = await this.listRepository.findOne(id);
+
+    if (!list)
+      throw new NotFoundException('List not found');
+
+    const updatedListDto = Object.fromEntries(
+      Object.entries(updateListDto).filter(([ , value ]) => value !== null && value !== undefined)
+    );
+
+    Object.assign(list, updatedListDto);
+
+    await this._em.persistAndFlush(list);
+
+    return list;
   }
 
-  remove(id: string) {
-    return this.listRepository.nativeDelete({id});
+  async remove(id: string) {
+    const list = await this.listRepository.findOne(id);
+
+    if (!list)
+      throw new NotFoundException('List not found');
+
+    await this._em.removeAndFlush(list);
+
+    return {
+      deleted: true,
+      list
+    };
   }
 }

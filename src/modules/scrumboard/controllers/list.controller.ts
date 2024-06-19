@@ -4,15 +4,23 @@ import { MemberGuard }   from '@modules/auth/guards/member.guard';
 import { CreateListDto } from '../dtos/create-list.dto';
 import { UpdateListDto } from '../dtos/update-list.dto';
 import { ListService }   from '../services/list.service';
+import { BoardGateway }  from '@modules/scrumboard/gateways/board.gateway';
 
 @Controller('scrumboard/list')
 @UseGuards(MemberGuard)
 export class ListController {
-  constructor(private readonly listService: ListService) {}
+  constructor(
+    private readonly listService: ListService,
+    private readonly boardGateway: BoardGateway
+  ) {}
 
   @Post()
-  create(@Body() createListDto: CreateListDto) {
-    return this.listService.create(createListDto);
+  async create(@Body() createListDto: CreateListDto) {
+    const list = await this.listService.create(createListDto);
+
+    this.boardGateway.server.to('board_' + createListDto.boardId).emit('listCreated', list);
+
+    return list;
   }
 
   @Get()
@@ -31,12 +39,20 @@ export class ListController {
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateListDto: UpdateListDto) {
-    return this.listService.update(id, updateListDto);
+  async update(@Param('id') id: string, @Body() updateListDto: UpdateListDto) {
+    const result = await this.listService.update(id, updateListDto);
+
+    this.boardGateway.server.to('board_' + result.board).emit('listUpdated', result);
+
+    return result;
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.listService.remove(id);
+  async remove(@Param('id') id: string) {
+    const result = await this.listService.remove(id);
+
+    this.boardGateway.server.to('board_' + result.list.board).emit('listDeleted', result);
+
+    return result;
   }
 }

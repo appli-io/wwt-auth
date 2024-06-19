@@ -59,7 +59,17 @@ export class CardService {
     return card;
   }
 
-  remove(id: string) {
-    return this.cardRepository.nativeDelete({id});
+  async remove(id: string) {
+    const card = await this.cardRepository.findOne(id);
+
+    if (!card)
+      throw new NotFoundException('Card not found');
+
+    await this.cardRepository.nativeDelete({id});
+
+    return {
+      deleted: true,
+      card
+    };
   }
 }

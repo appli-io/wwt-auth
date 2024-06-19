@@ -10,13 +10,15 @@ import { CurrentCompanyId }   from '@modules/company/decorators/company-id.decor
 import { CompanyEntity }      from '@modules/company/entities/company.entity';
 import { MemberService }      from '@modules/scrumboard/services/member.service';
 import { ResponseCardMapper } from '@modules/scrumboard/mappers/response-card.mapper';
+import { BoardGateway }       from '@modules/scrumboard/gateways/board.gateway';
 
 @Controller('scrumboard/card')
 @UseGuards(MemberGuard)
 export class CardController {
   constructor(
     private readonly cardService: CardService,
-    private readonly memberService: MemberService
+    private readonly memberService: MemberService,
+    private readonly boardGateway: BoardGateway
   ) {}
 
   @Post()
@@ -27,6 +29,8 @@ export class CardController {
   ) {
     const member = await this.memberService.findOne(userId, companyId);
     const card = await this.cardService.create(createCardDto, member);
+
+    this.boardGateway.server.to('board_' + createCardDto.boardId).emit('cardCreated', card);
 
     return ResponseCardMapper.map(card);
   }
@@ -45,11 +49,17 @@ export class CardController {
   async update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
     const card = await this.cardService.update(id, updateCardDto);
 
+    this.boardGateway.server.to('board_' + card.board.id).emit('cardUpdated', card);
+
     return ResponseCardMapper.map(card);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cardService.remove(id);
+  async remove(@Param('id') id: string) {
+    const result = await this.cardService.remove(id);
+
+    this.boardGateway.server.to('board_' + result.card.board).emit('cardDeleted', result);
+
+    return result;
   }
 }
