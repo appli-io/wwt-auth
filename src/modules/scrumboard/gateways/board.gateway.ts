@@ -28,8 +28,6 @@ export class BoardGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const {userId, companyId} = await this.decodeToken(client);
 
-      console.log(userId);
-
       if (!this.connectedUsers.has(userId)) {
         this.connectedUsers.set(userId, []);
       }
@@ -67,7 +65,6 @@ export class BoardGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private async decodeToken(client: Socket) {
-    console.log(client.handshake.auth.token);
     const decoded = await this.jwtService.verifyToken(client.handshake.auth.token, TokenTypeEnum.ACCESS, client.handshake['host']);
 
     return {

@@ -52,8 +52,6 @@ export class CardService {
       list: updateCardDto.listId ? updateCardDto.listId : card.list.id,
     });
 
-    console.log(card);
-
     await this._em.persistAndFlush(card);
 
     return card;

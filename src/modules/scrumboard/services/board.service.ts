@@ -8,6 +8,7 @@ import { UpdateBoardDto }    from '@modules/scrumboard/dtos/update-board.dto';
 import { CompanyEntity }     from '@modules/company/entities/company.entity';
 import { UserEntity }        from '@modules/users/entities/user.entity';
 import { CompanyUserEntity } from '@modules/company-user/entities/company-user.entity';
+import { SCRUMBOARD_STEPS }  from '@common/constant';
 
 @Injectable()
 export class BoardService {
@@ -20,7 +21,13 @@ export class BoardService {
     const board = this.boardRepository.create({
       ...createBoardDto,
       company: companyId,
-      lastActivity: new Date()
+      lastActivity: new Date(),
+      lists: [
+        {title: 'To Do', position: SCRUMBOARD_STEPS},
+        {title: 'In Progress', position: SCRUMBOARD_STEPS * 2},
+        {title: 'Done', position: SCRUMBOARD_STEPS * 3},
+        {title: 'Blocked', position: SCRUMBOARD_STEPS * 4}
+      ]
     });
     board.members.add(companyUser);
 
