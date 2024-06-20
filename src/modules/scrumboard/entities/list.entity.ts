@@ -7,7 +7,7 @@ import { CardEntity }  from './card.entity';
 
 @Entity({tableName: 'scrumboard_list'})
 export class ListEntity {
-  @PrimaryKey()
+  @PrimaryKey({columnType: 'uuid'})
   id: string = v4();
 
   @ManyToOne(() => BoardEntity)

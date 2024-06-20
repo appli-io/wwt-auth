@@ -9,7 +9,7 @@ import { ListEntity }        from './list.entity';
 
 @Entity({tableName: 'scrumboard_board'})
 export class BoardEntity {
-  @PrimaryKey()
+  @PrimaryKey({columnType: 'uuid'})
   id: string = v4();
 
   @Property()

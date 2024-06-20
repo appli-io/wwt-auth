@@ -9,7 +9,7 @@ import { LabelEntity }       from './label.entity';
 
 @Entity({tableName: 'scrumboard_card'})
 export class CardEntity {
-  @PrimaryKey()
+  @PrimaryKey({columnType: 'uuid'})
   id: string = v4();
 
   @ManyToOne(() => BoardEntity)
