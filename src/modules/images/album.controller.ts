@@ -17,17 +17,19 @@ import {
 
 import { FileInterceptor, FilesInterceptor } from '@nest-lab/fastify-multer';
 
-import { CurrentUser }         from '@modules/auth/decorators/current-user.decorator';
-import { MemberGuard }         from '@modules/auth/guards/member.guard';
-import { CurrentCompanyId }    from '@modules/company/decorators/company-id.decorator';
-import { QueryAlbumDto }       from '@modules/images/dtos/query-album.dto';
-import { QueryImagesDto }      from '@modules/images/dtos/query-images.dto';
-import { ImageEntity }         from '@modules/images/entities/image.entity';
-import { ImageService }        from '@modules/images/services/image.service';
-import { ResponseImageMapper } from '@modules/images/mappers/response-image.mapper';
-import { CreateAlbumDto }      from './dtos/create-album.dto';
-import { AlbumService }        from './services/album.service';
-import { ResponseAlbumMapper } from '@modules/images/mappers/response-album.mapper';
+import { CurrentUser }      from '@modules/auth/decorators/current-user.decorator';
+import { MemberGuard }      from '@modules/auth/guards/member.guard';
+import { CurrentCompanyId } from '@modules/company/decorators/company-id.decorator';
+
+import { CreateAlbumDto }       from './dtos/create-album.dto';
+import { QueryAlbumDto }        from './dtos/query-album.dto';
+import { QueryImagesDto }       from './dtos/query-images.dto';
+import { ImageEntity }          from './entities/image.entity';
+import { ResponseImageMapper }  from './mappers/response-image.mapper';
+import { ResponseAlbumMapper }  from './mappers/response-album.mapper';
+import { ResponseAlbumsMapper } from './mappers/response-albums.mapper';
+import { AlbumService }         from './services/album.service';
+import { ImageService }         from './services/image.service';
 
 @Controller({
   path: 'albums',
@@ -56,7 +58,9 @@ export class AlbumController {
     @CurrentCompanyId() companyId: string,
     @Body() query: QueryAlbumDto
   ) {
-    return this.albumService.findAll(query, companyId);
+    const results = await this.albumService.findAll(query, companyId);
+
+    return results.map(ResponseAlbumsMapper.map);
   }
 
   @Get(':id')
