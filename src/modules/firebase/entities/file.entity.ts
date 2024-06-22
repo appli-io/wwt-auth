@@ -16,13 +16,13 @@ export class FileEntity implements IImage {
   })
   public type: FileType;
 
-  @Property()
+  @Property({columnType: 'text'})
   public name: string;
 
-  @Property()
+  @Property({columnType: 'text'})
   public filepath: string;
 
-  @Property()
+  @Property({columnType: 'text'})
   public fileUrl: string;
 
   @Property()
@@ -37,7 +37,7 @@ export class FileEntity implements IImage {
   @Property({columnType: 'timestamptz', onUpdate: () => new Date()})
   public updatedAt: Date = new Date();
 
-  @ManyToOne(() => CompanyEntity, {nullable: false})
+  @ManyToOne(() => CompanyEntity, {nullable: true})
   public company: CompanyEntity;
 
   @ManyToOne({entity: () => NewsEntity, nullable: true})

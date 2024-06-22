@@ -40,7 +40,8 @@ export class StorageService {
       this._storage = getStorage().bucket(this._cs.get('firebase.storage.bucket'));
 
     const environment = this._cs.get('env');
-    const fileName = useFilename ? file.originalname : v4() + '.' + file.originalname.split('.').pop();
+    const tempId = v4();
+    const fileName = useFilename ? file.originalname : tempId + '.' + file.originalname.split('.').pop();
     const filepath = environment + '/' + path + '/' + fileName;
     const fileRef = this._storage.file(filepath);
     const fileToken = v4();
@@ -58,6 +59,7 @@ export class StorageService {
     const fileUrl = `https://firebasestorage.googleapis.com/v0/b/${ this._cs.get('firebase.storage.bucket') }/o/${ encodeURIComponent(filepath) }?alt=media&token=${ fileToken }`;
 
     const fileEntity = this._fileRepository.create({
+      id: tempId,
       type,
       filepath,
       fileUrl,

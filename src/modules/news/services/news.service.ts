@@ -40,7 +40,7 @@ export class NewsService {
       nullsFirst: false
     });
 
-    const result = await new PageFactory(
+    return await new PageFactory(
       pageable,
       this._newsRepository,
       {
@@ -48,7 +48,11 @@ export class NewsService {
         relations: [
           {
             property: 'createdBy', // join author
-            andSelect: true
+            andSelect: true,
+          },
+          {
+            property: 'createdBy.avatar', // join author
+            andSelect: true,
           },
           {
             property: 'category', // join category
@@ -56,41 +60,25 @@ export class NewsService {
           },
           {
             property: 'images', // join images
+            type: 'leftJoin',
             andSelect: true
           },
           {
             property: 'portraitImage', // join portraitImage
+            type: 'leftJoin',
             andSelect: true
           }
         ]
       }
     ).create();
-
-    const mappedContent = await Promise.all(result.content.map(async news => {
-      if (!news.portraitImage?.fileUrl) {
-        news.portraitImage.fileUrl = await this._storageService.getDownloadUrl(news.portraitImage.filepath as string);
-        this._commonService.saveEntity(news, true).then();
-      }
-      return news;
-    }));
-
-    return {
-      ...result,
-      content: mappedContent
-    };
   }
 
   public async findOneBySlugOrId(slugOrId: string): Promise<NewsEntity> {
     let response: NewsEntity;
-    if (isUUID(slugOrId)) response = await this._newsRepository.findOne({id: slugOrId}, {populate: [ 'createdBy', 'company' ]});
-    else response = await this._newsRepository.findOne({slug: slugOrId}, {populate: [ 'createdBy', 'company' ]}) as NewsEntity;
+    if (isUUID(slugOrId)) response = await this._newsRepository.findOne({id: slugOrId}, {populate: [ 'createdBy', 'company', 'portraitImage', 'images' ]});
+    else response = await this._newsRepository.findOne({slug: slugOrId}, {populate: [ 'createdBy', 'company', 'portraitImage', 'images' ]}) as NewsEntity;
 
     if (!response) throw new NotFoundException('NEWS_NOT_FOUND');
-
-    if (response.portraitImage && !response.portraitImage.fileUrl) {
-      response.portraitImage.fileUrl = await this._storageService.getDownloadUrl(response.portraitImage.filepath);
-      this._commonService.saveEntity(response, true).then();
-    }
 
     return response;
   }

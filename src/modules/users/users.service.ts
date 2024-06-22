@@ -27,6 +27,8 @@ import { StorageService }        from '@modules/firebase/services/storage.servic
 import { IUser }                 from './interfaces/user.interface';
 import { CompanyEntity }         from '@modules/company/entities/company.entity';
 import { FileType }              from '@modules/firebase/enums/file-type.enum';
+import sharp                     from 'sharp';
+import { heicToFormat }          from '@lib/heic-converter';
 
 @Injectable()
 export class UsersService {
@@ -79,7 +81,7 @@ export class UsersService {
     return this.findOneByUsername(idOrUsername);
   }
 
-  public async findOneById(id: string, populateJoin?: any): Promise<UserEntity> {
+  public async findOneById(id: string, populateJoin: any[] = []): Promise<UserEntity> {
     const user = await this._usersRepository.findOne({id}, {populate: [ ...populateJoin, 'avatar' ]});
     this.commonService.checkEntityExistence(user, 'User');
 
@@ -272,7 +274,29 @@ export class UsersService {
   public async updateAvatar(id: string, file: Express.Multer.File): Promise<IUser> {
     const user = await this.findOneById(id);
     const path = `users/${ id }/avatar`;
-    user.avatar = await this._storageService.uploadImage(undefined, FileType.IMAGE, path, file);
+    let fileBuffer: Buffer;
+
+    // if file type it is HEIC, use heic-converter to convert it to JPEG
+    if (file.mimetype === 'image/heic')
+      fileBuffer = await heicToFormat(file.buffer, 'JPEG', 1);
+    else if (file.mimetype !== 'image/jpeg') {
+      const tempFile = sharp(file.buffer).jpeg();
+      const metadata = await tempFile.metadata();
+
+      if (metadata.orientation) fileBuffer = await tempFile.rotate().toBuffer();
+      else fileBuffer = await tempFile.toBuffer();
+    } else {
+      fileBuffer = file.buffer;
+    }
+
+
+    user.avatar = await this._storageService.uploadImage(undefined, FileType.IMAGE, path, {
+      ...file,
+      buffer: fileBuffer,
+      size: fileBuffer.length,
+      originalname: 'avatar.jpg',
+      mimetype: 'image/jpeg',
+    });
     await this.commonService.saveEntity(user);
 
     return user;

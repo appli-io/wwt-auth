@@ -53,7 +53,7 @@ export class NewsEntity implements INews {
   @ManyToOne(() => CompanyEntity, {nullable: false})
   public company: CompanyEntity;
 
-  @ManyToOne({entity: () => UserEntity, nullable: false})
+  @ManyToOne({entity: () => UserEntity, nullable: false, eager: true})
   public createdBy: UserEntity;
 
   @ManyToOne({entity: () => UserEntity, nullable: true})

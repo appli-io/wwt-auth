@@ -29,7 +29,7 @@ export class AlbumService {
     companyId: string,
     userId: string
   ): Promise<AlbumEntity> {
-    await this._checkAlbumExists(createAlbumDto.name);
+    await this._checkAlbumExists(createAlbumDto.name, companyId);
 
     const albumId: string = v4();
     const basePath: string = `companies/${ companyId }/media/albums/${ albumId }`;
@@ -106,8 +106,8 @@ export class AlbumService {
     await this._commonService.removeEntity(album);
   }
 
-  private async _checkAlbumExists(name: string): Promise<void> {
-    const album = await this.albumRepository.count({name});
+  private async _checkAlbumExists(name: string, companyId: string): Promise<void> {
+    const album = await this.albumRepository.count({name, company: {id: companyId}});
 
     if (album) throw new BadRequestException('ALBUM_ALREADY_EXISTS');
   }

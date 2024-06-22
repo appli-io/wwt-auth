@@ -52,7 +52,7 @@ export class UserEntity implements IUser {
   public credentials: CredentialsEmbeddable = new CredentialsEmbeddable();
 
   // User profile picture
-  @OneToOne({entity: () => FileEntity, nullable: true})
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
   @IsOptional()
   public avatar?: FileEntity;
 

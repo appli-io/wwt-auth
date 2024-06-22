@@ -40,6 +40,11 @@ export class CompanyUserService {
           {
             property: 'user',
             andSelect: true
+          },
+          {
+            property: 'user.avatar',
+            andSelect: true,
+            type: 'leftJoin'
           }
         ]
       }
