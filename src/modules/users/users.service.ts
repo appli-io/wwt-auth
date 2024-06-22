@@ -60,7 +60,7 @@ export class UsersService {
   }
 
   public async findAll(): Promise<UserEntity[]> {
-    return this._usersRepository.findAll();
+    return this._usersRepository.findAll({populate: [ 'avatar' ]});
   }
 
   public async findOneByIdOrUsername(idOrUsername: string,): Promise<UserEntity> {
@@ -80,14 +80,14 @@ export class UsersService {
   }
 
   public async findOneById(id: string, populateJoin?: any): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({id}, {populate: populateJoin});
+    const user = await this._usersRepository.findOne({id}, {populate: [ ...populateJoin, 'avatar' ]});
     this.commonService.checkEntityExistence(user, 'User');
 
     return user;
   }
 
   public async findOneByUsername(username: string, forAuth = false,): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({username: username.toLowerCase()}, {populate: [ 'assignedCompanies', 'activeCompany', 'companyUsers' ]});
+    const user = await this._usersRepository.findOne({username: username.toLowerCase()}, {populate: [ 'assignedCompanies', 'activeCompany', 'companyUsers', 'avatar' ]});
 
     if (forAuth)
       this.throwUnauthorizedException(user);
@@ -100,7 +100,7 @@ export class UsersService {
   public async findOneByEmail(email: string, populate?: any[]): Promise<UserEntity> {
     const user = await this._usersRepository.findOne({
       email: email.toLowerCase(),
-    }, {populate});
+    }, {populate: [ ...populate, 'avatar' ]});
     this.throwUnauthorizedException(user);
 
     return user;
@@ -114,7 +114,7 @@ export class UsersService {
   }
 
   public async findOneByCredentials(id: string, version: number,): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({id}, {populate: [ 'assignedCompanies', 'companyUsers', 'activeCompany' ]});
+    const user = await this._usersRepository.findOne({id}, {populate: [ 'assignedCompanies', 'companyUsers', 'activeCompany', 'avatar' ]});
     this.throwUnauthorizedException(user);
 
     if (user.credentials.version !== version)

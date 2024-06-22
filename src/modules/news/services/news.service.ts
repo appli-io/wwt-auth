@@ -53,6 +53,14 @@ export class NewsService {
           {
             property: 'category', // join category
             andSelect: true
+          },
+          {
+            property: 'images', // join images
+            andSelect: true
+          },
+          {
+            property: 'portraitImage', // join portraitImage
+            andSelect: true
           }
         ]
       }

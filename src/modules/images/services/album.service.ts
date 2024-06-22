@@ -74,7 +74,7 @@ export class AlbumService {
     const albumResults = this.albumRepository.findAll({
       where: whereFilter,
       orderBy: {createdAt: 'DESC'},
-      populate: [ 'createdBy' ]
+      populate: [ 'createdBy', 'cover', 'coverThumbnail' ]
     });
 
     return Promise.all((await albumResults).map(async album => {
@@ -88,7 +88,10 @@ export class AlbumService {
   }
 
   async findOne(id: string, companyId: string): Promise<AlbumEntity> {
-    const album = await this.albumRepository.findOne({id, company: {id: companyId}}, {populate: [ 'createdBy', 'images' ]});
+    const album = await this.albumRepository.findOne({
+      id,
+      company: {id: companyId}
+    }, {populate: [ 'createdBy', 'images', 'cover', 'coverThumbnail' ]});
 
     if (!album) throw new NotFoundException('ALBUM_NOT_FOUND');
 

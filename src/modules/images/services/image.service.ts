@@ -76,11 +76,11 @@ export class ImageService {
     if (query.albumId) whereFilter.album = {id: query.albumId};
     whereFilter.company = {id: companyId};
 
-    return this._imageRepository.findAll({where: whereFilter});
+    return this._imageRepository.findAll({where: whereFilter, populate: [ 'original', 'thumbnail' ]});
   }
 
   async findOne(id: string): Promise<ImageEntity> {
-    return this._imageRepository.findOneOrFail({id});
+    return this._imageRepository.findOneOrFail({id}, {populate: [ 'original', 'thumbnail' ]});
   }
 
   async remove(id: string): Promise<void> {

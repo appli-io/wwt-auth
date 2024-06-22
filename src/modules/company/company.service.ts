@@ -74,6 +74,10 @@ export class CompanyService {
           {
             property: 'users',
             andSelect: true
+          },
+          {
+            property: 'logo',
+            andSelect: true
           }
         ]
       }
@@ -91,7 +95,7 @@ export class CompanyService {
   }
 
   public async findById(id: string): Promise<CompanyEntity> {
-    const result = await this._companyRepository.findOne({id}, {populate: [ 'owner', 'users' ]});
+    const result = await this._companyRepository.findOne({id}, {populate: [ 'owner', 'users', 'logo' ]});
 
     if (!result) throw new NotFoundException('NOT_FOUND');
 
