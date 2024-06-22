@@ -3,7 +3,8 @@ import { ApiProperty }                     from '@nestjs/swagger';
 import { v4 }                              from 'uuid';
 import { ResponseAllNewsCategoriesMapper } from '@modules/news/mappers/response-all-news-categories.mapper';
 import { ResponseSimpleUserMapper }        from '@modules/users/mappers/response-simple-user.mapper';
-import { IImage, INews }                   from '@modules/news/interfaces/news.interface';
+import { INews }                           from '@modules/news/interfaces/news.interface';
+import { FileEntity }                      from '@modules/firebase/entities/file.entity';
 
 export class ResponseFullNewsMapper implements Partial<INews> {
   @ApiProperty({
@@ -39,9 +40,14 @@ export class ResponseFullNewsMapper implements Partial<INews> {
     example: 'https://www.example.com/image.jpg',
     type: String,
   })
-  public portraitImage: IImage;
+  public portraitImage: FileEntity;
 
-  public images: IImage[];
+  @ApiProperty({
+    description: 'image',
+    example: 'https://www.example.com/image.jpg',
+    type: [ Object ],
+  })
+  public images: FileEntity[];
 
   @ApiProperty({
     description: 'Category',
@@ -82,7 +88,7 @@ export class ResponseFullNewsMapper implements Partial<INews> {
       slug: news.slug,
       body: news.body,
       portraitImage: news.portraitImage,
-      images: news.images,
+      images: news.images.getItems(),
       category: ResponseAllNewsCategoriesMapper.map(news.category),
       createdBy: ResponseSimpleUserMapper.map(news.createdBy),
       publishedAt: news.publishedAt,

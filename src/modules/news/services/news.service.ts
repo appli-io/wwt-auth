@@ -12,6 +12,7 @@ import { CreateNewsDto }               from '@modules/news/dtos/create-news.dto'
 import { NewsQueryDto }                from '@modules/news/dtos/news-query.dto';
 import { NewsCategoryService }         from '@modules/news/services/news-category.service';
 import { StorageService }              from '@modules/firebase/services/storage.service';
+import { FileType }                    from '@modules/firebase/enums/file-type.enum';
 
 @Injectable()
 export class NewsService {
@@ -82,16 +83,6 @@ export class NewsService {
       response.portraitImage.fileUrl = await this._storageService.getDownloadUrl(response.portraitImage.filepath);
       this._commonService.saveEntity(response, true).then();
     }
-    if (response.images?.length && response.images.some(image => !image.fileUrl)) {
-      response.images = await Promise.all(response.images.map(async image => {
-        if (!image.fileUrl) {
-          image.fileUrl = await this._storageService.getDownloadUrl(image.filepath);
-        }
-        return image;
-      }));
-
-      this._commonService.saveEntity(response, true).then();
-    }
 
     return response;
   }
@@ -118,16 +109,12 @@ export class NewsService {
     const basePath = this.buildNewsImageFilepath(companyId, news.id);
 
     if (images?.length > 0)
-      news.images = await Promise.all(images.map(async (image) => {
-        const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, image);
-
-        return {name: image.originalname, filepath, contentType: image.mimetype, fileUrl};
-      }));
+      news.images.add(await Promise.all(images.map(async (image) => {
+        return await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, image);
+      })));
 
     if (portraitImage) {
-      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, portraitImage);
-
-      news.portraitImage = {name: portraitImage.originalname, filepath, contentType: portraitImage.mimetype, fileUrl};
+      news.portraitImage = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, portraitImage);
     }
 
     await this._commonService.saveEntity(news, true);

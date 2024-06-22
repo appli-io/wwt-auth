@@ -1,15 +1,15 @@
-import { Collection, Embedded, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, } from '@mikro-orm/core';
-import { IsBoolean, IsEmail, IsOptional, IsString, Length, Matches }                             from 'class-validator';
-import { v4 }                                                                                    from 'uuid';
+import { Collection, Embedded, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, } from '@mikro-orm/core';
+import { IsBoolean, IsEmail, IsOptional, IsString, Length, Matches }                                       from 'class-validator';
+import { v4 }                                                                                              from 'uuid';
 
 import { BCRYPT_HASH_OR_UNSET, NAME_REGEX, SLUG_REGEX, } from '@common/consts/regex.const';
 import { CompanyEntity }                                 from '@modules/company/entities/company.entity';
 import { CompanyUserEntity }                             from '@modules/company-user/entities/company-user.entity';
-import { IImage }                                        from '@modules/news/interfaces/news.interface';
 
 import { CredentialsEmbeddable } from '../embeddables/credentials.embeddable';
 import { IUser }                 from '../interfaces/user.interface';
 import { OAuthProviderEntity }   from './oauth-provider.entity';
+import { FileEntity }            from '@modules/firebase/entities/file.entity';
 
 @Entity({tableName: 'users'})
 export class UserEntity implements IUser {
@@ -52,9 +52,9 @@ export class UserEntity implements IUser {
   public credentials: CredentialsEmbeddable = new CredentialsEmbeddable();
 
   // User profile picture
-  @Property({columnType: 'json', length: 255, nullable: true})
+  @OneToOne({entity: () => FileEntity, nullable: true})
   @IsOptional()
-  public avatar?: IImage;
+  public avatar?: FileEntity;
 
   // User portrait picture
   @Property({columnType: 'varchar', length: 255, nullable: true})

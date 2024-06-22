@@ -1,24 +1,23 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { v4 as uuidv4 }                            from 'uuid';
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { v4 }                                                from 'uuid';
+import { UserEntity }                                        from '@modules/users/entities/user.entity';
+import { CompanyEntity }                                     from '../../company/entities/company.entity';
+import { AlbumEntity }                                       from './album.entity';
+import { FileEntity }                                        from '@modules/firebase/entities/file.entity';
 
-import { IImage }        from '@modules/news/interfaces/news.interface';
-import { UserEntity }    from '@modules/users/entities/user.entity';
-import { CompanyEntity } from '../../company/entities/company.entity';
-import { AlbumEntity }   from './album.entity';
-
-@Entity({tableName: 'images'})
+@Entity({tableName: 'albums_images'})
 export class ImageEntity {
   @PrimaryKey()
-  id: string = uuidv4();
-
-  @Property({type: 'json', nullable: false})
-  original: IImage;
-
-  @Property({type: 'json', nullable: false})
-  thumbnail: IImage;
+  id: string = v4();
 
   @Property()
   size: number;
+
+  @OneToOne({entity: () => FileEntity, nullable: false})
+  original: FileEntity;
+
+  @OneToOne({entity: () => FileEntity, nullable: true})
+  thumbnail?: FileEntity;
 
   @ManyToOne(() => UserEntity)
   uploadedBy: UserEntity;

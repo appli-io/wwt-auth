@@ -1,12 +1,13 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { IsString, Length, Matches }               from 'class-validator';
+import { Collection, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { IsString, Length, Matches }                                                from 'class-validator';
+import { v4 }                                                                       from 'uuid';
 
 import { SLUG_REGEX }         from '@common/consts/regex.const';
 import { CompanyEntity }      from '@modules/company/entities/company.entity';
+import { FileEntity }         from '@modules/firebase/entities/file.entity';
 import { NewsCategoryEntity } from '@modules/news/entities/news-category.entity';
-import { IImage, INews }      from '@modules/news/interfaces/news.interface';
+import { INews }              from '@modules/news/interfaces/news.interface';
 import { UserEntity }         from '@modules/users/entities/user.entity';
-import { v4 }                 from 'uuid';
 
 @Entity({tableName: 'news'})
 export class NewsEntity implements INews {
@@ -31,13 +32,6 @@ export class NewsEntity implements INews {
   @IsString()
   public body: string;
 
-  // For images, the columnType is json as we want to store an array
-  @Property({columnType: 'json', nullable: true})
-  public images?: IImage[];
-
-  @Property({columnType: 'json', nullable: true})
-  public portraitImage?: IImage;
-
   @Property({columnType: 'timestamptz', onCreate: () => new Date()})
   public publishedAt: Date;
 
@@ -46,6 +40,12 @@ export class NewsEntity implements INews {
 
   @Property({columnType: 'boolean', default: false})
   public isDeleted: boolean;
+
+  @OneToMany(() => FileEntity, file => file.news, {nullable: true})
+  public images = new Collection<FileEntity>(this);
+
+  @OneToOne({entity: () => FileEntity, nullable: true})
+  public portraitImage?: FileEntity;
 
   @ManyToOne(() => NewsCategoryEntity, {nullable: false})
   public category: NewsCategoryEntity;

@@ -9,9 +9,8 @@ import { CommonService }     from '@common/common.service';
 import { generateThumbnail } from '@common/utils/file.utils';
 import { StorageService }    from '@modules/firebase/services/storage.service';
 import { QueryImagesDto }    from '@modules/images/dtos/query-images.dto';
-import { UserEntity }        from '@modules/users/entities/user.entity';
-import { IImage }            from '@modules/news/interfaces/news.interface';
 import { ImageEntity }       from '../entities/image.entity';
+import { FileType }          from '@modules/firebase/enums/file-type.enum';
 
 @Injectable({scope: Scope.REQUEST})
 export class ImageService {
@@ -30,37 +29,32 @@ export class ImageService {
     const basePath = `companies/${ companyId }/media/albums/${ albumId }`;
 
     const uploadPromises = images.map(async (file) => {
-      const image = this._imageRepository.create({
-        id: v4(),
-        album: albumId,
-        company: companyId,
-        uploadedBy: userId,
-      });
-
-      image.uploadedBy = {id: userId} as UserEntity;
+      const id = v4();
 
       // Original image
-      file.originalname = image.id + path.extname(file.originalname);
+      file.originalname = id + path.extname(file.originalname);
 
-      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, file, true);
-
-      image.original = this.createImageObject(file, filepath, fileUrl);
+      const {id: originalId} = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, file, true);
 
       // Thumbnail;
       const thumbnailBuffer = await generateThumbnail(file.buffer).webp().toBuffer();
       const thumbnailFile: Express.Multer.File = {
         ...file,
         buffer: thumbnailBuffer,
-        originalname: `${ image.id }-thumbnail.webp`,
+        originalname: `${ id }-thumbnail.webp`,
         mimetype: 'image/webp'
       };
-      const {
-        filepath: thumbnailFilepath,
-        fileUrl: thumbnailUrl
-      } = await this._storageService.uploadImage(`${ basePath }/thumbnails`, thumbnailFile, true);
+      const {id: thumbnailId} = await this._storageService.uploadImage(companyId, FileType.IMAGE, `${ basePath }/thumbnails`, thumbnailFile, true);
 
-      image.thumbnail = this.createImageObject(thumbnailFile, thumbnailFilepath, thumbnailUrl);
-      image.size = file.buffer.length + thumbnailBuffer.length;
+      const image = this._imageRepository.create({
+        id: id,
+        original: originalId,
+        thumbnail: thumbnailId,
+        album: albumId,
+        company: companyId,
+        uploadedBy: userId,
+        size: file.buffer.length + thumbnailBuffer.length
+      });
 
       try {
         await this._commonService.saveEntity(image, true, false); // Don't flush yet
@@ -96,15 +90,5 @@ export class ImageService {
 
   async countImagesByAlbumId(albumId: string): Promise<number> {
     return this._imageRepository.count({album: {id: albumId}});
-  }
-
-  private createImageObject(file: Express.Multer.File, filepath: string, fileUrl: string, size?: number): IImage {
-    return {
-      name: file.originalname,
-      filepath,
-      fileUrl,
-      contentType: file.mimetype,
-      size: size ?? file.buffer.length,
-    };
   }
 }

@@ -1,14 +1,14 @@
 import { CompanyUserEntity } from '@modules/company-user/entities/company-user.entity';
 import { RoleEnum }          from '@modules/company-user/enums/role.enum';
 import { UserEntity }        from '@modules/users/entities/user.entity';
-import { IImage }            from '@modules/news/interfaces/news.interface';
+import { FileEntity }        from '@modules/firebase/entities/file.entity';
 
 export class ResponseCompanyMemberMapper implements Partial<CompanyUserEntity>, Partial<UserEntity> {
   public id: string;
   public name: string;
   public username: string;
   public email: string;
-  public avatar: IImage;
+  public avatar: FileEntity;
   public role: RoleEnum;
   public isActive: boolean;
   public createdAt: Date;

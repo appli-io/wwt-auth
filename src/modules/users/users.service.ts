@@ -26,7 +26,7 @@ import { CompanyService }        from '@modules/company/company.service';
 import { StorageService }        from '@modules/firebase/services/storage.service';
 import { IUser }                 from './interfaces/user.interface';
 import { CompanyEntity }         from '@modules/company/entities/company.entity';
-import { IImage }                from '@modules/news/interfaces/news.interface';
+import { FileType }              from '@modules/firebase/enums/file-type.enum';
 
 @Injectable()
 export class UsersService {
@@ -272,13 +272,7 @@ export class UsersService {
   public async updateAvatar(id: string, file: Express.Multer.File): Promise<IUser> {
     const user = await this.findOneById(id);
     const path = `users/${ id }/avatar`;
-    const {filepath, fileUrl} = await this._storageService.uploadImage(path, file);
-    user.avatar = {
-      name: file.originalname,
-      filepath,
-      contentType: file.mimetype,
-      fileUrl,
-    } as IImage;
+    user.avatar = await this._storageService.uploadImage(undefined, FileType.IMAGE, path, file);
     await this.commonService.saveEntity(user);
 
     return user;

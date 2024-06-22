@@ -4,17 +4,16 @@ export interface INews {
   slug?: string;
   abstract?: string;
   body?: string;
-  images?: IImage[];
-  portraitImage?: IImage;
   isDeleted?: boolean;
   publishedAt?: Date;
   updatedAt?: Date;
 }
 
 export interface IImage {
+  id: string;
   name: string,
   filepath: string,
-  fileUrl?: string;
+  fileUrl: string;
   contentType: string,
-  size?: number;
+  size: number;
 }
