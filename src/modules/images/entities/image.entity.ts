@@ -13,10 +13,10 @@ export class ImageEntity {
   @Property()
   size: number;
 
-  @OneToOne({entity: () => FileEntity, nullable: false})
+  @OneToOne({entity: () => FileEntity, nullable: false, eager: true})
   original: FileEntity;
 
-  @OneToOne({entity: () => FileEntity, nullable: true})
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
   thumbnail?: FileEntity;
 
   @ManyToOne(() => UserEntity)

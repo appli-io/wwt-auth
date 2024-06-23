@@ -13,7 +13,7 @@ export class AlbumEntity {
   @Property()
   name: string;
 
-  @Property()
+  @Property({columnType: 'text'})
   description: string;
 
   @OneToOne({entity: () => FileEntity, nullable: true})

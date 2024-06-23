@@ -6,6 +6,7 @@ export class ResponseImageMapper {
   public id: string;
   public original: IImage;
   public thumbnail: IImage;
+  public size: number;
   public uploadedBy: ResponseSimpleUserMapper;
   public createdAt: Date;
 
@@ -18,6 +19,7 @@ export class ResponseImageMapper {
       id: image.id,
       original: image.original,
       thumbnail: image.thumbnail,
+      size: image.size,
       uploadedBy: ResponseSimpleUserMapper.map(image.uploadedBy),
       createdAt: image.createdAt,
     });

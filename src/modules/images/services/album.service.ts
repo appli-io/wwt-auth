@@ -91,7 +91,10 @@ export class AlbumService {
     const album = await this.albumRepository.findOne({
       id,
       company: {id: companyId}
-    }, {populate: [ 'createdBy', 'images', 'cover', 'coverThumbnail' ]});
+    }, {
+      populate: [ 'createdBy', 'images', 'cover', 'coverThumbnail' ],
+      orderBy: {images: {createdAt: 'DESC'}}
+    });
 
     if (!album) throw new NotFoundException('ALBUM_NOT_FOUND');
 
