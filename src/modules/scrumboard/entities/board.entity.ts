@@ -15,7 +15,7 @@ export class BoardEntity {
   @Property()
   title!: string;
 
-  @Property({nullable: true})
+  @Property({columnType: 'text', nullable: true})
   description?: string;
 
   @Property({nullable: true})
@@ -36,6 +36,6 @@ export class BoardEntity {
   @OneToMany(() => LabelEntity, label => label.board)
   labels = new Collection<LabelEntity>(this);
 
-  @ManyToMany({entity: () => CompanyUserEntity, mappedBy: 'boards', owner: true,})
+  @ManyToMany({entity: () => CompanyUserEntity, mappedBy: 'boards', owner: true})
   members = new Collection<CompanyUserEntity>(this);
 }

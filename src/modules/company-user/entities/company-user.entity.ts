@@ -12,7 +12,7 @@ import { UserEntity }         from '@modules/users/entities/user.entity';
 @Entity({tableName: 'company_user'})
 @Unique({properties: [ 'user', 'company' ]})
 export class CompanyUserEntity {
-  @ManyToOne({primary: true, entity: () => UserEntity})
+  @ManyToOne({primary: true, entity: () => UserEntity, eager: true})
   public user: UserEntity;
 
   @ManyToOne({primary: true, entity: () => CompanyEntity})

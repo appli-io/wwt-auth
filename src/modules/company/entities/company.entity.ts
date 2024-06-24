@@ -66,7 +66,7 @@ export class CompanyEntity implements ICompany {
   @Length(2, 255)
   public country: string;
 
-  @OneToOne({entity: () => FileEntity, nullable: true})
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
   @IsOptional()
   public logo?: FileEntity;
 

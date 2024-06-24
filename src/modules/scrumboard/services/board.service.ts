@@ -13,12 +13,12 @@ import { SCRUMBOARD_STEPS }  from '@common/constant';
 @Injectable()
 export class BoardService {
   constructor(
-    @InjectRepository(BoardEntity) private readonly boardRepository: EntityRepository<BoardEntity>,
+    @InjectRepository(BoardEntity) private readonly _boardRepository: EntityRepository<BoardEntity>,
     private readonly _em: EntityManager,
   ) {}
 
   async create(createBoardDto: CreateBoardDto, companyUser: CompanyUserEntity, companyId: CompanyEntity['id']) {
-    const board = this.boardRepository.create({
+    const board = this._boardRepository.create({
       ...createBoardDto,
       company: companyId,
       lastActivity: new Date(),
@@ -33,18 +33,20 @@ export class BoardService {
 
     await this._em.persistAndFlush(board);
 
-    return board;
+    console.log('board', board);
+    return await this._em.refresh(board);
   }
 
   findAll(userId: UserEntity['id'], companyId: CompanyEntity['id']) {
-    return this.boardRepository.findAll({
+    return this._boardRepository.findAll({
       where: {company: companyId, members: {user: userId}},
-      populate: [ 'members', 'members.user' ]
+      populate: [ 'members', 'members.user' ],
+      orderBy: {lastActivity: 'desc'}
     });
   }
 
   findOne(id: string) {
-    return this.boardRepository.findOne(
+    return this._boardRepository.findOne(
       id,
       {
         populate: [ 'members', 'members.user', 'lists', 'lists.cards', 'labels' ],
@@ -54,10 +56,10 @@ export class BoardService {
   }
 
   update(id: string, updateBoardDto: UpdateBoardDto) {
-    return this.boardRepository.nativeUpdate({id}, updateBoardDto);
+    return this._boardRepository.nativeUpdate({id}, updateBoardDto);
   }
 
   remove(id: string) {
-    return this.boardRepository.nativeDelete({id});
+    return this._boardRepository.nativeDelete({id});
   }
 }

@@ -28,7 +28,9 @@ export class BoardController {
     @Body() createBoardDto: CreateBoardDto
   ) {
     const member = await this.memberService.findOne(userId, companyId);
-    return this.boardService.create(createBoardDto, member, companyId);
+    const result = await this.boardService.create(createBoardDto, member, companyId);
+
+    return ResponseBoardMapper.map(result);
   }
 
   @Get()
@@ -38,7 +40,7 @@ export class BoardController {
   ) {
     const boards = await this.boardService.findAll(userId, companyId);
 
-    return boards.map((board) => ResponseBoardsMapper.map(board));
+    return boards.map(ResponseBoardsMapper.map);
   }
 
   @Get(':id')
