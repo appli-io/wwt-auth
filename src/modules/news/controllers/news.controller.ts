@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -31,6 +32,7 @@ import { ContentType }                     from '@modules/shared/enums/content-t
 import { ResponseFullNewsMapper }          from '@modules/news/mappers/response-full-news.mapper';
 import { NewsQueryDto }                    from '@modules/news/dtos/news-query.dto';
 import { AnyFilesInterceptor }             from '@nest-lab/fastify-multer';
+import { VALID_IMAGE_TYPES }               from '@common/constant';
 
 const MAX_HIGHLIGHTED_NEWS = 5;
 
@@ -81,7 +83,15 @@ export class NewsController {
   }
 
   @Post()
-  @UseInterceptors(AnyFilesInterceptor())
+  @UseInterceptors(AnyFilesInterceptor({
+    fileFilter: (req, file, cb) => {
+      if (!VALID_IMAGE_TYPES.includes(file.mimetype)) {
+        return cb(new BadRequestException('INVALID_IMAGE_TYPE'), false);
+      }
+
+      cb(null, true);
+    }
+  }))
   public async create(
     @CurrentUser() userId: string,
     @CurrentCompanyId() companyId: string,
@@ -92,7 +102,7 @@ export class NewsController {
     const portraitImage = files.find(file => file.fieldname === 'portraitImage');
     const createdNews = await this._newsService.create(news, images, portraitImage, userId, companyId);
 
-    return createdNews.id;
+    return ResponseFullNewsMapper.map(createdNews);
   }
 
   @Delete(':id')

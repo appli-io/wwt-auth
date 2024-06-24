@@ -1,11 +1,11 @@
 import { ImageEntity }              from '@modules/images/entities/image.entity';
-import { IImage }                   from '@modules/news/interfaces/news.interface';
 import { ResponseSimpleUserMapper } from '@modules/users/mappers/response-simple-user.mapper';
+import { ResponseFileMapper }       from '@modules/firebase/mappers/response-file.mapper';
 
 export class ResponseImageMapper {
   public id: string;
-  public original: IImage;
-  public thumbnail: IImage;
+  public original: ResponseFileMapper;
+  public thumbnail: ResponseFileMapper;
   public size: number;
   public uploadedBy: ResponseSimpleUserMapper;
   public createdAt: Date;
@@ -17,8 +17,8 @@ export class ResponseImageMapper {
   public static map(image: ImageEntity): ResponseImageMapper {
     return new ResponseImageMapper({
       id: image.id,
-      original: image.original,
-      thumbnail: image.thumbnail,
+      original: ResponseFileMapper.map(image.original),
+      thumbnail: ResponseFileMapper.map(image.thumbnail),
       size: image.size,
       uploadedBy: ResponseSimpleUserMapper.map(image.uploadedBy),
       createdAt: image.createdAt,

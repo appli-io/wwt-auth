@@ -38,6 +38,7 @@ import { ResponseCompanyMapper }           from '@modules/company/mapper/respons
 import { RoleEnum }                        from '@modules/company-user/enums/role.enum';
 import { CompanyUserService }              from '@modules/company-user/company-user.service';
 import { FileInterceptor }                 from '@nest-lab/fastify-multer';
+import { VALID_IMAGE_TYPES }               from '@common/constant';
 
 @ApiTags('Company')
 @Controller('company')
@@ -95,7 +96,15 @@ export class CompanyController {
 
   @Post()
   @MemberUnneeded()
-  @UseInterceptors(FileInterceptor('logo'))
+  @UseInterceptors(FileInterceptor('logo', {
+    fileFilter: (req, file, cb) => {
+      if (!VALID_IMAGE_TYPES.includes(file.mimetype)) {
+        return cb(new BadRequestException('INVALID_IMAGE_TYPE'), false);
+      }
+
+      cb(null, true);
+    }
+  }))
   public async create(
     @CurrentUser() userId: string,
     @Body() createCompanyDto: CreateCompanyDto,

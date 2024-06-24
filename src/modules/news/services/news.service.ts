@@ -13,6 +13,7 @@ import { NewsQueryDto }                from '@modules/news/dtos/news-query.dto';
 import { NewsCategoryService }         from '@modules/news/services/news-category.service';
 import { StorageService }              from '@modules/firebase/services/storage.service';
 import { FileType }                    from '@modules/firebase/enums/file-type.enum';
+import { optimizeImage }               from '@common/utils/file.utils';
 
 @Injectable()
 export class NewsService {
@@ -106,6 +107,7 @@ export class NewsService {
 
     if (images?.length > 0)
       news.images.add(await Promise.all(images.map(async (image) => {
+        image = await optimizeImage(image);
         return await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, image);
       })));
 

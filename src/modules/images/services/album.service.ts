@@ -5,14 +5,14 @@ import { EntityRepository, QBFilterQuery } from '@mikro-orm/core';
 import * as path                           from 'node:path';
 import { v4 }                              from 'uuid';
 
-import { CommonService }     from '@common/common.service';
-import { generateThumbnail } from '@common/utils/file.utils';
-import { StorageService }    from '@modules/firebase/services/storage.service';
-import { QueryAlbumDto }     from '@modules/images/dtos/query-album.dto';
-import { ImageService }      from '@modules/images/services/image.service';
-import { FileType }          from '@modules/firebase/enums/file-type.enum';
-import { CreateAlbumDto }    from '../dtos/create-album.dto';
-import { AlbumEntity }       from '../entities/album.entity';
+import { CommonService }                    from '@common/common.service';
+import { generateThumbnail, optimizeImage } from '@common/utils/file.utils';
+import { StorageService }                   from '@modules/firebase/services/storage.service';
+import { QueryAlbumDto }                    from '@modules/images/dtos/query-album.dto';
+import { ImageService }                     from '@modules/images/services/image.service';
+import { FileType }                         from '@modules/firebase/enums/file-type.enum';
+import { CreateAlbumDto }                   from '../dtos/create-album.dto';
+import { AlbumEntity }                      from '../entities/album.entity';
 
 @Injectable({scope: Scope.REQUEST})
 export class AlbumService {
@@ -43,6 +43,8 @@ export class AlbumService {
     if (cover) {
       cover.originalname = 'cover' + path.extname(cover.originalname);
       album.cover = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, cover, true);
+
+      cover = await optimizeImage(cover);
 
       // generate thumbnail
       const coverPhotoThumbnail = await generateThumbnail(cover.buffer, {width: 500}).webp().toBuffer();

@@ -11,9 +11,9 @@ export interface INews {
 
 export interface IImage {
   id: string;
-  name: string,
-  filepath: string,
+  name: string;
+  filepath: string;
   fileUrl: string;
-  contentType: string,
+  contentType: string;
   size: number;
 }

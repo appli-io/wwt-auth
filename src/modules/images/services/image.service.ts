@@ -5,12 +5,12 @@ import { EntityRepository, QBFilterQuery } from '@mikro-orm/core';
 import * as path                           from 'node:path';
 import { v4 }                              from 'uuid';
 
-import { CommonService }     from '@common/common.service';
-import { generateThumbnail } from '@common/utils/file.utils';
-import { StorageService }    from '@modules/firebase/services/storage.service';
-import { QueryImagesDto }    from '@modules/images/dtos/query-images.dto';
-import { ImageEntity }       from '../entities/image.entity';
-import { FileType }          from '@modules/firebase/enums/file-type.enum';
+import { CommonService }                    from '@common/common.service';
+import { generateThumbnail, optimizeImage } from '@common/utils/file.utils';
+import { StorageService }                   from '@modules/firebase/services/storage.service';
+import { QueryImagesDto }                   from '@modules/images/dtos/query-images.dto';
+import { ImageEntity }                      from '../entities/image.entity';
+import { FileType }                         from '@modules/firebase/enums/file-type.enum';
 
 @Injectable({scope: Scope.REQUEST})
 export class ImageService {
@@ -33,6 +33,8 @@ export class ImageService {
 
       // Original image
       file.originalname = id + path.extname(file.originalname);
+
+      file = await optimizeImage(file);
 
       const {id: originalId} = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, file, true);
 

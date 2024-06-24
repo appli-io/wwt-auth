@@ -1,6 +1,6 @@
-import decode from "heic-decode";
-import convertLibrary from "./lib";
-import formats from "./formats-node";
+import decode         from 'heic-decode';
+import convertLibrary from './lib';
+import formats        from './formats-node';
 
 const { one, all } = convertLibrary(decode, formats);
 
@@ -12,7 +12,6 @@ interface ConvertOptions {
 
 // Function to convert HEIC to other formats
 async function heicToFormat(buffer: Buffer, format: string, quality?: number): Promise<any> {
-  console.log(format);
   return await one({ buffer, format, quality });
 }
 

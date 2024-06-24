@@ -1,5 +1,17 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Res, UploadedFile, UseInterceptors, } from '@nestjs/common';
-import { ConfigService }                                                                                from '@nestjs/config';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Patch,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+}                        from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   ApiBadRequestResponse,
   ApiNoContentResponse,
@@ -7,7 +19,7 @@ import {
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
-}                                                                                                       from '@nestjs/swagger';
+}                        from '@nestjs/swagger';
 
 import { FastifyReply } from 'fastify';
 
@@ -25,6 +37,7 @@ import { ResponseUserMapper }     from './mappers/response-user.mapper';
 import { UsersService }           from './users.service';
 import { FileInterceptor }        from '@nest-lab/fastify-multer';
 import { StorageService }         from '@modules/firebase/services/storage.service';
+import { VALID_IMAGE_TYPES }      from '@common/constant';
 
 @ApiTags('Users')
 @Controller('users')
@@ -158,7 +171,15 @@ export class UsersController {
   @ApiUnauthorizedResponse({
     description: 'The user is not logged in.',
   })
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+    fileFilter: (req, file, cb) => {
+      if (!VALID_IMAGE_TYPES.includes(file.mimetype)) {
+        return cb(new BadRequestException('INVALID_IMAGE_TYPE'), false);
+      }
+
+      cb(null, true);
+    }
+  }))
   public async updateAvatar(
     @CurrentUser() id: string,
     @UploadedFile() file: Express.Multer.File

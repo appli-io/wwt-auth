@@ -30,6 +30,7 @@ import { ResponseAlbumMapper }  from './mappers/response-album.mapper';
 import { ResponseAlbumsMapper } from './mappers/response-albums.mapper';
 import { AlbumService }         from './services/album.service';
 import { ImageService }         from './services/image.service';
+import { VALID_IMAGE_TYPES }    from '@common/constant';
 
 @Controller({
   path: 'albums',
@@ -43,7 +44,15 @@ export class AlbumController {
   ) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('cover'))
+  @UseInterceptors(FileInterceptor('cover', {
+    fileFilter: (req, file, cb) => {
+      if (!VALID_IMAGE_TYPES.includes(file.mimetype)) {
+        return cb(new BadRequestException('INVALID_IMAGE_TYPE'), false);
+      }
+
+      cb(null, true);
+    }
+  }))
   async create(
     @CurrentUser() userId: string,
     @CurrentCompanyId() companyId: string,
@@ -86,7 +95,15 @@ export class AlbumController {
   }
 
   @Post(':id/images')
-  @UseInterceptors(FilesInterceptor('images'))
+  @UseInterceptors(FilesInterceptor('images', undefined, {
+    fileFilter: (req, file, cb) => {
+      if (!VALID_IMAGE_TYPES.includes(file.mimetype)) {
+        return cb(new BadRequestException('INVALID_IMAGE_TYPE'), false);
+      }
+
+      cb(null, true);
+    }
+  }))
   async uploadImages(
     @CurrentUser() userId: string,
     @CurrentCompanyId() companyId: string,
