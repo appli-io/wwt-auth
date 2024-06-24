@@ -6,6 +6,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   NotFoundException,
   Param,
   ParseUUIDPipe,
@@ -40,6 +41,8 @@ const MAX_HIGHLIGHTED_NEWS = 5;
 @Controller('news')
 @UseGuards(MemberGuard) // 👈 Validate user is an active member of the company
 export class NewsController {
+  private readonly _logger = new Logger(NewsController.name);
+
   constructor(
     private readonly _newsService: NewsService,
     private readonly _companyUserService: CompanyUserService,
@@ -54,6 +57,8 @@ export class NewsController {
     @Query() query: NewsQueryDto,
   ) {
     const pageableNews = await this._newsService.findAll(query, pageable, companyId);
+
+    this._logger.log(`Found ${ pageableNews.content.length } news`);
 
     return {
       ...pageableNews,
@@ -79,6 +84,7 @@ export class NewsController {
   ) {
     const news = await this._newsService.findAll({highlighted: true}, pageable, companyId);
 
+    this._logger.log(`Found ${ news.content.length } news`);
     return news.content.map(ResponseAllNewsMapper.map);
   }
 
