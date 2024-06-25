@@ -54,6 +54,7 @@ export class NewsService {
           {
             property: 'createdBy.avatar', // join author
             andSelect: true,
+            type: 'leftJoin'
           },
           {
             property: 'category', // join category
