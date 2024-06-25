@@ -1,11 +1,5 @@
 import sharp from 'sharp';
 
-interface Decode {
-  (options: { buffer: Buffer }): Promise<Image>;
-
-  all(options: { buffer: Buffer }): Promise<Image[]>;
-}
-
 interface Encode {
   [format: string]: (options: { width: number; height: number; data: Uint8Array; quality: number }) => Promise<Buffer>;
 }
@@ -31,7 +25,7 @@ interface ConvertImageOptions {
   quality?: number;
 }
 
-const convertLibrary = (decode: Decode, encode) => {
+const convertLibrary = (decode, encode) => {
   const convertImage = async ({image, format, quality}: ConvertImageOptions): Promise<Buffer> => {
     return await encode[format]({
       width: image.width,
