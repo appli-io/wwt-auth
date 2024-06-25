@@ -84,7 +84,7 @@ export class NewsController {
   ) {
     const news = await this._newsService.findAll({highlighted: true}, pageable, companyId);
 
-    this._logger.log(`Found ${ news.content.length } news`);
+    this._logger.log(`${ companyId } - Found ${ news.content.length } news`);
     return news.content.map(ResponseAllNewsMapper.map);
   }
 
