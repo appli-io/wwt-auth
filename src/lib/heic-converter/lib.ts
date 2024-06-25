@@ -45,8 +45,6 @@ const convertLibrary = (decode: Decode, encode) => {
     const image = sharp(buffer);
     const metadata = await image.metadata();
 
-    console.log(metadata);
-
     if (metadata.orientation) {
       return image.rotate().toBuffer();
     }

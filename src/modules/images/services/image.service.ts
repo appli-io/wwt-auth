@@ -87,6 +87,8 @@ export class ImageService {
 
   async remove(id: string): Promise<void> {
     const image = await this._imageRepository.findOneOrFail({id});
+    await this._storageService.removeFile(image.original.filepath);
+    await this._storageService.removeFile(image.thumbnail.filepath);
     await this._commonService.removeEntity(image);
   }
 

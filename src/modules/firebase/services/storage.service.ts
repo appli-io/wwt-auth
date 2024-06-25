@@ -74,6 +74,15 @@ export class StorageService {
     return fileEntity;
   }
 
+  async removeFile(path: string): Promise<void> {
+    if (!this._storage)
+      this._storage = getStorage().bucket(this._cs.get('firebase.storage.bucket'));
+
+    const file = this._storage.file(path);
+
+    await file.delete();
+  }
+
   async getDownloadUrl(path: string): Promise<string> {
     if (!this._storage)
       this._storage = getStorage().bucket(this._cs.get('firebase.storage.bucket'));

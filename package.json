@@ -91,6 +91,7 @@
     "@nestjs/testing": "^10.3.3",
     "@types/bcrypt": "^5.0.0",
     "@types/handlebars": "^4.1.0",
+    "@types/heic-decode" : "^1.1.2",
     "@types/jest": "29.5.5",
     "@types/jsonwebtoken": "^9.0.3",
     "@types/multer": "^1.4.11",

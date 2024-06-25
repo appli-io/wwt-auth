@@ -43,25 +43,6 @@ export class AlbumController {
     private imageService: ImageService
   ) {}
 
-  @Post()
-  @UseInterceptors(FileInterceptor('cover', {
-    fileFilter: (req, file, cb) => {
-      if (!VALID_IMAGE_TYPES.includes(file.mimetype)) {
-        return cb(new BadRequestException('INVALID_IMAGE_TYPE'), false);
-      }
-
-      cb(null, true);
-    }
-  }))
-  async create(
-    @CurrentUser() userId: string,
-    @CurrentCompanyId() companyId: string,
-    @UploadedFile() cover: Express.Multer.File,
-    @Body() createAlbumDto: CreateAlbumDto
-  ) {
-    return this.albumService.create(createAlbumDto, cover, companyId, userId);
-  }
-
   @Get()
   async findAll(
     @CurrentCompanyId() companyId: string,
@@ -82,6 +63,30 @@ export class AlbumController {
     if (!album) throw new NotFoundException('ALBUM_NOT_FOUND');
 
     return ResponseAlbumMapper.map(album);
+  }
+
+  @Post()
+  @UseInterceptors(FileInterceptor('cover', {
+    fileFilter: (req, file, cb) => {
+      if (!VALID_IMAGE_TYPES.includes(file.mimetype)) {
+        return cb(new BadRequestException('INVALID_IMAGE_TYPE'), false);
+      }
+
+      cb(null, true);
+    }
+  }))
+  async create(
+    @CurrentUser() userId: string,
+    @CurrentCompanyId() companyId: string,
+    @UploadedFile() cover: Express.Multer.File,
+    @Body() createAlbumDto: CreateAlbumDto
+  ) {
+    return this.albumService.create(createAlbumDto, cover, companyId, userId);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return this.albumService.remove(id);
   }
 
   @Get(':id/images')
@@ -124,12 +129,7 @@ export class AlbumController {
   }
 
   @Delete(':id/images/:imageId')
-  async imageRemove(@Param('id') id: string) {
+  async imageRemove(@Param('imageId') id: string) {
     return this.imageService.remove(id);
-  }
-
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.albumService.remove(id);
   }
 }
