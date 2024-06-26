@@ -16,10 +16,10 @@ export class AlbumEntity {
   @Property({columnType: 'text'})
   description: string;
 
-  @OneToOne({entity: () => FileEntity, nullable: true})
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
   cover?: FileEntity;
 
-  @OneToOne({entity: () => FileEntity, nullable: true})
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
   coverThumbnail?: FileEntity;
 
   @OneToMany(() => ImageEntity, image => image.album)

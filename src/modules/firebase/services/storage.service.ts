@@ -75,12 +75,19 @@ export class StorageService {
   }
 
   async removeFile(path: string): Promise<void> {
-    if (!this._storage)
-      this._storage = getStorage().bucket(this._cs.get('firebase.storage.bucket'));
+    try {
+      if (!this._storage)
+        this._storage = getStorage().bucket(this._cs.get('firebase.storage.bucket'));
 
-    const file = this._storage.file(path);
+      const file = this._storage.file(path);
 
-    await file.delete();
+      if (!file) return;
+
+      await file.delete();
+    } catch (error) {
+      if (error.code === 404) return;
+      if (error.code === 403) throw new Error('Unauthorized to remove file');
+    }
   }
 
   async getDownloadUrl(path: string): Promise<string> {

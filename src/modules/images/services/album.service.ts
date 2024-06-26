@@ -104,9 +104,18 @@ export class AlbumService {
   }
 
   async remove(id: string): Promise<void> {
-    const album = await this.albumRepository.findOne({id});
+    const album = await this.albumRepository.findOne({id}, {populate: [ 'images' ]});
 
     if (!album) throw new NotFoundException('ALBUM_NOT_FOUND');
+
+    for (const image of album.images) {
+      await this._imageService.removeFromEntity(image);
+    }
+
+    if (album.cover) {
+      await this._storageService.removeFile(album.cover.filepath);
+      await this._storageService.removeFile(album.coverThumbnail.filepath);
+    }
 
     await this._commonService.removeEntity(album);
   }

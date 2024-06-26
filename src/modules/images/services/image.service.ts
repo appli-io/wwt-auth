@@ -87,12 +87,17 @@ export class ImageService {
 
   async remove(id: string): Promise<void> {
     const image = await this._imageRepository.findOneOrFail({id});
-    await this._storageService.removeFile(image.original.filepath);
-    await this._storageService.removeFile(image.thumbnail.filepath);
-    await this._commonService.removeEntity(image);
+
+    await this.removeFromEntity(image);
   }
 
   async countImagesByAlbumId(albumId: string): Promise<number> {
     return this._imageRepository.count({album: {id: albumId}});
+  }
+
+  async removeFromEntity(entity: ImageEntity): Promise<void> {
+    await this._storageService.removeFile(entity.original.filepath);
+    await this._storageService.removeFile(entity.thumbnail.filepath);
+    await this._commonService.removeEntity(entity);
   }
 }
