@@ -7,6 +7,7 @@ import {
   NotFoundException,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Scope,
   UploadedFile,
@@ -21,16 +22,17 @@ import { CurrentUser }      from '@modules/auth/decorators/current-user.decorato
 import { MemberGuard }      from '@modules/auth/guards/member.guard';
 import { CurrentCompanyId } from '@modules/company/decorators/company-id.decorator';
 
-import { CreateAlbumDto }       from './dtos/create-album.dto';
-import { QueryAlbumDto }        from './dtos/query-album.dto';
-import { QueryImagesDto }       from './dtos/query-images.dto';
-import { ImageEntity }          from './entities/image.entity';
-import { ResponseImageMapper }  from './mappers/response-image.mapper';
-import { ResponseAlbumMapper }  from './mappers/response-album.mapper';
-import { ResponseAlbumsMapper } from './mappers/response-albums.mapper';
-import { AlbumService }         from './services/album.service';
-import { ImageService }         from './services/image.service';
-import { VALID_IMAGE_TYPES }    from '@common/constant';
+import { CreateAlbumDto }        from './dtos/create-album.dto';
+import { QueryAlbumDto }         from './dtos/query-album.dto';
+import { QueryImagesDto }        from './dtos/query-images.dto';
+import { ImageEntity }           from './entities/image.entity';
+import { ResponseImageMapper }   from './mappers/response-image.mapper';
+import { ResponseAlbumMapper }   from './mappers/response-album.mapper';
+import { ResponseAlbumsMapper }  from './mappers/response-albums.mapper';
+import { AlbumService }          from './services/album.service';
+import { ImageService }          from './services/image.service';
+import { VALID_IMAGE_TYPES }     from '@common/constant';
+import { removeUndefinedFields } from '@common/utils/functions.util';
 
 @Controller({
   path: 'albums',
@@ -82,6 +84,27 @@ export class AlbumController {
     @Body() createAlbumDto: CreateAlbumDto
   ) {
     return this.albumService.create(createAlbumDto, cover, companyId, userId);
+  }
+
+  @Patch(':id')
+  @UseInterceptors(FileInterceptor('cover', {
+    fileFilter: (req, file, cb) => {
+      if (!VALID_IMAGE_TYPES.includes(file.mimetype)) {
+        return cb(new BadRequestException('INVALID_IMAGE_TYPE'), false);
+      }
+
+      cb(null, true);
+    }
+  }))
+  async update(
+    @CurrentCompanyId() companyId: string,
+    @Param('id') id: string,
+    @UploadedFile() cover: Express.Multer.File,
+    @Body() updateAlbumDto: any
+  ) {
+    removeUndefinedFields(updateAlbumDto);
+
+    return this.albumService.update(id, updateAlbumDto, cover, companyId);
   }
 
   @Delete(':id')

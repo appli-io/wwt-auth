@@ -13,6 +13,7 @@ import { ImageService }                     from '@modules/images/services/image
 import { FileType }                         from '@modules/firebase/enums/file-type.enum';
 import { CreateAlbumDto }                   from '../dtos/create-album.dto';
 import { AlbumEntity }                      from '../entities/album.entity';
+import { updateOnlyChangedFields }          from '@common/utils/functions.util';
 
 @Injectable({scope: Scope.REQUEST})
 export class AlbumService {
@@ -41,21 +42,10 @@ export class AlbumService {
     });
 
     if (cover) {
-      cover.originalname = 'cover' + path.extname(cover.originalname);
-      album.cover = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, cover, true);
+      const {coverEntity, thumbnailEntity} = await this._uploadCover(cover, companyId, albumId);
 
-      cover = await optimizeImage(cover);
-
-      // generate thumbnail
-      const coverPhotoThumbnail = await generateThumbnail(cover.buffer, {width: 500}).webp().toBuffer();
-      const coverThumbnailFile = {
-        ...cover,
-        buffer: coverPhotoThumbnail,
-        originalname: 'cover-thumbnail.webp',
-        mimetype: 'image/webp'
-      } as Express.Multer.File;
-
-      album.coverThumbnail = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, coverThumbnailFile, true);
+      album.cover = coverEntity;
+      album.coverThumbnail = thumbnailEntity;
     }
 
     try {
@@ -103,14 +93,47 @@ export class AlbumService {
     return album;
   }
 
+  async update(id: string, updateAlbumDto: CreateAlbumDto, cover: Express.Multer.File, companyId: string): Promise<AlbumEntity> {
+    const album = await this.albumRepository.findOne({id, company: {id: companyId}});
+
+    if (!album) throw new NotFoundException('ALBUM_NOT_FOUND');
+
+    if (updateAlbumDto.name !== album.name)
+      await this._checkAlbumExists(updateAlbumDto.name, companyId);
+
+    updateOnlyChangedFields(album, updateAlbumDto, [ 'cover' ]);
+
+    if (cover) {
+      // remove old cover
+      if (album.cover) {
+        await this._storageService.removeFile(album.cover.filepath);
+        await this._storageService.removeFile(album.coverThumbnail.filepath);
+      }
+
+      const {coverEntity, thumbnailEntity} = await this._uploadCover(cover, companyId, id);
+
+      album.cover = coverEntity;
+      album.coverThumbnail = thumbnailEntity;
+    }
+
+    try {
+      await this._commonService.saveEntity(album, true);
+      return album;
+    } catch (error) {
+      throw new BadRequestException('Failed to update the album due to a database error');
+    }
+  }
+
   async remove(id: string): Promise<void> {
     const album = await this.albumRepository.findOne({id}, {populate: [ 'images' ]});
 
     if (!album) throw new NotFoundException('ALBUM_NOT_FOUND');
 
-    for (const image of album.images) {
-      await this._imageService.removeFromEntity(image);
-    }
+    // Start all delete operations at once
+    const deletePromises = album.images.map(image => this._imageService.removeFromEntity(image));
+
+    // Wait for all delete operations to complete
+    await Promise.all(deletePromises);
 
     if (album.cover) {
       await this._storageService.removeFile(album.cover.filepath);
@@ -124,5 +147,25 @@ export class AlbumService {
     const album = await this.albumRepository.count({name, company: {id: companyId}});
 
     if (album) throw new BadRequestException('ALBUM_ALREADY_EXISTS');
+  }
+
+  private async _uploadCover(cover: Express.Multer.File, companyId: string, id: string) {
+    const basePath: string = `companies/${ companyId }/media/albums/${ id }`;
+    cover = await optimizeImage(cover);
+    cover.originalname = 'cover' + path.extname(cover.originalname);
+    const coverEntity = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, cover, true);
+
+    // generate thumbnail
+    const coverPhotoThumbnail = await generateThumbnail(cover.buffer, {width: 500}).webp().toBuffer();
+    const coverThumbnailFile = {
+      ...cover,
+      buffer: coverPhotoThumbnail,
+      originalname: 'cover-thumbnail.webp',
+      mimetype: 'image/webp'
+    } as Express.Multer.File;
+
+    const thumbnailEntity = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, coverThumbnailFile, true);
+
+    return {coverEntity, thumbnailEntity};
   }
 }

@@ -20,3 +20,20 @@ export const loadImagesFromStorage = async (storageService: StorageService, obje
     }
   }
 };
+
+
+export const removeUndefinedFields = (data: any): void => {
+  for (const key in data) {
+    if (data[key] === undefined) {
+      delete data[key];
+    }
+  }
+};
+
+export const updateOnlyChangedFields = (entity: any, data: any, exceptionFields: string[]): void => {
+  for (const key in data) {
+    if (data[key] !== undefined && !exceptionFields.includes(key)) {
+      entity[key] = data[key];
+    }
+  }
+};
