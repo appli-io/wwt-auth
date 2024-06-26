@@ -131,8 +131,6 @@ export class AuthController {
           .send(new MessageMapper('Invalid token'));
       }
     }
-
-
   }
 
   @Post('/sign-out')
