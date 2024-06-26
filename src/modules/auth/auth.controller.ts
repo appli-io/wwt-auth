@@ -113,14 +113,26 @@ export class AuthController {
     @Req() req: FastifyRequest,
     @Res() res: FastifyReply,
   ): Promise<void> {
-    const token = this.refreshTokenFromReq(req);
-    const result = await this._authService.refreshTokenAccess(
-      token,
-      req.headers.host,
-    );
-    this.saveRefreshCookie(res, result.refreshToken)
-      .status(HttpStatus.OK)
-      .send(AuthResponseMapper.map(result));
+    try {
+      const token = this.refreshTokenFromReq(req);
+      const result = await this._authService.refreshTokenAccess(
+        token,
+        req.headers.host,
+      );
+      this.saveRefreshCookie(res, result.refreshToken)
+        .status(HttpStatus.OK)
+        .send(AuthResponseMapper.map(result));
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        res
+          .clearCookie(this.cookieName, {path: this.cookiePath})
+          .header('Content-Type', 'application/json')
+          .status(HttpStatus.UNAUTHORIZED)
+          .send(new MessageMapper('Invalid token'));
+      }
+    }
+
+
   }
 
   @Post('/sign-out')
