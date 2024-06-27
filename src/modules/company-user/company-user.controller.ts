@@ -1,8 +1,14 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { CompanyUserService } from '@modules/company-user/company-user.service';
-import { CurrentUser } from '@modules/auth/decorators/current-user.decorator';
-import { CompanyUserInviteService } from './company-user-invite.service';
+import { Body, Controller, Get, Param, Post, UseGuards }  from '@nestjs/common';
+import { CreateCompanyUserInviteDto }                     from './dtos/create-company-user-invite.dto';
+import { CompanyUserService }                             from '@modules/company-user/company-user.service';
+import { CompanyUserInviteService }                       from './company-user-invite.service';
+import { CurrentCompanyId }                               from '@modules/company/decorators/company-id.decorator';
+import { CurrentUser }                                    from '@modules/auth/decorators/current-user.decorator';
+import { RequiredRole }                                   from '@modules/auth/decorators/requierd-role.decorator';
+import { RolesGuard }                                     from '@modules/auth/guards/roles.guard';
+import { RoleEnum }                                       from './enums/role.enum';
 
+@UseGuards(RolesGuard)
 @Controller('company-user')
 export class CompanyUserController {
   constructor(
@@ -18,10 +24,20 @@ export class CompanyUserController {
     return await this._companyUserService.isUserInCompany(companyId, userId);
   }
 
-  @Get('/:companyId/invitations')
+  @Get('/invitations')
   public async getAllInvites(
-    @Param('companyId') companyId: string
+    @CurrentCompanyId() companyId: string,
   ) {
-    return await this._companyUserInviteService.getAll(companyId)
+    return await this._companyUserInviteService.getAll(companyId);
+  }
+
+  @Post('/invite')
+  @RequiredRole(RoleEnum.ADMIN)
+  public async inviteUser(
+    @CurrentCompanyId() companyId: string,
+    @CurrentUser() user: string,
+    @Body() createInviteDto: CreateCompanyUserInviteDto
+  ) {
+    return await this._companyUserInviteService.create(createInviteDto, companyId, user);
   }
 }

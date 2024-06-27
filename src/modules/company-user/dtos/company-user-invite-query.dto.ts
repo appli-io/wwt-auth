@@ -1,12 +1,12 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty }                                      from "@nestjs/swagger";
 
 export class CompanyUserInviteQueryDto {
 
-  @ApiProperty({
-    description: 'The uuid of the invite',
-    type: String,
-  })
-  id?: string;
+  // @ApiProperty({
+  //   description: 'The uuid of the invite',
+  //   type: String,
+  // })
+  // id?: string;
 
   @ApiProperty({
     description: 'The email of the user to be invited',
@@ -19,6 +19,4 @@ export class CompanyUserInviteQueryDto {
     type: Boolean,
   })
   joined?: boolean;
-
-
 }
