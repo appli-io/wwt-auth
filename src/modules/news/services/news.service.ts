@@ -136,8 +136,8 @@ export class NewsService {
     if (!isAdmin && news.createdBy.id !== userId)
       throw new UnauthorizedException('You are not allowed to delete this news');
 
-    const deletePromises = news.images.map(image => this._storageService.removeFile(image.filepath));
-    if (news.portraitImage) deletePromises.push(this._storageService.removeFile(news.portraitImage.filepath));
+    const deletePromises = news.images.map(image => this._storageService.removeFile(image));
+    if (news.portraitImage) deletePromises.push(this._storageService.removeFile(news.portraitImage));
 
     await Promise.all(deletePromises);
 

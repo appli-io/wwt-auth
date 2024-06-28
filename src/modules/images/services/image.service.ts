@@ -96,8 +96,8 @@ export class ImageService {
   }
 
   async removeFromEntity(entity: ImageEntity): Promise<void> {
-    await this._storageService.removeFile(entity.original.filepath);
-    await this._storageService.removeFile(entity.thumbnail.filepath);
+    await this._storageService.removeFile(entity.original);
+    await this._storageService.removeFile(entity.thumbnail);
     await this._commonService.removeEntity(entity);
   }
 }

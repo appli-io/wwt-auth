@@ -106,8 +106,8 @@ export class AlbumService {
     if (cover) {
       // remove old cover
       if (album.cover) {
-        await this._storageService.removeFile(album.cover.filepath);
-        await this._storageService.removeFile(album.coverThumbnail.filepath);
+        await this._storageService.removeFile(album.cover);
+        await this._storageService.removeFile(album.coverThumbnail);
       }
 
       const {coverEntity, thumbnailEntity} = await this._uploadCover(cover, companyId, id);
@@ -132,8 +132,8 @@ export class AlbumService {
     // Start all delete operations at once
     const deletePromises = album.images.map(image => this._imageService.removeFromEntity(image));
     if (album.cover) {
-      deletePromises.push(this._storageService.removeFile(album.cover.filepath));
-      deletePromises.push(this._storageService.removeFile(album.coverThumbnail.filepath));
+      deletePromises.push(this._storageService.removeFile(album.cover));
+      deletePromises.push(this._storageService.removeFile(album.coverThumbnail));
     }
 
     // Wait for all delete operations to complete
