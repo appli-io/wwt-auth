@@ -93,7 +93,7 @@ export class NewsService {
       if (count > 0) throw new ConflictException('Slug already exists');
     }
 
-    const category = await this._newsCategoryService.findOneBySlugOrId(newsDto.categorySlug, companyId);
+    const category = await this._newsCategoryService.findOneBySlugOrId(newsDto.category, companyId);
 
     if (!category) throw new BadRequestException('Category not found');
 

@@ -48,5 +48,5 @@ export class CreateNewsDto implements Partial<INews> {
     type: String
   })
   @IsString()
-  categorySlug!: string;
+  category!: string;
 }

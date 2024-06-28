@@ -1,14 +1,16 @@
-import { Injectable }        from '@nestjs/common';
-import { InjectRepository }  from '@mikro-orm/nestjs';
-import { BoardEntity }       from '@modules/scrumboard/entities/board.entity';
-import { EntityRepository }  from '@mikro-orm/postgresql';
-import { CreateBoardDto }    from '@modules/scrumboard/dtos/create-board.dto';
-import { EntityManager }     from '@mikro-orm/core';
-import { UpdateBoardDto }    from '@modules/scrumboard/dtos/update-board.dto';
-import { CompanyEntity }     from '@modules/company/entities/company.entity';
-import { UserEntity }        from '@modules/users/entities/user.entity';
-import { CompanyUserEntity } from '@modules/company-user/entities/company-user.entity';
+import { Injectable } from '@nestjs/common';
+
+import { EntityManager }    from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository } from '@mikro-orm/postgresql';
+
 import { SCRUMBOARD_STEPS }  from '@common/constant';
+import { CompanyEntity }     from '@modules/company/entities/company.entity';
+import { CompanyUserEntity } from '@modules/company-user/entities/company-user.entity';
+import { BoardEntity }       from '@modules/scrumboard/entities/board.entity';
+import { CreateBoardDto }    from '@modules/scrumboard/dtos/create-board.dto';
+import { UpdateBoardDto }    from '@modules/scrumboard/dtos/update-board.dto';
+import { UserEntity }        from '@modules/users/entities/user.entity';
 
 @Injectable()
 export class BoardService {
@@ -50,7 +52,14 @@ export class BoardService {
       id,
       {
         populate: [ 'members', 'members.user', 'lists', 'lists.cards', 'labels' ],
-        orderBy: {lists: {cards: {position: 'asc'}}}
+        orderBy: {
+          lists: {
+            position: 'asc',
+            cards: {
+              position: 'asc'
+            }
+          }
+        }
       }
     );
   }

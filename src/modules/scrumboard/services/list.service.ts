@@ -3,9 +3,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository }                from '@mikro-orm/nestjs';
 
-import { ListEntity }    from '../entities/list.entity';
 import { CreateListDto } from '../dtos/create-list.dto';
 import { UpdateListDto } from '../dtos/update-list.dto';
+import { ListEntity }    from '../entities/list.entity';
 
 @Injectable()
 export class ListService {
@@ -20,6 +20,8 @@ export class ListService {
       board: createListDto.boardId,
       position: createListDto.position,
     });
+
+    list.board.lastActivity = new Date();
     await this._em.persistAndFlush(list);
 
     return list;
@@ -34,7 +36,15 @@ export class ListService {
   }
 
   async update(id: string, updateListDto: UpdateListDto) {
-    const list = await this.listRepository.findOne(id);
+    const list = await this.listRepository
+      .findOne(id, {
+        populate: [ 'cards' ],
+        orderBy: {
+          cards: {
+            position: 'asc'
+          }
+        }
+      });
 
     if (!list)
       throw new NotFoundException('List not found');
@@ -44,6 +54,7 @@ export class ListService {
     );
 
     Object.assign(list, updatedListDto);
+    list.board.lastActivity = new Date();
 
     await this._em.persistAndFlush(list);
 
