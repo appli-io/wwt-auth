@@ -1,12 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { EventEntity }                     from './entities/event.entity';
-import { EventQueryDto }                   from './dtos/event-query.dto';
-import { QBFilterQuery }                   from '@mikro-orm/core';
-import { InjectRepository }                from '@mikro-orm/nestjs';
-import { EntityRepository }                from '@mikro-orm/postgresql';
-import { CreateEventDto }                  from './dtos/create-event.dto';
-import { CommonService }                   from '@common/common.service';
-import { getCoordinates }                  from '@lib/gmap-extract-lat-long';
+import { EventEntity } from './entities/event.entity';
+import { EventQueryDto } from './dtos/event-query.dto';
+import { QBFilterQuery } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository } from '@mikro-orm/postgresql';
+import { CreateEventDto } from './dtos/create-event.dto';
+import { CommonService } from '@common/common.service';
+import { getCoordinates } from '@lib/gmap-extract-lat-long';
+import { updateOnlyChangedFields } from '@common/utils/functions.util';
+
 
 @Injectable()
 export class EventService {
@@ -16,8 +18,8 @@ export class EventService {
   ) {}
 
   public async findAll(query: EventQueryDto, companyId: string) {
-    const whereClause: QBFilterQuery<EventEntity> = {company: {id: companyId}};
-    
+    const whereClause: QBFilterQuery<EventEntity> = { company: { id: companyId } };
+
     if (query.id) whereClause['id'] = { $eq: query.id };
     if (query.title) whereClause['title'] = { $ilike: `%${query.title}%` };
     if (query.isAllDay) whereClause['isAllDay'] = query.isAllDay;
@@ -28,28 +30,31 @@ export class EventService {
     if (query.type) whereClause['type'] = query.type;
     if (query.status) whereClause['status'] = query.status;
 
-    return this._eventRepository.findAll({where: whereClause });
+    return this._eventRepository.findAll({ where: whereClause });
   }
 
+  public async findOne(id: string): Promise<EventEntity> {
+    return this._eventRepository.findOne({ id });
+  }
 
-  public async create(createEventDto: CreateEventDto, userId: string, companyId: string): Promise<EventEntity>{
+  public async create(createEventDto: CreateEventDto, userId: string, companyId: string): Promise<EventEntity> {
     const event: EventEntity = this._eventRepository.create({
       ...createEventDto,
       company: companyId,
       createdBy: userId,
     });
 
-    if (event.url?.some(url => url.platform === 'maps')) {
+    if (event.url?.some((url) => url.platform === 'maps')) {
       await Promise.all(
-        event.url.map(async url => {
+        event.url.map(async (url) => {
           if (url.platform === 'maps' && url.url) {
-            const {lat, lng} = await getCoordinates(url.url);
+            const { lat, lng } = await getCoordinates(url.url);
             url.latitude = lat;
             url.longitude = lng;
           }
 
           return url;
-        })
+        }),
       );
     }
 
@@ -59,15 +64,29 @@ export class EventService {
     } catch (error) {
       throw new BadRequestException('Failed to create event due to a database error: ' + error.message);
     }
-    
   }
 
-  public async delete(
-    id: string, 
-    ): Promise<void> {
-    const event = await this._eventRepository.findOne({id});
+  public async update(id: string, updateEventDto: CreateEventDto, companyId:string): Promise<EventEntity> {
+    const event = await this._eventRepository.findOne({ id, company: { id: companyId }});
+    if (!event) throw new BadRequestException('Event not found');
+    
+    updateOnlyChangedFields(event, updateEventDto)
+
+    try {
+      await this._commonService.saveEntity(event, true);
+      return event;
+    } catch (error) {
+      throw new BadRequestException('Failed to update event due to a database error: ' + error.message);
+    }
+  }
+
+  public async delete(id: string): Promise<void> {
+    const event = await this._eventRepository.findOne({ id });
     if (!event) throw new BadRequestException('Event not found');
 
     await this._commonService.removeEntity(event);
-}
+  }
+
+
+  
 }

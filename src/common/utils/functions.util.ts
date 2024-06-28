@@ -30,7 +30,7 @@ export const removeUndefinedFields = (data: any): void => {
   }
 };
 
-export const updateOnlyChangedFields = (entity: any, data: any, exceptionFields: string[]): void => {
+export const updateOnlyChangedFields = (entity: any, data: any, exceptionFields: string[] = []): void => {
   for (const key in data) {
     if (data[key] !== undefined && !exceptionFields.includes(key)) {
       entity[key] = data[key];
