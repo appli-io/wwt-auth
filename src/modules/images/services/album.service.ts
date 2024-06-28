@@ -131,14 +131,13 @@ export class AlbumService {
 
     // Start all delete operations at once
     const deletePromises = album.images.map(image => this._imageService.removeFromEntity(image));
+    if (album.cover) {
+      deletePromises.push(this._storageService.removeFile(album.cover.filepath));
+      deletePromises.push(this._storageService.removeFile(album.coverThumbnail.filepath));
+    }
 
     // Wait for all delete operations to complete
     await Promise.all(deletePromises);
-
-    if (album.cover) {
-      await this._storageService.removeFile(album.cover.filepath);
-      await this._storageService.removeFile(album.coverThumbnail.filepath);
-    }
 
     await this._commonService.removeEntity(album);
   }

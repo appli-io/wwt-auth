@@ -28,7 +28,7 @@ export class NewsEntity implements INews {
   @IsString()
   public abstract: string;
 
-  @Property({columnType: 'text'})
+  @Property({columnType: 'text', nullable: true})
   @IsString()
   public body: string;
 
@@ -38,8 +38,8 @@ export class NewsEntity implements INews {
   @Property({columnType: 'timestamptz', onUpdate: () => new Date(), nullable: true})
   public updatedAt?: Date;
 
-  @Property({columnType: 'boolean', default: false})
-  public isDeleted: boolean;
+  @Property({columnType: 'timestamptz', nullable: true})
+  public deletedAt?: Date;
 
   @OneToMany(() => FileEntity, file => file.news, {nullable: true})
   public images = new Collection<FileEntity>(this);
@@ -58,4 +58,7 @@ export class NewsEntity implements INews {
 
   @ManyToOne({entity: () => UserEntity, nullable: true})
   public updatedBy?: UserEntity;
+
+  @ManyToOne({entity: () => UserEntity, nullable: true})
+  public deletedBy?: UserEntity;
 }

@@ -72,6 +72,13 @@ export class ResponseFullNewsMapper implements Partial<INews> {
   public publishedAt: Date;
 
   @ApiProperty({
+    description: 'Deleted date',
+    example: new Date(),
+    type: Date,
+  })
+  public deletedAt: Date;
+
+  @ApiProperty({
     description: 'Body',
     example: 'This is the body of the news',
     type: String,
@@ -94,6 +101,7 @@ export class ResponseFullNewsMapper implements Partial<INews> {
       category: ResponseAllNewsCategoriesMapper.map(news.category),
       createdBy: ResponseSimpleUserMapper.map(news.createdBy),
       publishedAt: news.publishedAt,
+      deletedAt: news.deletedAt,
     });
   }
 }

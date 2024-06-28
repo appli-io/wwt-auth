@@ -7,6 +7,7 @@ export interface INews {
   isDeleted?: boolean;
   publishedAt?: Date;
   updatedAt?: Date;
+  deletedAt?: Date;
 }
 
 export interface IImage {

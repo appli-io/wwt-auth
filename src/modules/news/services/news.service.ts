@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 
-import { QBFilterQuery }    from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository } from '@mikro-orm/postgresql';
-import { isUUID }           from 'class-validator';
+import { QBFilterQuery, wrap }             from '@mikro-orm/core';
+import { InjectRepository }                from '@mikro-orm/nestjs';
+import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
+import { isUUID }                          from 'class-validator';
 
 import { CommonService }               from '@common/common.service';
 import { Page, Pageable, PageFactory } from '@lib/pageable';
@@ -20,13 +20,17 @@ export class NewsService {
 
   constructor(
     @InjectRepository(NewsEntity) private readonly _newsRepository: EntityRepository<NewsEntity>,
+    private readonly _em: EntityManager,
     private readonly _newsCategoryService: NewsCategoryService,
     private readonly _commonService: CommonService,
     private readonly _storageService: StorageService
   ) {}
 
   public async findAll(query: NewsQueryDto, pageable: Pageable, companyId: string): Promise<Page<NewsEntity>> {
-    const whereClause: QBFilterQuery<NewsEntity> = {company: companyId};
+    const whereClause: QBFilterQuery<NewsEntity> = {
+      company: companyId,
+      deletedAt: null
+    };
 
     if (query.id) whereClause['id'] = {$eq: query.id};
     if (query.headline) whereClause['headline'] = {$ilike: `%${ query.headline }%`};
@@ -121,7 +125,10 @@ export class NewsService {
   }
 
   public async delete(id: string, userId: string, companyId: string, isAdmin: boolean): Promise<void> {
-    const news: NewsEntity = await this._newsRepository.findOne({id, company: companyId}, {populate: [ 'createdBy' ]});
+    const news: NewsEntity = await this._newsRepository.findOne({
+      id,
+      company: companyId
+    }, {populate: [ 'createdBy', 'images', 'portraitImage' ]});
 
     if (!news)
       throw new NotFoundException('News not found. (id: ' + id + ')');
@@ -129,8 +136,21 @@ export class NewsService {
     if (!isAdmin && news.createdBy.id !== userId)
       throw new UnauthorizedException('You are not allowed to delete this news');
 
-    news.isDeleted = true;
-    await this._commonService.saveEntity(news);
+    const deletePromises = news.images.map(image => this._storageService.removeFile(image.filepath));
+    if (news.portraitImage) deletePromises.push(this._storageService.removeFile(news.portraitImage.filepath));
+
+    await Promise.all(deletePromises);
+
+    await this._em
+      .persistAndFlush(
+        wrap(news)
+          .assign({
+            body: undefined,
+            deletedBy: userId,
+            deletedAt: new Date()
+          }));
+
+    // await this._commonService.saveEntity(news);
   }
 
   private async generateSlug(name: string, companyId: string): Promise<string> {

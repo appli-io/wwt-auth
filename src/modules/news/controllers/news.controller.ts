@@ -34,6 +34,7 @@ import { ResponseFullNewsMapper }          from '@modules/news/mappers/response-
 import { NewsQueryDto }                    from '@modules/news/dtos/news-query.dto';
 import { AnyFilesInterceptor }             from '@nest-lab/fastify-multer';
 import { VALID_IMAGE_TYPES }               from '@common/constant';
+import { MessageMapper }                   from '@common/mappers/message.mapper';
 
 const MAX_HIGHLIGHTED_NEWS = 5;
 
@@ -121,7 +122,7 @@ export class NewsController {
 
     await this._newsService.delete(id, userId, companyId, isAdmin);
 
-    return 'News deleted';
+    return new MessageMapper('News deleted');
   }
 
   @Get('social/:id/count')
