@@ -27,6 +27,7 @@ import { FirebaseModule }          from '@modules/firebase/firebase.module';
 import { JwtModule }               from '@modules/jwt/jwt.module';
 import { LikeModule }              from '@modules/likes/like.module';
 import { MailerModule }            from '@modules/mailer/mailer.module';
+import { MarketplaceModule }       from '@modules/marketplace/marketplace.module';
 import { NewsModule }              from '@modules/news/news.module';
 import { Oauth2Module }            from '@modules/oauth2/oauth2.module';
 import { PermissionsModule }       from '@modules/permissions/permissions.module';
@@ -78,7 +79,8 @@ import { config }        from './config';
     BioBioModule,
     AlbumModule,
     EventsModule,
-    ScrumboardModule
+    ScrumboardModule,
+    MarketplaceModule
   ],
   controllers: [ AppController ],
   providers: [
