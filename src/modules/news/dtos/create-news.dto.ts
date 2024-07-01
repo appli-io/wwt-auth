@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsOptional, IsString, Length } from 'class-validator';
+import { IsObject, IsOptional, IsString, Length } from 'class-validator';
 
-import { INews } from '@modules/news/interfaces/news.interface';
+import { INews }     from '@modules/news/interfaces/news.interface';
+import { Transform } from 'class-transformer';
 
 export class CreateNewsDto implements Partial<INews> {
   @ApiProperty({
@@ -39,9 +40,9 @@ export class CreateNewsDto implements Partial<INews> {
     minLength: 50,
     type: String
   })
-  @IsString()
-  @Length(50)
-  body: string;
+  @IsObject()
+  @Transform(({value}) => JSON.parse(value))
+  body: Record<string, unknown>;
 
   @ApiProperty({
     description: 'News category slug',

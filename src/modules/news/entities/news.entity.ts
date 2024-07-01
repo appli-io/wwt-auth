@@ -28,9 +28,8 @@ export class NewsEntity implements INews {
   @IsString()
   public abstract: string;
 
-  @Property({columnType: 'text', nullable: true})
-  @IsString()
-  public body: string;
+  @Property({columnType: 'json', nullable: true})
+  public body: Record<string, unknown> = {};
 
   @Property({columnType: 'timestamptz', onCreate: () => new Date()})
   public publishedAt: Date;

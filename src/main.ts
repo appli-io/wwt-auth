@@ -15,7 +15,13 @@ import { RedisIoAdapter }         from '@config/adapters/redis-io.adapter';
 import { AppModule }              from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {snapshot: true});
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter({
+      bodyLimit: 10485760
+    }),
+    {snapshot: true}
+  );
   const configService = app.get(ConfigService);
   const logger: Logger = new Logger('Bootstrap');
 

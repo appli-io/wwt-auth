@@ -3,7 +3,7 @@ export interface INews {
   headline?: string;
   slug?: string;
   abstract?: string;
-  body?: string;
+  body?: Record<string, unknown>;
   isDeleted?: boolean;
   publishedAt?: Date;
   updatedAt?: Date;

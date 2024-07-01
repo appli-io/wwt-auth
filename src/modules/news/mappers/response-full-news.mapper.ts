@@ -83,7 +83,7 @@ export class ResponseFullNewsMapper implements Partial<INews> {
     example: 'This is the body of the news',
     type: String,
   })
-  public body: string;
+  public body: Record<string, unknown>;
 
   constructor(values: ResponseFullNewsMapper) {
     Object.assign(this, values);

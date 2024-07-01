@@ -101,11 +101,11 @@ export class NewsController {
   public async create(
     @CurrentUser() userId: string,
     @CurrentCompanyId() companyId: string,
-    @UploadedFiles() files: Express.Multer.File[],
     @Body() news: CreateNewsDto,
+    @UploadedFiles() files?: Express.Multer.File[]
   ) {
-    const images = files.filter(file => file.fieldname === 'images');
-    const portraitImage = files.find(file => file.fieldname === 'portraitImage');
+    const images = files?.filter(file => file.fieldname === 'images');
+    const portraitImage = files?.find(file => file.fieldname === 'portraitImage');
     const createdNews = await this._newsService.create(news, images, portraitImage, userId, companyId);
 
     return ResponseFullNewsMapper.map(createdNews);
