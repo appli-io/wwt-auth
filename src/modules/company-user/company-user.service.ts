@@ -1,15 +1,15 @@
 import { ConflictException, Injectable, Logger, LoggerService, NotFoundException } from '@nestjs/common';
 
 import { EntityManager, QBFilterQuery } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository } from '@mikro-orm/postgresql';
+import { InjectRepository }             from '@mikro-orm/nestjs';
+import { EntityRepository }             from '@mikro-orm/postgresql';
 
-import { CommonService } from '@common/common.service';
+import { CommonService }               from '@common/common.service';
 import { Page, Pageable, PageFactory } from '@lib/pageable';
-import { AddUserToCompanyDto } from '@modules/company/dtos/add-user-to-company.dto';
-import { CompanyUserEntity } from '@modules/company-user/entities/company-user.entity';
-import { RoleEnum } from '@modules/company-user/enums/role.enum';
-import { MembersQueryDto } from '@modules/company/dtos/members-query.dto';
+import { AddUserToCompanyDto }         from '@modules/company/dtos/add-user-to-company.dto';
+import { CompanyUserEntity }           from '@modules/company-user/entities/company-user.entity';
+import { RoleEnum }                    from '@modules/company-user/enums/role.enum';
+import { MembersQueryDto }             from '@modules/company/dtos/members-query.dto';
 
 @Injectable()
 export class CompanyUserService {
@@ -28,13 +28,11 @@ export class CompanyUserService {
 
     whereClause.user = {};
     if (query.memberId) whereClause.user = { ...whereClause.user, id: { $eq: query.memberId } };
-    if (query.name) whereClause.user = { ...whereClause.user, name: { $ilike: query.name } }
-    if (query.email) whereClause.user = { ...whereClause.user, email: { $ilike: query.email } }
+    if (query.name) whereClause.user = {...whereClause.user, name: {$ilike: `%${ query.name }%`}};
+    if (query.email) whereClause.user = {...whereClause.user, email: {$ilike: `%${ query.email }%`}};
     if (query.role) whereClause.role = { $eq: query.role };
     if (query.isActive) whereClause.isActive = { $eq: query.isActive };
     if (query.createdFrom) whereClause.createdAt = { $gte: query.createdFrom };
-
-    console.log("query", whereClause)
 
     const users: Page<CompanyUserEntity> = await new PageFactory(
       pageable,

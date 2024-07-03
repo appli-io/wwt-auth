@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsObject, IsOptional, IsString, Length } from 'class-validator';
+import { Allow, IsOptional, IsString, Length } from 'class-validator';
 
 import { INews }     from '@modules/news/interfaces/news.interface';
 import { Transform } from 'class-transformer';
@@ -40,7 +40,7 @@ export class CreateNewsDto implements Partial<INews> {
     minLength: 50,
     type: String
   })
-  @IsObject()
+  @Allow()
   @Transform(({value}) => JSON.parse(value))
   body: Record<string, unknown>;
 
