@@ -75,6 +75,7 @@ export class PageFactory<TEntity extends object, TOutput extends object = TEntit
       queryBuilder.offset(offset).limit(size - (difference > 0 ? difference : 0));
     }
 
+    console.log("builder",queryBuilder.getQuery())
     const result = await queryBuilder.getResultList();
     const content = result.map(this._map);
     const totalPages = Math.ceil(totalElements / size);

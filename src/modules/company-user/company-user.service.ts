@@ -1,15 +1,15 @@
 import { ConflictException, Injectable, Logger, LoggerService, NotFoundException } from '@nestjs/common';
 
 import { EntityManager, QBFilterQuery } from '@mikro-orm/core';
-import { InjectRepository }             from '@mikro-orm/nestjs';
-import { EntityRepository }             from '@mikro-orm/postgresql';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository } from '@mikro-orm/postgresql';
 
-import { CommonService }               from '@common/common.service';
+import { CommonService } from '@common/common.service';
 import { Page, Pageable, PageFactory } from '@lib/pageable';
-import { AddUserToCompanyDto }         from '@modules/company/dtos/add-user-to-company.dto';
-import { CompanyUserEntity }           from '@modules/company-user/entities/company-user.entity';
-import { RoleEnum }                    from '@modules/company-user/enums/role.enum';
-import { MembersQueryDto }             from '@modules/company/dtos/members-query.dto';
+import { AddUserToCompanyDto } from '@modules/company/dtos/add-user-to-company.dto';
+import { CompanyUserEntity } from '@modules/company-user/entities/company-user.entity';
+import { RoleEnum } from '@modules/company-user/enums/role.enum';
+import { MembersQueryDto } from '@modules/company/dtos/members-query.dto';
 
 @Injectable()
 export class CompanyUserService {
@@ -24,12 +24,17 @@ export class CompanyUserService {
   }
 
   public async getMembers(companyId: string, query: MembersQueryDto, pageable: Pageable) {
-    const whereClause: QBFilterQuery<CompanyUserEntity> = {company: {id: {$eq: companyId}}};
+    const whereClause: QBFilterQuery<CompanyUserEntity> = { company: { id: { $eq: companyId } } };
 
-    if (query.memberId) whereClause.user = {id: {$eq: query.memberId}};
-    if (query.role) whereClause.role = {$eq: query.role};
-    if (query.isActive) whereClause.isActive = {$eq: query.isActive};
-    if (query.createdFrom) whereClause.createdAt = {$gte: query.createdFrom};
+    whereClause.user = {};
+    if (query.memberId) whereClause.user = { ...whereClause.user, id: { $eq: query.memberId } };
+    if (query.name) whereClause.user = { ...whereClause.user, name: { $ilike: query.name } }
+    if (query.email) whereClause.user = { ...whereClause.user, email: { $ilike: query.email } }
+    if (query.role) whereClause.role = { $eq: query.role };
+    if (query.isActive) whereClause.isActive = { $eq: query.isActive };
+    if (query.createdFrom) whereClause.createdAt = { $gte: query.createdFrom };
+
+    console.log("query", whereClause)
 
     const users: Page<CompanyUserEntity> = await new PageFactory(
       pageable,
@@ -54,14 +59,14 @@ export class CompanyUserService {
   }
 
   public async findOne(userId: string, companyId: string) {
-    return this._userCompanyRepository.findOne({user: userId, company: companyId});
+    return this._userCompanyRepository.findOne({ user: userId, company: companyId });
   }
 
   public async getUserAssignedCompanies(userId: string) {
-    return this._userCompanyRepository.find({user: userId});
+    return this._userCompanyRepository.find({ user: userId });
   }
 
-  public async assignCompanyToUser(companyId: string, {userId, role}: AddUserToCompanyDto) {
+  public async assignCompanyToUser(companyId: string, { userId, role }: AddUserToCompanyDto) {
     const isUserInCompany: boolean = await this.isUserInCompany(companyId, userId);
 
     if (isUserInCompany) throw new ConflictException('User is already in company');
@@ -79,7 +84,7 @@ export class CompanyUserService {
   public async removeCompanyFromUser(companyId: string, userId: string): Promise<boolean> {
     this.loggerService.log('Removing company from user');
 
-    const userCompany = await this._userCompanyRepository.findOneOrFail({user: userId, company: companyId})
+    const userCompany = await this._userCompanyRepository.findOneOrFail({ user: userId, company: companyId })
       .catch(() => {
         throw new NotFoundException('Member not found in company');
       });
@@ -92,7 +97,7 @@ export class CompanyUserService {
   public async disableUserInCompany(companyId: string, userId: string): Promise<boolean> {
     this.loggerService.log('Disabling user in company');
 
-    const userCompany = await this._userCompanyRepository.findOneOrFail({user: userId, company: companyId})
+    const userCompany = await this._userCompanyRepository.findOneOrFail({ user: userId, company: companyId })
       .catch(() => {
         throw new NotFoundException('Member not found in company');
       });
@@ -109,9 +114,9 @@ export class CompanyUserService {
       .getEntityManager()
       .createQueryBuilder(CompanyUserEntity);
 
-    qb.where({user: userId, company: companyId});
+    qb.where({ user: userId, company: companyId });
 
-    if (requiredRoles.length > 1) qb.andWhere({role: {$in: requiredRoles}});
+    if (requiredRoles.length > 1) qb.andWhere({ role: { $in: requiredRoles } });
 
     const results = await qb.select('role').execute();
     const roles: RoleEnum[] = results.map(result => result.role);
@@ -120,11 +125,11 @@ export class CompanyUserService {
   }
 
   public isUserInCompany = (companyId: string, userId: string) =>
-    this._userCompanyRepository.count({user: userId, company: companyId})
+    this._userCompanyRepository.count({ user: userId, company: companyId })
       .then(userCompany => userCompany > 0);
 
   public async isActiveUserInCompanies(id: string, companiesIds: string[]) {
-    const userCompany = await this._userCompanyRepository.count({user: id, company: {$in: companiesIds}, isActive: true});
+    const userCompany = await this._userCompanyRepository.count({ user: id, company: { $in: companiesIds }, isActive: true });
     return companiesIds.length === userCompany;
   }
 }
