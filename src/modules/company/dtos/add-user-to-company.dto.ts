@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsEnum, IsNumber } from 'class-validator';
+import { IsEnum, IsUUID } from 'class-validator';
 
 import { RoleEnum } from '@modules/company-user/enums/role.enum';
 
@@ -9,7 +9,7 @@ export class AddUserToCompanyDto {
     description: 'User ID',
     type: String,
   })
-  @IsNumber()
+  @IsUUID()
   public userId: string;
 
   @ApiProperty({
