@@ -140,6 +140,5 @@
       "./src/mikro-orm.config.ts",
       "./dist/mikro-orm.config.js"
     ]
-  },
-  "packageManager": "yarn@3.3.1"
+  }
 }
