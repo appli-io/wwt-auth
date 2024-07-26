@@ -24,7 +24,8 @@ export function config(): IConfig {
     entitiesTs: [ 'src/**/*.entity.ts', 'src/**/*.embeddable.ts' ],
     loadStrategy: LoadStrategy.JOINED,
     allowGlobalContext: true,
-    forceUtcTimezone: true
+    forceUtcTimezone: true,
+    debug: true
   };
 
   return {
