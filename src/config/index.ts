@@ -34,6 +34,7 @@ export function config(): IConfig {
     url: process.env.URL,
     port: parseInt(process.env.PORT, 10),
     domain: process.env.DOMAIN,
+    prefilledUserPassword: process.env.PREFILLED_USER_PASSWORD,
     jwt: {
       access: {
         privateKey,

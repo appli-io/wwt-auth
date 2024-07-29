@@ -37,6 +37,7 @@ import { UsersModule }             from '@modules/users/users.module';
 import { AppController } from './app.controller';
 import { AppService }    from './app.service';
 import { config }        from './config';
+import { SeederService } from '@modules/seeder/seeder.service';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { config }        from './config';
   providers: [
     AppService,
     MikroOrmLogger,
+    SeederService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,

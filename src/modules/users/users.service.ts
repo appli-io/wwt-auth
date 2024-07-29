@@ -22,7 +22,6 @@ import { CredentialsEmbeddable } from './embeddables/credentials.embeddable';
 import { OAuthProviderEntity }   from './entities/oauth-provider.entity';
 import { UserEntity }            from './entities/user.entity';
 import { OAuthProvidersEnum }    from './enums/oauth-providers.enum';
-import { CompanyService }        from '@modules/company/company.service';
 import { StorageService }        from '@modules/firebase/services/storage.service';
 import { IUser }                 from './interfaces/user.interface';
 import { CompanyEntity }         from '@modules/company/entities/company.entity';
@@ -37,14 +36,13 @@ export class UsersService {
     @InjectRepository(UsersContactEntity) private readonly _usersContactRepository: EntityRepository<UsersContactEntity>,
     @InjectRepository(OAuthProviderEntity) private readonly _oauthProvidersRepository: EntityRepository<OAuthProviderEntity>,
     private readonly _companyUserService: CompanyUserService,
-    private readonly _companyService: CompanyService,
     private readonly _storageService: StorageService,
     private readonly commonService: CommonService,
   ) {
   }
 
-  public async create(provider: OAuthProvidersEnum, email: string, name: string, password?: string,): Promise<UserEntity> {
-    const isConfirmed = provider !== OAuthProvidersEnum.LOCAL;
+  public async create(provider: OAuthProvidersEnum, email: string, name: string, password?: string, confirmed: boolean = false): Promise<UserEntity> {
+    const isConfirmed = provider !== OAuthProvidersEnum.LOCAL || confirmed;
     const formattedEmail = email.toLowerCase();
     await this.checkEmailUniqueness(formattedEmail);
     const formattedName = this.commonService.formatName(name);
