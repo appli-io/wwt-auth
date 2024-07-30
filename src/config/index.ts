@@ -35,6 +35,7 @@ export function config(): IConfig {
     port: parseInt(process.env.PORT, 10),
     domain: process.env.DOMAIN,
     prefilledUserPassword: process.env.PREFILLED_USER_PASSWORD,
+    crypto: {key: process.env.CRYPTO_SECRET},
     jwt: {
       access: {
         privateKey,

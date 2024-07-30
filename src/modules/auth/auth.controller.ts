@@ -10,6 +10,8 @@ import {
 }                                                                                                                from '@nestjs/swagger';
 import { FastifyReply, FastifyRequest }                                                                          from 'fastify';
 
+import AES from 'crypto-js/aes';
+
 import { isNull, isUndefined } from '@common/utils/validation.util';
 import { IMessage }            from '@common/interfaces/message.interface';
 import { MessageMapper }       from '@common/mappers/message.mapper';
@@ -33,6 +35,7 @@ import { AuthResponseMapper }           from './mappers/auth-response.mapper';
 import { OAuthProvidersResponseMapper } from './mappers/oauth-provider-response.mapper';
 import { ResponsePositionsMapper }      from '@modules/auth/mappers/response-positions.mapper';
 import { StorageService }               from '@modules/firebase/services/storage.service';
+import { IConfig }                      from '@config/interfaces/config.interface';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -41,16 +44,18 @@ export class AuthController {
   private readonly cookiePath = '/api/auth';
   private readonly cookieName: string;
   private readonly refreshTime: number;
+  private readonly cryptoKey: string;
   private readonly testing: boolean;
 
   constructor(
     private readonly _authService: AuthService,
     private readonly _usersService: UsersService,
     private readonly _storageService: StorageService,
-    private readonly _configService: ConfigService,
+    private readonly _configService: ConfigService<IConfig>,
   ) {
-    this.cookieName = this._configService.get<string>('REFRESH_COOKIE');
-    this.refreshTime = this._configService.get<number>('jwt.refresh.time');
+    this.cookieName = this._configService.get<string>('REFRESH_COOKIE', {infer: true});
+    this.refreshTime = this._configService.get<number>('jwt.refresh.time', {infer: true});
+    this.cryptoKey = this._configService.get('crypto.key', {infer: true});
     this.testing = this._configService.get<boolean>('testing');
   }
 
@@ -71,6 +76,29 @@ export class AuthController {
     @Body() signUpDto: SignUpDto,
   ): Promise<IMessage> {
     return await this._authService.signUp(signUpDto, origin);
+  }
+
+  @Public()
+  @Post('/sign-up/validate-email')
+  @ApiOkResponse({
+    type: MessageMapper,
+    description: 'Validates the user email existence',
+  })
+  @ApiBadRequestResponse({
+    description: 'Something is invalid on the request body',
+  })
+  public async validateSignUpEmail(
+    @Body('email') encryptedEmail: string,
+  ): Promise<{ isValid: boolean }> {
+    // decrypt AES encrypted email
+    console.log('encryptedKey', this.cryptoKey);
+    console.log('asdadasd', encryptedEmail);
+    const email = AES.decrypt(encryptedEmail, this.cryptoKey).toString();
+    const user = await this._usersService.findOneByEmail(email);
+
+    if (user) return {isValid: false};
+
+    return {isValid: true};
   }
 
   @Public()

@@ -12,6 +12,7 @@ export interface IConfig {
   readonly port: number;
   readonly domain: string;
   readonly prefilledUserPassword: string;
+  readonly crypto: { key: string };
   readonly db: MikroOrmModuleOptions;
   readonly redis: RedisOptions;
   readonly jwt: IJwt;
