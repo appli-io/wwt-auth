@@ -70,7 +70,6 @@ export class SeederService {
     const companies: CreateCompanyDto[] = [
       {
         name: 'WeWorkTogether',
-        username: 'weworktogether',
         nationalId: '1-9',
         email: 'contact@weworktogether.com',
         country: 'CL',

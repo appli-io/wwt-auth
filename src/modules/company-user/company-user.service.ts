@@ -10,6 +10,8 @@ import { AddUserToCompanyDto }         from '@modules/company/dtos/add-user-to-c
 import { CompanyUserEntity }           from '@modules/company-user/entities/company-user.entity';
 import { RoleEnum }                    from '@modules/company-user/enums/role.enum';
 import { MembersQueryDto }             from '@modules/company/dtos/members-query.dto';
+import { CompanyUserInviteService }    from '@modules/company-user/company-user-invite.service';
+import { UserEntity }                  from '@modules/users/entities/user.entity';
 
 @Injectable()
 export class CompanyUserService {
@@ -17,6 +19,7 @@ export class CompanyUserService {
 
   constructor(
     @InjectRepository(CompanyUserEntity) private readonly _userCompanyRepository: EntityRepository<CompanyUserEntity>,
+    public readonly _companyUserInviteService: CompanyUserInviteService,
     public readonly _em: EntityManager,
     private readonly _commonService: CommonService,
   ) {
@@ -77,6 +80,29 @@ export class CompanyUserService {
     });
 
     await this._commonService.saveEntity(userCompany, true);
+  }
+
+  public async assignCompanyToUserByInviteToken(token: string, user: UserEntity) {
+    const invite = await this._companyUserInviteService.getByToken(token);
+
+    if (!invite) throw new NotFoundException('Invite not found');
+
+    const isUserInCompany: boolean = await this.isUserInCompany(invite.company.id, user.id);
+
+    if (isUserInCompany) throw new ConflictException('User is already in company');
+
+    if (invite.email !== user.email) throw new ConflictException('User email does not match invite email');
+
+    const userCompany = this._userCompanyRepository.create({
+      user: user.id,
+      company: invite.company.id,
+      role: invite.role,
+      position: invite.position,
+      isActive: true,
+    });
+
+    await this._commonService.saveEntity(userCompany, true);
+    await this._companyUserInviteService.updateJoined(invite);
   }
 
   public async removeCompanyFromUser(companyId: string, userId: string): Promise<boolean> {

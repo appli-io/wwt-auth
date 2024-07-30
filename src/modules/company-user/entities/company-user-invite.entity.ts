@@ -1,8 +1,8 @@
-import { CompanyEntity }                                      from "@modules/company/entities/company.entity";
-import { Entity, Enum, ManyToOne, PrimaryKey, Property }      from "@mikro-orm/core";
-import { RoleEnum }                                           from "../enums/role.enum";
-import { UserEntity }                                         from "@modules/users/entities/user.entity";
-import { v4 }                                                 from "uuid";
+import { CompanyEntity }                                 from '@modules/company/entities/company.entity';
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { RoleEnum }                                      from '../enums/role.enum';
+import { UserEntity }                                    from '@modules/users/entities/user.entity';
+import { v4 }                                            from 'uuid';
 
 @Entity({ tableName: 'company_user_invite' })
 export class CompanyUserInviteEntity {
@@ -15,10 +15,13 @@ export class CompanyUserInviteEntity {
   @Enum({ items: () => RoleEnum, default: RoleEnum.USER })
   public role: RoleEnum;
 
+  @Property({columnType: 'varchar'})
+  public position: string;
+
   @Property({ columnType: 'text' })
   public message: string;
 
-  @Property({ columnType: 'varchar', nullable: true })
+  @Property({columnType: 'varchar', nullable: false})
   public token: string;
 
   @Property({ columnType: 'boolean', default: false })

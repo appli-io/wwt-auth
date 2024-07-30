@@ -66,6 +66,7 @@
     "joi": "^17.10.2",
     "jpeg-js" : "^0.4.4",
     "jsonwebtoken": "^9.0.2",
+    "nanoid" : "^3.3.4",
     "nestjs-throttler-storage-redis": "^0.4.3",
     "nodemailer": "^6.9.5",
     "pg": "^8.11.5",

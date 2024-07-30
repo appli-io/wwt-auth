@@ -10,7 +10,8 @@ import {
 }                                                                                                                from '@nestjs/swagger';
 import { FastifyReply, FastifyRequest }                                                                          from 'fastify';
 
-import AES from 'crypto-js/aes';
+import AES      from 'crypto-js/aes';
+import CryptoJS from 'crypto-js';
 
 import { isNull, isUndefined } from '@common/utils/validation.util';
 import { IMessage }            from '@common/interfaces/message.interface';
@@ -90,10 +91,9 @@ export class AuthController {
   public async validateSignUpEmail(
     @Body('email') encryptedEmail: string,
   ): Promise<{ isValid: boolean }> {
+    console.log(this.cryptoKey);
     // decrypt AES encrypted email
-    console.log('encryptedKey', this.cryptoKey);
-    console.log('asdadasd', encryptedEmail);
-    const email = AES.decrypt(encryptedEmail, this.cryptoKey).toString();
+    const email = AES.decrypt(encryptedEmail, this.cryptoKey).toString(CryptoJS.enc.Utf8);
     const user = await this._usersService.findOneByEmail(email);
 
     if (user) return {isValid: false};

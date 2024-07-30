@@ -1,6 +1,6 @@
 import { ApiProperty }                                           from '@nestjs/swagger';
 import { IsEmail, IsOptional, IsString, IsUrl, Length, Matches } from 'class-validator';
-import { NAME_REGEX, SLUG_REGEX }                                from '@common/consts/regex.const';
+import { NAME_REGEX }                                            from '@common/consts/regex.const';
 import { ICompany }                                              from '@modules/company/interfaces/company.interface';
 
 export class CreateCompanyDto implements Partial<ICompany> {
@@ -17,21 +17,21 @@ export class CreateCompanyDto implements Partial<ICompany> {
   })
   public name!: string;
 
-  @ApiProperty({
-    description: 'The username',
-    minLength: 3,
-    maxLength: 100,
-    type: String,
-    pattern: SLUG_REGEX.source
-  })
-  @IsString()
-  @Length(3, 100, {
-    message: 'Username has to be between 3 and 100 characters.',
-  })
-  @Matches(SLUG_REGEX, {
-    message: 'Username can only contain letters, dtos, numbers and spaces.',
-  })
-  public username!: string;
+  // @ApiProperty({
+  //   description: 'The username',
+  //   minLength: 3,
+  //   maxLength: 100,
+  //   type: String,
+  //   pattern: SLUG_REGEX.source
+  // })
+  // @IsString()
+  // @Length(3, 100, {
+  //   message: 'Username has to be between 3 and 100 characters.',
+  // })
+  // @Matches(SLUG_REGEX, {
+  //   message: 'Username can only contain letters, dtos, numbers and spaces.',
+  // })
+  // public username!: string;
 
   @ApiProperty({
     description: 'Company national ID',
@@ -52,7 +52,7 @@ export class CreateCompanyDto implements Partial<ICompany> {
   @IsString()
   @IsOptional()
   @Length(3, 100, {message: 'Description has to be between 3 and 255 characters.',})
-  public description!: string;
+  public description?: string;
 
   @ApiProperty({
     description: 'Company email',

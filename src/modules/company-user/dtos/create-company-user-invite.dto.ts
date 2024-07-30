@@ -1,7 +1,7 @@
-import { ApiProperty }                                        from "@nestjs/swagger";
-import { RoleEnum }                                           from "../enums/role.enum";
-import { Transform }                                          from "class-transformer";
-import { IsEmail, IsEnum, IsOptional, IsString, Length }      from "class-validator";
+import { ApiProperty }                                   from '@nestjs/swagger';
+import { RoleEnum }                                      from '../enums/role.enum';
+import { Transform }                                     from 'class-transformer';
+import { IsEmail, IsEnum, IsOptional, IsString, Length } from 'class-validator';
 
 export class CreateCompanyUserInviteDto {
 
@@ -17,6 +17,14 @@ export class CreateCompanyUserInviteDto {
   @Transform(({value}) => value.toLowerCase())
   @IsOptional()
   public role?: RoleEnum;
+
+  @ApiProperty({
+    description: 'The position of the user',
+    type: String,
+  })
+  @IsString()
+  @Length(1, 255)
+  public position!: string;
 
   @ApiProperty({
     description: 'The message to be sent to the user',

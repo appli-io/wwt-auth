@@ -28,12 +28,13 @@ export class CompanyService {
 
   public async create(createCompanyDto: CreateCompanyDto, logo: Express.Multer.File, userId: string) {
     await this.checkIfCompanyExists(createCompanyDto.nationalId, createCompanyDto.country);
-    await this.checkUsernameUniqueness(createCompanyDto.username);
+    // await this.checkUsernameUniqueness(createCompanyDto.username);
     await this.checkEmailUniqueness(createCompanyDto.email);
 
     const company: CompanyEntity = this._companyRepository.create({
       ...createCompanyDto,
       owner: userId,
+      username: await this.generateUsername(createCompanyDto.name),
     });
 
     if (logo) {
@@ -121,5 +122,14 @@ export class CompanyService {
 
     if (company > 0)
       throw new ConflictException('CONFLICT_EMAIL');
+  }
+
+  private async generateUsername(name: string): Promise<string> {
+    const pointSlug = this._commonService.generatePointSlug(name);
+    const count = await this._companyRepository.count({username: {$like: `${ pointSlug }%`}});
+
+    if (count > 0) return `${ pointSlug }${ count }`;
+
+    return pointSlug;
   }
 }

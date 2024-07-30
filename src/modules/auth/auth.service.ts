@@ -25,6 +25,7 @@ import { SignInDto }                                                            
 import { SignUpDto }                                                                           from './dtos/sign-up.dto';
 import { IAuthResult }                                                                         from './interfaces/auth-result.interface';
 import { CompanyUserService }                                                                  from '@modules/company-user/company-user.service';
+import { CompanyService }                                                                      from '@modules/company/company.service';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +34,7 @@ export class AuthService {
     private readonly cacheManager: Cache,
     private readonly commonService: CommonService,
     private readonly usersService: UsersService,
+    private readonly companyService: CompanyService,
     private readonly companyUserService: CompanyUserService,
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService,
@@ -42,17 +44,23 @@ export class AuthService {
   public async signUp(dto: SignUpDto, domain?: string): Promise<IMessage> {
     const {name, email, password1, password2} = dto;
     this.comparePasswords(password1, password2);
+
     const user = await this.usersService.create(
       OAuthProvidersEnum.LOCAL,
       email,
       name,
       password1,
     );
+
     const confirmationToken = await this.jwtService.generateToken(
       user,
       TokenTypeEnum.CONFIRMATION,
       domain,
     );
+
+    if (dto.token) await this.companyUserService.assignCompanyToUserByInviteToken(dto.token, user);
+    else if (dto.company) await this.companyService.create(dto.company, undefined, user.id);
+
     this.mailerService.sendConfirmationEmail(user, confirmationToken);
     return this.commonService.generateMessage('Registration successful');
   }
