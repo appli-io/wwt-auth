@@ -260,7 +260,11 @@ export class AuthService {
         throw new BadRequestException('Invalid email');
       }
 
-      return this.usersService.findOneByEmail(emailOrUsername, [ 'assignedCompanies', 'companyUsers', 'activeCompany' ]);
+      const user = await this.usersService.findOneByEmail(emailOrUsername, [ 'assignedCompanies', 'companyUsers', 'activeCompany' ]);
+
+      if (isUndefined(user) || isNull(user)) throw new UnauthorizedException('Invalid credentials');
+
+      return user;
     }
 
     if (

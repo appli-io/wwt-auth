@@ -97,13 +97,10 @@ export class UsersService {
     return user;
   }
 
-  public async findOneByEmail(email: string, populate?: any[]): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({
+  public async findOneByEmail(email: string, populate: any[] = []): Promise<UserEntity> {
+    return await this._usersRepository.findOne({
       email: email.toLowerCase(),
     }, {populate: [ ...populate, 'avatar' ]});
-    this.throwUnauthorizedException(user);
-
-    return user;
   }
 
   // necessary for password reset

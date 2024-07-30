@@ -48,12 +48,12 @@ export class CompanyEntity implements ICompany {
   @Length(5, 255)
   public email: string;
 
-  @Property({columnType: 'varchar', length: 255})
+  @Property({columnType: 'varchar', length: 255, nullable: true})
   @IsString()
   @IsUrl()
   @IsOptional()
   @Length(5, 255)
-  public website: string;
+  public website?: string;
 
   @Property({columnType: 'boolean', default: false})
   public isVerified: boolean;

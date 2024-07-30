@@ -20,20 +20,24 @@ export class SeederService {
   }
 
   public async seedUsers() {
+    const password = this._configService.get('prefilledUserPassword', {infer: true});
+
+    this.logger.log(` Prefilled user password: ${ password }.`);
+
     // Seed adminUser
     const users: CreateUserDto[] = [
       {
         provider: OAuthProvidersEnum.LOCAL,
         email: 'david.misa97@gmail.com',
         name: 'David Misael Villegas Sandoval',
-        password: this._configService.get('prefilledUserPassword', {infer: true}),
+        password,
         confirmed: true
       },
       {
         provider: OAuthProvidersEnum.LOCAL,
         email: 'david.misa001@gmail.com',
         name: 'David Misael Villegas Sandoval',
-        password: this._configService.get('prefilledUserPassword', {infer: true}),
+        password,
         confirmed: true
       }
     ];
@@ -44,10 +48,17 @@ export class SeederService {
         // Check if user already exists
         const existingUser = await this._userService.findOneByEmail(user.email);
         // If exist user, do nothing
-        if (existingUser) return;
+        if (existingUser) {
+          this.logger.debug(`User ${ user.email } already exists`);
+          return;
+        }
         await this._userService.create(user.provider, user.email, user.name, user.password, user.confirmed);
+
+        this.logger.debug(`User ${ user.email } created`);
       } catch (e) {
         console.error(e);
+
+        this.logger.error(`Error creating user ${ user.email }`);
       }
     });
 
@@ -71,9 +82,14 @@ export class SeederService {
     const promises = companies.map(async (company) => {
       try {
         await this._companyService.create(company, undefined, userId);
+        this.logger.debug(`Company ${ company.name } created`);
       } catch (e) {
         console.error(e);
       }
     });
+
+
+    await Promise.all(promises);
+    0;
   }
 }
