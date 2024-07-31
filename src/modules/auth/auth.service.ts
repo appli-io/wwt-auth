@@ -45,6 +45,9 @@ export class AuthService {
     const {name, email, password1, password2} = dto;
     this.comparePasswords(password1, password2);
 
+    if (dto.token) await this.companyUserService.validateTokenAndUsersEmail(dto.token, email);
+    else if (dto.company) await this.companyService.validateCompany(dto.company);
+
     const user = await this.usersService.create(
       OAuthProvidersEnum.LOCAL,
       email,
@@ -58,7 +61,10 @@ export class AuthService {
       domain,
     );
 
-    if (dto.token) await this.companyUserService.assignCompanyToUserByInviteToken(dto.token, user);
+    if (dto.token) {
+      const companyUser = await this.companyUserService.assignCompanyToUserByInviteToken(dto.token, user);
+      await this.usersService.setActiveCompany(user.id, companyUser.company.id);
+    }
     else if (dto.company) await this.companyService.create(dto.company, undefined, user.id);
 
     this.mailerService.sendConfirmationEmail(user, confirmationToken);

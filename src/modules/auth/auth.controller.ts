@@ -1,5 +1,18 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, Res, UnauthorizedException, UseGuards, } from '@nestjs/common';
-import { ConfigService }                                                                                         from '@nestjs/config';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UnprocessableEntityException,
+  UseGuards,
+}                                       from '@nestjs/common';
+import { ConfigService }                from '@nestjs/config';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -7,8 +20,8 @@ import {
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
-}                                                                                                                from '@nestjs/swagger';
-import { FastifyReply, FastifyRequest }                                                                          from 'fastify';
+}                                       from '@nestjs/swagger';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 import AES      from 'crypto-js/aes';
 import CryptoJS from 'crypto-js';
@@ -76,6 +89,8 @@ export class AuthController {
     @Origin() origin: string | undefined,
     @Body() signUpDto: SignUpDto,
   ): Promise<IMessage> {
+    if (!signUpDto.token && !signUpDto.company) throw new UnprocessableEntityException('TOKEN_OR_COMPANY_REQUIRED');
+
     return await this._authService.signUp(signUpDto, origin);
   }
 

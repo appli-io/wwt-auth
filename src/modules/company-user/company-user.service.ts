@@ -82,16 +82,18 @@ export class CompanyUserService {
     await this._commonService.saveEntity(userCompany, true);
   }
 
-  public async assignCompanyToUserByInviteToken(token: string, user: UserEntity) {
+  public async validateTokenAndUsersEmail(token: string, email: string) {
+    if (!token) return;
+
     const invite = await this._companyUserInviteService.getByToken(token);
 
-    if (!invite) throw new NotFoundException('Invite not found');
+    if (!invite) throw new NotFoundException('INVITE_NOT_FOUND');
 
-    const isUserInCompany: boolean = await this.isUserInCompany(invite.company.id, user.id);
+    if (invite.email !== email) throw new ConflictException('TOKEN_EMAIL_MISMATCH');
+  }
 
-    if (isUserInCompany) throw new ConflictException('User is already in company');
-
-    if (invite.email !== user.email) throw new ConflictException('User email does not match invite email');
+  public async assignCompanyToUserByInviteToken(token: string, user: UserEntity) {
+    const invite = await this._companyUserInviteService.getByToken(token);
 
     const userCompany = this._userCompanyRepository.create({
       user: user.id,
@@ -103,6 +105,8 @@ export class CompanyUserService {
 
     await this._commonService.saveEntity(userCompany, true);
     await this._companyUserInviteService.updateJoined(invite);
+
+    return userCompany;
   }
 
   public async removeCompanyFromUser(companyId: string, userId: string): Promise<boolean> {

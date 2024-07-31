@@ -50,6 +50,13 @@ export class CompanyService {
     return this.findById(company.id);
   }
 
+  public async validateCompany(dto: CreateCompanyDto) {
+    await this.checkIfCompanyExists(dto.nationalId, dto.country);
+    await this.checkEmailUniqueness(dto.email);
+
+    return true;
+  }
+
   public async findAll(query: CompanyQueryDto, pageable: Pageable): Promise<Page<CompanyEntity>> {
     const whereClause: QBFilterQuery<CompanyEntity> = {};
 
