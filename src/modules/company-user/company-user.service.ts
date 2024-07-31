@@ -88,7 +88,7 @@ export class CompanyUserService {
     const invite = await this._companyUserInviteService.getByToken(token);
 
     if (!invite) throw new NotFoundException('INVITE_NOT_FOUND');
-
+    if (invite.joined) throw new ConflictException('INVITE_ALREADY_USED');
     if (invite.email !== email) throw new ConflictException('TOKEN_EMAIL_MISMATCH');
   }
 
