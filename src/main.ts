@@ -1,3 +1,5 @@
+import './config/instrument.config';
+
 import { Logger, ValidationPipe }                 from '@nestjs/common';
 import { ConfigService }                          from '@nestjs/config';
 import { NestFactory, Reflector }                 from '@nestjs/core';
