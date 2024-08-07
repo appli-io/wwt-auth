@@ -71,6 +71,10 @@ export class EventService {
     if (!event) throw new BadRequestException('Event not found');
     
     updateOnlyChangedFields(event, updateEventDto)
+    
+    if (updateEventDto.isAllDay === true) {
+      event.endDate = null;
+    }
 
     try {
       await this._commonService.saveEntity(event, true);
