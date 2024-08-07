@@ -44,6 +44,7 @@ import { SentryModule }  from '@sentry/nestjs/setup';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
@@ -67,7 +68,6 @@ import { SentryModule }  from '@sentry/nestjs/setup';
     DevtoolsModule.register({
       http: process.env.NODE_ENV !== 'production',
     }),
-    SentryModule.forRoot(),
     FastifyMulterModule,
     FirebaseModule,
     CommonModule,
