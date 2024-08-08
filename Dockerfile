@@ -29,6 +29,10 @@ COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modul
 
 COPY --chown=node:node . .
 
+ARG SENTRY_AUTH_TOKEN=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
+
+ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+
 RUN npm run build
 
 ENV NODE_ENV production

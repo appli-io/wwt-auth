@@ -34,7 +34,8 @@ async function bootstrap() {
   await app.register(fastifyCsrfProtection as any, {cookieOpts: {signed: true}});
   await app.register(fastifyCors as any, {
     credentials: true,
-    origin: '*'
+    origin: '*',
+    allowedHeaders: [ 'Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Forwarded-Proto', 'X-Forwarded-For', 'X-Forwarded-Host', 'X-Forwarded-Port', 'X-Requested-With', 'sentry-trace', 'baggage' ]
   });
 
   app.useGlobalPipes(
