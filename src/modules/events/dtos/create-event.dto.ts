@@ -1,10 +1,10 @@
-import { ApiProperty }                                                                   from '@nestjs/swagger';
-import { EventTypeEnum }                                                                 from '../enums/event-type.enum';
-import { EventStatusEnum }                                                               from '../enums/event-status.enum';
-import { IEventUrl }                                                                     from '../interfaces/event-url.interface';
-import { IEventOrganizer }                                                               from '../interfaces/event-organizer.interface';
-import { Allow, IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsString, Length, Min } from 'class-validator';
-import { Transform, Type }                                                               from 'class-transformer';
+import { ApiProperty }                                                                              from '@nestjs/swagger';
+import { EventTypeEnum }                                                                            from '../enums/event-type.enum';
+import { EventStatusEnum }                                                                          from '../enums/event-status.enum';
+import { IEventUrl }                                                                                from '../interfaces/event-url.interface';
+import { IEventOrganizer }                                                                          from '../interfaces/event-organizer.interface';
+import { Allow, IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsString, Length, Min, MinLength } from 'class-validator';
+import { Transform, Type }                                                                          from 'class-transformer';
 
 export class CreateEventDto {
   @ApiProperty({
@@ -19,7 +19,7 @@ export class CreateEventDto {
     description: 'Event description',
   })
   @IsString()
-  @Length(3, 255)
+  @MinLength(10)
   public description: string;
 
   @ApiProperty({
