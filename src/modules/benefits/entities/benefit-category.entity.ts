@@ -2,6 +2,9 @@ import { Collection, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Propert
 import { v4 }                                                                       from 'uuid';
 import { BenefitEntity }                                                            from '@modules/benefits/entities/benefit.entity';
 import { FileEntity }                                                               from '@modules/firebase/entities/file.entity';
+import { CompanyEntity }                                                            from '@modules/company/entities/company.entity';
+import { CompanyUserEntity }                                                        from '@modules/company-user/entities/company-user.entity';
+import { BenefitCategoryViewEntity }                                                from '@modules/benefits/entities/benefit-category-view.entity';
 
 @Entity({tableName: 'benefit_categories'})
 export class BenefitCategoryEntity {
@@ -32,11 +35,20 @@ export class BenefitCategoryEntity {
   @ManyToOne(() => BenefitCategoryEntity, {nullable: true})
   parent?: BenefitCategoryEntity;
 
+  @ManyToOne(() => CompanyEntity)
+  company?: CompanyEntity;
+
+  @ManyToOne(() => CompanyUserEntity)
+  createdBy?: CompanyUserEntity;
+
   @OneToMany(() => BenefitCategoryEntity, category => category.parent)
   subCategories = new Collection<BenefitCategoryEntity>(this);
 
   @OneToMany(() => BenefitEntity, benefit => benefit.category)
   benefits = new Collection<BenefitEntity>(this);
+
+  @OneToMany(() => BenefitCategoryViewEntity, view => view.benefitCategory)
+  views = new Collection<BenefitCategoryViewEntity>(this);
 
   @Property()
   createdAt: Date = new Date();

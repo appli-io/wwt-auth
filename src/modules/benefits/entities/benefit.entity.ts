@@ -6,6 +6,9 @@ import { BenefitTypeEnum }       from '@modules/benefits/enums/benefit-type.enum
 import { FileEntity }            from '@modules/firebase/entities/file.entity';
 import { v4 }                    from 'uuid';
 import { BenefitLocationEntity } from '@modules/benefits/entities/benefit-location.entity';
+import { BenefitViewEntity }     from '@modules/benefits/entities/benefit-view.entity';
+import { CompanyEntity }         from '@modules/company/entities/company.entity';
+import { CompanyUserEntity }     from '@modules/company-user/entities/company-user.entity';
 
 @Entity({tableName: 'benefits'})
 export class BenefitEntity {
@@ -37,13 +40,22 @@ export class BenefitEntity {
   public image?: FileEntity;
 
   @ManyToOne(() => BenefitCompanyEntity)
-  company!: BenefitCompanyEntity;
+  benefitCompany!: BenefitCompanyEntity;
 
   @ManyToOne(() => BenefitCategoryEntity)
   category!: BenefitCategoryEntity;
 
+  @ManyToOne(() => CompanyEntity)
+  company!: CompanyEntity;
+
+  @ManyToOne(() => CompanyUserEntity)
+  createdBy!: CompanyUserEntity;
+
   @OneToMany(() => BenefitLocationEntity, location => location.benefit)
   locations = new Collection<BenefitLocationEntity>(this);
+
+  @OneToMany(() => BenefitViewEntity, view => view.benefit)
+  views = new Collection<BenefitViewEntity>(this);
 
   @Property({onCreate: () => new Date()})
   public createdAt: Date = new Date();

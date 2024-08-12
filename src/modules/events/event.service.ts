@@ -1,13 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { EventEntity } from './entities/event.entity';
-import { EventQueryDto } from './dtos/event-query.dto';
-import { QBFilterQuery } from '@mikro-orm/core';
+
+import { QBFilterQuery }    from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
-import { CreateEventDto } from './dtos/create-event.dto';
-import { CommonService } from '@common/common.service';
-import { getCoordinates } from '@lib/gmap-extract-lat-long';
+
+import { CommonService }           from '@common/common.service';
 import { updateOnlyChangedFields } from '@common/utils/functions.util';
+import { EventQueryDto }           from './dtos/event-query.dto';
+import { CreateEventDto }          from './dtos/create-event.dto';
+import { EventEntity }             from './entities/event.entity';
 
 
 @Injectable()
@@ -18,23 +19,23 @@ export class EventService {
   ) {}
 
   public async findAll(query: EventQueryDto, companyId: string) {
-    const whereClause: QBFilterQuery<EventEntity> = { company: { id: companyId } };
+    const whereClause: QBFilterQuery<EventEntity> = {company: {id: companyId}};
 
-    if (query.id) whereClause['id'] = { $eq: query.id };
-    if (query.title) whereClause['title'] = { $ilike: `%${query.title}%` };
+    if (query.id) whereClause['id'] = {$eq: query.id};
+    if (query.title) whereClause['title'] = {$ilike: `%${ query.title }%`};
     if (query.isAllDay) whereClause['isAllDay'] = query.isAllDay;
     if (query.startDate) whereClause['startDate'] = query.startDate;
     if (query.endDate) whereClause['endDate'] = query.endDate;
-    if (query.location) whereClause['location'] = { $ilike: `%${query.location}%` };
+    if (query.location) whereClause['location'] = {$ilike: `%${ query.location }%`};
     //capacity
     if (query.type) whereClause['type'] = query.type;
     if (query.status) whereClause['status'] = query.status;
 
-    return this._eventRepository.findAll({ where: whereClause });
+    return this._eventRepository.findAll({where: whereClause, orderBy: {startDate: 'DESC'}});
   }
 
   public async findOne(id: string): Promise<EventEntity> {
-    return this._eventRepository.findOne({ id });
+    return this._eventRepository.findOne({id});
   }
 
   public async create(createEventDto: CreateEventDto, userId: string, companyId: string): Promise<EventEntity> {
@@ -44,20 +45,6 @@ export class EventService {
       createdBy: userId,
     });
 
-    if (event.url?.some((url) => url.platform === 'maps')) {
-      await Promise.all(
-        event.url.map(async (url) => {
-          if (url.platform === 'maps' && url.url) {
-            const { lat, lng } = await getCoordinates(url.url);
-            url.latitude = lat;
-            url.longitude = lng;
-          }
-
-          return url;
-        }),
-      );
-    }
-
     try {
       await this._commonService.saveEntity(event, true);
       return event;
@@ -66,12 +53,12 @@ export class EventService {
     }
   }
 
-  public async update(id: string, updateEventDto: CreateEventDto, companyId:string): Promise<EventEntity> {
-    const event = await this._eventRepository.findOne({ id, company: { id: companyId }});
+  public async update(id: string, updateEventDto: CreateEventDto, companyId: string): Promise<EventEntity> {
+    const event = await this._eventRepository.findOne({id, company: {id: companyId}});
     if (!event) throw new BadRequestException('Event not found');
-    
-    updateOnlyChangedFields(event, updateEventDto)
-    
+
+    updateOnlyChangedFields(event, updateEventDto);
+
     if (updateEventDto.isAllDay === true) {
       event.endDate = null;
     }
@@ -85,12 +72,11 @@ export class EventService {
   }
 
   public async delete(id: string): Promise<void> {
-    const event = await this._eventRepository.findOne({ id });
+    const event = await this._eventRepository.findOne({id});
     if (!event) throw new BadRequestException('Event not found');
 
     await this._commonService.removeEntity(event);
   }
 
 
-  
 }
