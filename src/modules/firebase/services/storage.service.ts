@@ -1,12 +1,17 @@
-import { Injectable }                      from '@nestjs/common';
+import { Injectable }    from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+import { Bucket }                          from '@google-cloud/storage';
+import { InjectRepository }                from '@mikro-orm/nestjs';
+import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { getDownloadURL, getStorage }      from 'firebase-admin/storage';
 import { v4 }                              from 'uuid';
-import { Bucket }                          from '@google-cloud/storage';
-import { ConfigService }                   from '@nestjs/config';
-import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { FileEntity }                      from '@modules/firebase/entities/file.entity';
-import { InjectRepository }                from '@mikro-orm/nestjs';
-import { FileType }                        from '@modules/firebase/enums/file-type.enum';
+
+import { generateThumbnail, optimizeImage } from '@common/utils/file.utils';
+import { FileEntity }                       from '@modules/firebase/entities/file.entity';
+import { FileType }                         from '@modules/firebase/enums/file-type.enum';
+import { UploadOptionsDto }                 from '@modules/firebase/dtos/upload-options.dto';
+import { CompanyEntity }                    from '@modules/company/entities/company.entity';
 
 @Injectable()
 export class StorageService {
@@ -17,6 +22,31 @@ export class StorageService {
     private readonly _em: EntityManager,
     private readonly _cs: ConfigService
   ) {}
+
+  async uploadFile(file: Express.Multer.File, uploadOptions: UploadOptionsDto, companyId: CompanyEntity['id']) {
+    const path = uploadOptions.isCompanyFile ? `companies/${ companyId }` : '';
+    const result = {};
+    if (uploadOptions.type === FileType.IMAGE) {
+      if (uploadOptions.mustCompress) {
+        const compressedFile = await optimizeImage(file);
+        result['image'] = await this.uploadImage(companyId, uploadOptions.type, path + '/images', compressedFile, true);
+      }
+      if (uploadOptions.mustThumbnail) {
+        const thumbnailBuffer = await generateThumbnail(file.buffer).webp().toBuffer();
+        const thumbnailFile: Express.Multer.File = {
+          ...file,
+          buffer: thumbnailBuffer,
+          originalname: `${ v4() }-thumbnail.webp`,
+          mimetype: 'image/webp'
+        };
+        result['thumbnail'] = await this.uploadImage(companyId, uploadOptions.type, path + '/images/thumbnails', thumbnailFile, true);
+      }
+    } else {
+      result['file'] = await this.uploadImage(companyId, uploadOptions.type, path + '/files', file, true);
+    }
+
+    return result;
+  }
 
   /**
    * Upload Image to Firebase Storage Bucket
