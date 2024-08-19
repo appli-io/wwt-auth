@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsNumber, IsObject, IsString, Length, MinLength } from 'class-validator';
+import { IsNumber, IsObject, IsOptional, IsString, Length, MinLength } from 'class-validator';
 
 export class CreateBenefitCategoryDto {
   @ApiProperty({
@@ -28,15 +28,19 @@ export class CreateBenefitCategoryDto {
 
   @ApiProperty({
     description: 'Category metadata',
-    type: Object
+    type: Object,
+    required: false
   })
   @IsObject()
+  @IsOptional()
   public metadata: Record<string, any>;
 
   @ApiProperty({
     description: 'Parent category id',
-    type: String
+    type: String,
+    required: false
   })
   @IsString()
+  @IsOptional()
   public parentId: string;
 }

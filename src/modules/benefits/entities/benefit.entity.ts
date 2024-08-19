@@ -16,22 +16,22 @@ export class BenefitEntity {
   id: string = v4();
 
   @Property()
-  title!: string;
+  name!: string;
 
   @Property({type: 'text'})
   description!: string;
 
-  @Property({type: 'text'})
-  requirements!: string;
+  @Property({type: 'text', nullable: true})
+  requirements?: string;
 
-  @Property({type: 'text'})
-  conditions!: string;
+  @Property({type: 'text', nullable: true})
+  conditions?: string;
 
-  @Property({type: 'json'})
-  discounts: Record<string, any> = {};
+  @Property({type: 'json', nullable: true})
+  discounts?: Record<string, any>;
 
-  @Property({type: 'date'})
-  dueDate!: Date;
+  @Property({type: 'date', nullable: true})
+  dueDate?: Date;
 
   @Enum({items: () => BenefitTypeEnum})
   type!: BenefitTypeEnum;

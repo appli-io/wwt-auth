@@ -1,6 +1,6 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository }                                                     from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository }                                      from '@mikro-orm/postgresql';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository }                                 from '@mikro-orm/nestjs';
+import { EntityManager, EntityRepository }                  from '@mikro-orm/postgresql';
 
 import { CommonService }              from '@common/common.service';
 import { BenefitEntity }              from '@modules/benefits/entities/benefit.entity';
@@ -8,12 +8,12 @@ import { BenefitCompanyEntity }       from '@modules/benefits/entities/benefit-c
 import { BenefitCategoryEntity }      from '@modules/benefits/entities/benefit-category.entity';
 import { CreateBenefitCategoryDto }   from '@modules/benefits/dtos/create-benefit-category.dto';
 import { CompanyEntity }              from '@modules/company/entities/company.entity';
-import { UserEntity }                 from '@modules/users/entities/user.entity';
 import { CompanyUserService }         from '@modules/company-user/company-user.service';
-import { RoleEnum }                   from '@modules/company-user/enums/role.enum';
 import { BenefitViewService }         from '@modules/benefits/services/benefit-view.service';
 import { CreateBenefitDto }           from '@modules/benefits/dtos/create-benefit.dto';
 import { BenefitCategoryViewService } from '@modules/benefits/services/benefit-category-view.service';
+import { CompanyUserEntity }          from '@modules/company-user/entities/company-user.entity';
+import { CreateBenefitCompanyDto }    from '@modules/benefits/dtos/create-benefit-company.dto';
 
 @Injectable()
 export class BenefitsService {
@@ -29,20 +29,18 @@ export class BenefitsService {
   ) {}
 
   // Category Methods
-  public async createCategory(dto: CreateBenefitCategoryDto, companyId: CompanyEntity['id'], userId: UserEntity['id']): Promise<BenefitCategoryEntity> {
-    await this._checkIfCategoryExistByName(dto.name, companyId);
-    const member = await this._companyUserService.findOne(userId, companyId);
+  public async createCategory(dto: CreateBenefitCategoryDto, member: CompanyUserEntity): Promise<BenefitCategoryEntity> {
+    await this._checkIfCategoryExistByName(dto.name, member.company.id);
 
-    if (!member || !member.isActive || member.role !== RoleEnum.ADMIN) throw new ForbiddenException('USER_NOT_ACTIVE');
-
-    const parent = dto.parentId ? await this.findOneCategory(dto.parentId, companyId) : null;
+    const parent = dto.parentId ? await this.findOneCategory(dto.parentId, member.company.id, false) : null;
 
     if (dto.parentId && !parent) throw new NotFoundException('PARENT_CATEGORY_NOT_FOUND');
 
     const category = this._categoryRepository.create({
       ...dto,
-      company: companyId,
-      parent: parent
+      company: member.company.id,
+      parent: parent,
+      createdBy: member
     });
 
     await this._commonService.saveEntity(category, true);
@@ -50,44 +48,32 @@ export class BenefitsService {
     return category;
   }
 
-  public async findOneCategory(id: string, companyId: CompanyEntity['id']): Promise<BenefitCategoryEntity> {
+  public async findOneCategory(id: string, companyId: CompanyEntity['id'], count: boolean = true): Promise<BenefitCategoryEntity> {
     const category = await this._categoryRepository.findOne({id, company: {id: companyId}});
 
     if (!category) throw new NotFoundException('CATEGORY_NOT_FOUND');
 
-    this._benefitCategoryViewService.create(id);
+    // Create view registry
+    if (count) this._benefitCategoryViewService.create(id);
 
     return category;
   }
 
   public async findAllCategories(companyId: CompanyEntity['id']): Promise<BenefitCategoryEntity[]> {
-    const qb = this._categoryRepository.createQueryBuilder('c');
-    const benefits = await qb.select([ 'c.*', 'COUNT(cv.id) as views' ])
-      .leftJoin('c.benefits', 'cv')
-      .where({company: {id: companyId}})
-      .groupBy('c.id')
-      .orderBy({views: 'DESC'})
-      .getResultList();
-
-    console.log(benefits);
-
-    return benefits;
+    return this._categoryRepository.find({company: {id: companyId}});
   }
 
   // Benefit Methods
-  public async createBenefit(dto: CreateBenefitDto, companyId: CompanyEntity['id'], userId: UserEntity['id']): Promise<BenefitEntity> {
-    const category = await this.findOneCategory(dto.categoryId, companyId);
+  public async createBenefit(dto: CreateBenefitDto, member: CompanyUserEntity): Promise<BenefitEntity> {
+    const category = await this.findOneCategory(dto.categoryId, member.company.id, false);
 
     if (!category) throw new NotFoundException('CATEGORY_NOT_FOUND');
-
-    const member = await this._companyUserService.findOne(userId, companyId);
-
-    if (!member || !member.isActive) throw new ForbiddenException('USER_NOT_ACTIVE');
 
     const benefit = this._benefitRepository.create({
       ...dto,
       category,
-      company: companyId,
+      company: member.company.id,
+      benefitCompany: dto.companyId,
       createdBy: member
     });
 
@@ -97,7 +83,7 @@ export class BenefitsService {
   }
 
   public async findOneBenefit(id: string, companyId: CompanyEntity['id']): Promise<BenefitEntity> {
-    const benefit = await this._benefitRepository.findOne({id, company: {id: companyId}});
+    const benefit = await this._benefitRepository.findOne({id, company: {id: companyId}}, {populate: [ 'category', 'benefitCompany' ]});
 
     if (!benefit) throw new NotFoundException('BENEFIT_NOT_FOUND');
 
@@ -108,15 +94,20 @@ export class BenefitsService {
   }
 
   public async findAllBenefits(companyId: CompanyEntity['id']): Promise<BenefitEntity[]> {
+    return await this._benefitRepository.find({company: {id: companyId}}, {populate: [ 'category', 'benefitCompany' ]});
+  }
+
+  public async findMostViewedBenefits(companyId: CompanyEntity['id']): Promise<BenefitEntity[]> {
     const qb = this._benefitRepository.createQueryBuilder('b');
 
     // count views
-    const benefits = await qb.select([ 'b.*', 'COUNT(bv.id) as views' ])
+    const benefits = await qb.select([ 'b.*', 'COUNT(bv.id) as views_count' ])
       .leftJoin('b.views', 'bv')
       .where({company: {id: companyId}})
       .andWhere('bv.timestamp > NOW() - INTERVAL \'1 month\'') // TODO: make it dynamic
       .groupBy('b.id')
-      .orderBy({views: 'DESC'})
+      .orderBy({views_count: 'DESC'})
+      .limit(5)
       .getResultList();
 
     console.log(benefits);
@@ -130,6 +121,23 @@ export class BenefitsService {
     if (!benefit) throw new NotFoundException('BENEFIT_NOT_FOUND');
 
     await this._commonService.removeEntity(benefit);
+  }
+
+  // Company Methods
+  public async createCompany(dto: CreateBenefitCompanyDto, member: CompanyUserEntity): Promise<BenefitCompanyEntity> {
+    const company = this._companyRepository.create({
+      ...dto,
+      company: member.company.id,
+      createdBy: member
+    });
+
+    await this._commonService.saveEntity(company, true);
+
+    return company;
+  }
+
+  public async findAllCompanies(companyId: CompanyEntity['id']): Promise<BenefitCompanyEntity[]> {
+    return this._companyRepository.find({company: {id: companyId}});
   }
 
   private async _checkIfCategoryExistByName(name: string, companyId: string) {

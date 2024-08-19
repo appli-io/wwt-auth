@@ -5,8 +5,6 @@ import { Observable } from 'rxjs';
 
 import { memberUnneededKey }  from '@modules/auth/decorators/member-unneeded.decorator';
 import { CompanyUserService } from '@modules/company-user/company-user.service';
-import { RoleEnum }           from '@modules/company-user/enums/role.enum';
-import { requiredRolesKey }   from '@modules/auth/decorators/requierd-role.decorator';
 import { FastifyRequest }     from 'fastify';
 
 @Injectable()
@@ -18,13 +16,11 @@ export class MemberGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const memberUnneeded = this._reflector.get<boolean>(memberUnneededKey, context.getHandler());
-    const requiredRoles = this._reflector.get<RoleEnum[]>(requiredRolesKey, context.getHandler());
 
     /**
      * If memberUnneeded is true, then no need to check if user is part of company
-     * If requiredRoles is true, then check if user has the required roles bcs of the RolesGuard, that already checks user roles at company
      */
-    if (memberUnneeded || requiredRoles) {
+    if (memberUnneeded) {
       return true; // if memberUnneeded or requiredRoles is true, then no need to check if user is part of company
     }
 
@@ -32,10 +28,16 @@ export class MemberGuard implements CanActivate {
     const userId = request.user;
     const companyId = request.companyId;
 
-    if (!userId || !companyId) {
-      throw new ForbiddenException('Invalid permissions');
-    }
+    return this._companyUserService.findOne(userId, companyId)
+      .then((member) => {
+        console.log('member', member);
+        if (!member) throw new ForbiddenException('USER_NOT_MEMBER');
+        if (!member.isActive) throw new ForbiddenException('USER_NOT_ACTIVE');
 
-    return this._companyUserService.isUserInCompany(companyId, userId);
+        // save the member at the request
+        request.member = member;
+
+        return true;
+      });
   }
 }

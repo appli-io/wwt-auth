@@ -139,17 +139,14 @@ export class CompanyUserService {
 
   public async getUserRole(companyId: string, userId: string, requiredRoles: RoleEnum[]) {
     const qb = this._userCompanyRepository
-      .getEntityManager()
-      .createQueryBuilder(CompanyUserEntity);
+      .createQueryBuilder();
 
-    qb.where({ user: userId, company: companyId });
+    qb.where({user: userId, company: companyId, isActive: true});
 
     if (requiredRoles.length > 1) qb.andWhere({ role: { $in: requiredRoles } });
 
     const results = await qb.select('role').execute();
-    const roles: RoleEnum[] = results.map(result => result.role);
-
-    return roles;
+    return results.map(result => result.role);
   }
 
   public isUserInCompany = (companyId: string, userId: string) =>
