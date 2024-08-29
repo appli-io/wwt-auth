@@ -43,7 +43,7 @@ export class BenefitsController {
   @Get('category')
   public async findAllCategories(
     @CurrentCompanyId() companyId: string,
-    @Query('layout') layout: string = LayoutEnum.FULL
+    @Query('layout') layout: string
   ) {
     const results = await this.benefitsService.findAllCategories(companyId);
 
