@@ -1,13 +1,17 @@
-import { Collection, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { v4 }                                                                       from 'uuid';
-import { BenefitEntity }                                                            from '@modules/benefits/entities/benefit.entity';
-import { FileEntity }                                                               from '@modules/firebase/entities/file.entity';
-import { CompanyEntity }                                                            from '@modules/company/entities/company.entity';
-import { CompanyUserEntity }                                                        from '@modules/company-user/entities/company-user.entity';
-import { BenefitCategoryViewEntity }                                                from '@modules/benefits/entities/benefit-category-view.entity';
+import { Collection, Entity, EntityRepositoryType, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { v4 }                                                                                             from 'uuid';
+import { BenefitEntity }                                                                                  from '@modules/benefits/entities/benefit.entity';
+import { FileEntity }                                                                                     from '@modules/firebase/entities/file.entity';
+import { CompanyEntity }                                                                                  from '@modules/company/entities/company.entity';
+import { CompanyUserEntity }                                                                              from '@modules/company-user/entities/company-user.entity';
+import { BenefitCategoryViewEntity }                                                                      from '@modules/benefits/entities/benefit-category-view.entity';
+import { BenefitCategoryRepository }                                                                      from '@modules/benefits/entities/repositories/benefit-category.repository';
 
-@Entity({tableName: 'benefit_categories'})
+@Entity({tableName: 'benefit_categories', repository: () => BenefitCategoryRepository})
 export class BenefitCategoryEntity {
+
+  [EntityRepositoryType]?: BenefitCategoryRepository;
+
   @PrimaryKey({type: 'uuid'})
   id: string = v4();
 

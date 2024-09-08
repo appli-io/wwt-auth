@@ -11,12 +11,22 @@ export class UploadOptionsDto {
   @IsOptional()
   public filename?: string;
 
-  @IsBoolean()
-  public isCompanyFile: boolean;
+  @IsString()
+  @IsOptional()
+  public customPath?: string;
 
   @IsBoolean()
-  public mustCompress: boolean;
+  @IsOptional()
+  @Transform(({value}) => value === undefined ? false : value)
+  public mustOptimize?: boolean;
 
   @IsBoolean()
-  public mustThumbnail: boolean;
+  @IsOptional()
+  @Transform(({value}) => value === undefined ? false : value)
+  public mustThumbnail?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  @Transform(({value}) => value === undefined ? false : value)
+  public useFilename?: boolean;
 }

@@ -8,23 +8,26 @@ import { BenefitCompanyEntity }       from '@modules/benefits/entities/benefit-c
 import { BenefitCategoryEntity }      from '@modules/benefits/entities/benefit-category.entity';
 import { CreateBenefitCategoryDto }   from '@modules/benefits/dtos/create-benefit-category.dto';
 import { CompanyEntity }              from '@modules/company/entities/company.entity';
-import { CompanyUserService }         from '@modules/company-user/company-user.service';
 import { BenefitViewService }         from '@modules/benefits/services/benefit-view.service';
 import { CreateBenefitDto }           from '@modules/benefits/dtos/create-benefit.dto';
 import { BenefitCategoryViewService } from '@modules/benefits/services/benefit-category-view.service';
 import { CompanyUserEntity }          from '@modules/company-user/entities/company-user.entity';
 import { CreateBenefitCompanyDto }    from '@modules/benefits/dtos/create-benefit-company.dto';
+import { BenefitCategoryRepository }  from '@modules/benefits/entities/repositories/benefit-category.repository';
+import { StorageService }             from '@modules/firebase/services/storage.service';
+import { FileType }                   from '@modules/firebase/enums/file-type.enum';
+import { BenefitCompanyRepository }   from '@modules/benefits/entities/repositories/benefit-company.repository';
 
 @Injectable()
 export class BenefitsService {
   constructor(
     @InjectRepository(BenefitEntity) private readonly _benefitRepository: EntityRepository<BenefitEntity>,
-    @InjectRepository(BenefitCompanyEntity) private readonly _companyRepository: EntityRepository<BenefitCompanyEntity>,
-    @InjectRepository(BenefitCategoryEntity) private readonly _categoryRepository: EntityRepository<BenefitCategoryEntity>,
-    private readonly _commonService: CommonService,
-    private readonly _companyUserService: CompanyUserService,
+    private readonly _companyRepository: BenefitCompanyRepository,
+    private readonly _categoryRepository: BenefitCategoryRepository,
     private readonly _benefitViewService: BenefitViewService,
     private readonly _benefitCategoryViewService: BenefitCategoryViewService,
+    private readonly _commonService: CommonService,
+    private readonly _storageService: StorageService,
     private readonly _em: EntityManager,
   ) {}
 
@@ -32,9 +35,25 @@ export class BenefitsService {
   public async createCategory(dto: CreateBenefitCategoryDto, member: CompanyUserEntity): Promise<BenefitCategoryEntity> {
     await this._checkIfCategoryExistByName(dto.name, member.company.id);
 
-    const parent = dto.parentId ? await this.findOneCategory(dto.parentId, member.company.id, false) : null;
+    const parent = dto.parent ? await this.findOneCategory(dto.parent, member.company.id, false) : null;
 
-    if (dto.parentId && !parent) throw new NotFoundException('PARENT_CATEGORY_NOT_FOUND');
+    if (dto.parent && !parent) throw new NotFoundException('PARENT_CATEGORY_NOT_FOUND');
+
+    const categoryCount = await this._categoryRepository.countByNameAndParent(dto.name, dto.parent, member.company.id);
+
+    if (categoryCount > 0) throw new ConflictException('CATEGORY_ALREADY_EXIST');
+
+    if (dto.icon) {
+      const result = await this._storageService.uploadFile(dto.icon, {type: FileType.IMAGE}, member.company.id);
+      console.log('icon: ', result);
+      dto.icon = result['image'];
+    }
+
+    if (dto.image) {
+      const result = await this._storageService.uploadFile(dto.image, {type: FileType.IMAGE, mustOptimize: true}, member.company.id);
+      console.log('image: ', result);
+      dto.image = result['image'];
+    }
 
     const category = this._categoryRepository.create({
       ...dto,
@@ -61,6 +80,14 @@ export class BenefitsService {
 
   public async findAllCategories(companyId: CompanyEntity['id']): Promise<BenefitCategoryEntity[]> {
     return this._categoryRepository.find({company: {id: companyId}});
+  }
+
+  public async deleteCategory(id: string, companyId: CompanyEntity['id']): Promise<void> {
+    const category = await this._categoryRepository.findOne({id, company: {id: companyId}});
+
+    if (!category) throw new NotFoundException('CATEGORY_NOT_FOUND');
+
+    await this._commonService.removeEntity(category);
   }
 
   // Benefit Methods
@@ -125,6 +152,15 @@ export class BenefitsService {
 
   // Company Methods
   public async createCompany(dto: CreateBenefitCompanyDto, member: CompanyUserEntity): Promise<BenefitCompanyEntity> {
+    const tempCompany = await this._companyRepository.countByName(dto.name, member.company.id);
+
+    if (tempCompany > 0) throw new ConflictException('COMPANY_ALREADY_EXIST');
+
+    if (dto.image) {
+      const result = await this._storageService.uploadFile(dto.image, {type: FileType.IMAGE, mustOptimize: true}, member.company.id);
+      dto.image = result['image'];
+    }
+
     const company = this._companyRepository.create({
       ...dto,
       company: member.company.id,

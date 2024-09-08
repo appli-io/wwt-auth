@@ -36,7 +36,7 @@ export class ImageService {
 
       file = await optimizeImage(file);
 
-      const {id: originalId} = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, file, true);
+      const {id: originalId} = await this._storageService.upload(companyId, FileType.IMAGE, basePath, file, true);
 
       // Thumbnail;
       const thumbnailBuffer = await generateThumbnail(file.buffer).webp().toBuffer();
@@ -46,7 +46,7 @@ export class ImageService {
         originalname: `${ id }-thumbnail.webp`,
         mimetype: 'image/webp'
       };
-      const {id: thumbnailId} = await this._storageService.uploadImage(companyId, FileType.IMAGE, `${ basePath }/thumbnails`, thumbnailFile, true);
+      const {id: thumbnailId} = await this._storageService.upload(companyId, FileType.IMAGE, `${ basePath }/thumbnails`, thumbnailFile, true);
 
       const image = this._imageRepository.create({
         id: id,

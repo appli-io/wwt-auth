@@ -30,7 +30,6 @@ export class MemberGuard implements CanActivate {
 
     return this._companyUserService.findOne(userId, companyId)
       .then((member) => {
-        console.log('member', member);
         if (!member) throw new ForbiddenException('USER_NOT_MEMBER');
         if (!member.isActive) throw new ForbiddenException('USER_NOT_ACTIVE');
 

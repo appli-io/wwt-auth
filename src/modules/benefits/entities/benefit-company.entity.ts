@@ -1,11 +1,14 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { FileEntity }                                        from '@modules/firebase/entities/file.entity';
-import { v4 }                                                from 'uuid';
-import { CompanyEntity }                                     from '@modules/company/entities/company.entity';
-import { CompanyUserEntity }                                 from '@modules/company-user/entities/company-user.entity';
+import { Entity, EntityRepositoryType, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { FileEntity }                                                              from '@modules/firebase/entities/file.entity';
+import { v4 }                                                                      from 'uuid';
+import { CompanyEntity }                                                           from '@modules/company/entities/company.entity';
+import { CompanyUserEntity }                                                       from '@modules/company-user/entities/company-user.entity';
+import { BenefitCompanyRepository }                                                from '@modules/benefits/entities/repositories/benefit-company.repository';
 
-@Entity({tableName: 'benefit_companies'})
+@Entity({tableName: 'benefit_companies', repository: () => BenefitCompanyRepository})
 export class BenefitCompanyEntity {
+  [EntityRepositoryType]?: BenefitCompanyRepository;
+
   @PrimaryKey({type: 'uuid'})
   id: string = v4();
 

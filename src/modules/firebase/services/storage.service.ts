@@ -23,14 +23,18 @@ export class StorageService {
     private readonly _cs: ConfigService
   ) {}
 
-  async uploadFile(file: Express.Multer.File, uploadOptions: UploadOptionsDto, companyId: CompanyEntity['id']) {
-    const path = uploadOptions.isCompanyFile ? `companies/${ companyId }` : '';
+  async uploadFile(
+    file: Express.Multer.File,
+    uploadOptions: UploadOptionsDto,
+    companyId?: CompanyEntity['id']
+  ) {
+    const path = uploadOptions.customPath || (companyId ? `companies/${ companyId }` : '');
     const result = {};
     if (uploadOptions.type === FileType.IMAGE) {
-      if (uploadOptions.mustCompress) {
-        const compressedFile = await optimizeImage(file);
-        result['image'] = await this.uploadImage(companyId, uploadOptions.type, path + '/images', compressedFile, true);
-      }
+      if (uploadOptions.mustOptimize) file = await optimizeImage(file);
+
+      result['image'] = await this.upload(companyId, uploadOptions.type, path + '/images', file, uploadOptions.useFilename);
+
       if (uploadOptions.mustThumbnail) {
         const thumbnailBuffer = await generateThumbnail(file.buffer).webp().toBuffer();
         const thumbnailFile: Express.Multer.File = {
@@ -39,10 +43,10 @@ export class StorageService {
           originalname: `${ v4() }-thumbnail.webp`,
           mimetype: 'image/webp'
         };
-        result['thumbnail'] = await this.uploadImage(companyId, uploadOptions.type, path + '/images/thumbnails', thumbnailFile, true);
+        result['thumbnail'] = await this.upload(companyId, uploadOptions.type, path + '/images/thumbnails', thumbnailFile, uploadOptions.useFilename);
       }
     } else {
-      result['file'] = await this.uploadImage(companyId, uploadOptions.type, path + '/files', file, true);
+      result['file'] = await this.upload(companyId, uploadOptions.type, path + '/files', file, uploadOptions.useFilename);
     }
 
     return result;
@@ -59,7 +63,7 @@ export class StorageService {
    *
    * @returns {Promise<FileEntity>} filepath, fileUrl and fileName
    */
-  async uploadImage(
+  async upload(
     companyId: string | undefined,
     type: FileType,
     path: string,

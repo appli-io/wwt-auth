@@ -287,7 +287,7 @@ export class UsersService {
     // compress the image and make it smaller
     fileBuffer = await sharp(fileBuffer).resize(500).toBuffer();
 
-    user.avatar = await this._storageService.uploadImage(undefined, FileType.IMAGE, path, {
+    user.avatar = await this._storageService.upload(undefined, FileType.IMAGE, path, {
       ...file,
       buffer: fileBuffer,
       size: fileBuffer.length,

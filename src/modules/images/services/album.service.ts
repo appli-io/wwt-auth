@@ -152,7 +152,7 @@ export class AlbumService {
     const basePath: string = `companies/${ companyId }/media/albums/${ id }`;
     cover = await optimizeImage(cover);
     cover.originalname = 'cover' + path.extname(cover.originalname);
-    const coverEntity = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, cover, true);
+    const coverEntity = await this._storageService.upload(companyId, FileType.IMAGE, basePath, cover, true);
 
     // generate thumbnail
     const coverPhotoThumbnail = await generateThumbnail(cover.buffer, {width: 500}).webp().toBuffer();
@@ -163,7 +163,7 @@ export class AlbumService {
       mimetype: 'image/webp'
     } as Express.Multer.File;
 
-    const thumbnailEntity = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, coverThumbnailFile, true);
+    const thumbnailEntity = await this._storageService.upload(companyId, FileType.IMAGE, basePath, coverThumbnailFile, true);
 
     return {coverEntity, thumbnailEntity};
   }

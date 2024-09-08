@@ -113,11 +113,11 @@ export class NewsService {
     if (images?.length > 0)
       news.images.add(await Promise.all(images.map(async (image) => {
         image = await optimizeImage(image);
-        return await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, image);
+        return await this._storageService.upload(companyId, FileType.IMAGE, basePath, image);
       })));
 
     if (portraitImage) {
-      news.portraitImage = await this._storageService.uploadImage(companyId, FileType.IMAGE, basePath, portraitImage);
+      news.portraitImage = await this._storageService.upload(companyId, FileType.IMAGE, basePath, portraitImage);
     }
 
     await this._commonService.saveEntity(news, true);

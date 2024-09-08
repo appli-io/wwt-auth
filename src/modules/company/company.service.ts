@@ -40,7 +40,7 @@ export class CompanyService {
     if (logo) {
       const basePath = `companies/${ company.id }`;
       logo.originalname = 'logo' + path.extname(logo.originalname);
-      company.logo = await this._storageService.uploadImage(company.id, FileType.IMAGE, basePath, logo, true);
+      company.logo = await this._storageService.upload(company.id, FileType.IMAGE, basePath, logo, true);
     }
 
     await this._commonService.saveEntity(company, true);

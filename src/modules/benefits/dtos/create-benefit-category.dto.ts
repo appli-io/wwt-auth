@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsNumber, IsObject, IsOptional, IsString, Length, MinLength } from 'class-validator';
+import { IsNumber, IsObject, IsOptional, IsString, IsUUID, Length, MinLength } from 'class-validator';
 
 export class CreateBenefitCategoryDto {
   @ApiProperty({
@@ -23,6 +23,7 @@ export class CreateBenefitCategoryDto {
     description: 'Category order to show',
     type: Number
   })
+  @IsOptional()
   @IsNumber()
   public order: number;
 
@@ -31,8 +32,8 @@ export class CreateBenefitCategoryDto {
     type: Object,
     required: false
   })
-  @IsObject()
   @IsOptional()
+  @IsObject()
   public metadata: Record<string, any>;
 
   @ApiProperty({
@@ -40,7 +41,11 @@ export class CreateBenefitCategoryDto {
     type: String,
     required: false
   })
-  @IsString()
   @IsOptional()
-  public parentId: string;
+  @IsUUID()
+  public parent?: string;
+
+  // Internal use only
+  public icon: Express.Multer.File;
+  public image: Express.Multer.File;
 }

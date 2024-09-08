@@ -25,7 +25,7 @@ export function config(): IConfig {
     loadStrategy: LoadStrategy.JOINED,
     allowGlobalContext: true,
     forceUtcTimezone: true,
-    debug: true
+    debug: false
   };
 
   return {
