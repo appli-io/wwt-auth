@@ -13,7 +13,7 @@ export class BenefitCategoryViewService {
   public create(benefitCategoryId: string): void {
     const view = this._benefitCategoryViewRepository.create({
       benefitCategory: benefitCategoryId,
-      timestamp: new Date().getTime(),
+      timestamp: new Date(),
     });
 
     this._em.persistAndFlush(view).then();

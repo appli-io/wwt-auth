@@ -32,4 +32,7 @@ export class CreateBenefitDto {
 
   @IsUUID()
   public companyId: string;
+
+  // Internal use only
+  image?: Express.Multer.File;
 }

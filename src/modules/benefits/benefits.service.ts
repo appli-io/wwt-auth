@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository }                                 from '@mikro-orm/nestjs';
-import { EntityManager, EntityRepository }                  from '@mikro-orm/postgresql';
+import { EntityRepository }                                 from '@mikro-orm/postgresql';
 
 import { CommonService }              from '@common/common.service';
 import { BenefitEntity }              from '@modules/benefits/entities/benefit.entity';
@@ -27,8 +27,7 @@ export class BenefitsService {
     private readonly _benefitViewService: BenefitViewService,
     private readonly _benefitCategoryViewService: BenefitCategoryViewService,
     private readonly _commonService: CommonService,
-    private readonly _storageService: StorageService,
-    private readonly _em: EntityManager,
+    private readonly _storageService: StorageService
   ) {}
 
   // Category Methods
@@ -45,13 +44,11 @@ export class BenefitsService {
 
     if (dto.icon) {
       const result = await this._storageService.uploadFile(dto.icon, {type: FileType.IMAGE}, member.company.id);
-      console.log('icon: ', result);
       dto.icon = result['image'];
     }
 
     if (dto.image) {
       const result = await this._storageService.uploadFile(dto.image, {type: FileType.IMAGE, mustOptimize: true}, member.company.id);
-      console.log('image: ', result);
       dto.image = result['image'];
     }
 
@@ -68,7 +65,10 @@ export class BenefitsService {
   }
 
   public async findOneCategory(id: string, companyId: CompanyEntity['id'], count: boolean = true): Promise<BenefitCategoryEntity> {
-    const category = await this._categoryRepository.findOne({id, company: {id: companyId}});
+    const category = await this._categoryRepository.findOne({
+      id,
+      company: {id: companyId}
+    }, {populate: [ 'parent', 'icon', 'image', 'subCategories' ]});
 
     if (!category) throw new NotFoundException('CATEGORY_NOT_FOUND');
 
@@ -78,8 +78,33 @@ export class BenefitsService {
     return category;
   }
 
+  /**
+   * Find all benefits of a category, if contain subcategories, return all benefits of subcategories
+   *
+   * @param id
+   * @param companyId
+   */
+  public async findCategoryBenefits(id: string, companyId: CompanyEntity['id']): Promise<BenefitEntity[]> {
+    const category = await this._categoryRepository.findOne({
+      id,
+      company: {id: companyId}
+    }, {populate: [ 'benefits', 'benefits.category', 'benefits.benefitCompany', 'subCategories.benefits.category', 'subCategories.benefits.benefitCompany' ]});
+
+    if (!category) throw new NotFoundException('CATEGORY_NOT_FOUND');
+
+    const benefits = category.benefits.getItems();
+
+    if (category.subCategories.isInitialized()) {
+      category.subCategories.getItems().forEach((subCategory) => {
+        benefits.push(...subCategory.benefits.getItems());
+      });
+    }
+
+    return benefits;
+  }
+
   public async findAllCategories(companyId: CompanyEntity['id']): Promise<BenefitCategoryEntity[]> {
-    return this._categoryRepository.find({company: {id: companyId}});
+    return this._categoryRepository.find({company: {id: companyId}}, {populate: [ 'subCategories', 'parent', 'icon', 'image' ]});
   }
 
   public async deleteCategory(id: string, companyId: CompanyEntity['id']): Promise<void> {
@@ -95,6 +120,12 @@ export class BenefitsService {
     const category = await this.findOneCategory(dto.categoryId, member.company.id, false);
 
     if (!category) throw new NotFoundException('CATEGORY_NOT_FOUND');
+
+    console.log('dto: ', dto);
+    if (dto.image) {
+      const result = await this._storageService.uploadFile(dto.image, {type: FileType.IMAGE, mustOptimize: true}, member.company.id);
+      dto.image = result['image'];
+    }
 
     const benefit = this._benefitRepository.create({
       ...dto,
@@ -120,8 +151,17 @@ export class BenefitsService {
     return benefit;
   }
 
-  public async findAllBenefits(companyId: CompanyEntity['id']): Promise<BenefitEntity[]> {
-    return await this._benefitRepository.find({company: {id: companyId}}, {populate: [ 'category', 'benefitCompany' ]});
+  public async findAllBenefits(companyId: CompanyEntity['id'], ...options: any): Promise<BenefitEntity[]> {
+    const filter = {company: {id: companyId}};
+
+    options.forEach((option: { [key: string]: any }) => {
+      if (typeof option === 'object') {
+        Object.keys(option).forEach((key) => {
+          filter[key] = option[key];
+        });
+      }
+    });
+    return await this._benefitRepository.find(filter, {populate: [ 'category', 'benefitCompany' ]});
   }
 
   public async findMostViewedBenefits(companyId: CompanyEntity['id']): Promise<BenefitEntity[]> {
@@ -137,12 +177,10 @@ export class BenefitsService {
       .limit(5)
       .getResultList();
 
-    console.log(benefits);
-
     return benefits;
   }
 
-  public async removeBenefit(id: string, companyId: CompanyEntity['id']): Promise<void> {
+  public async deleteBenefit(id: string, companyId: CompanyEntity['id']): Promise<void> {
     const benefit = await this._benefitRepository.findOne({id, company: {id: companyId}});
 
     if (!benefit) throw new NotFoundException('BENEFIT_NOT_FOUND');
@@ -174,6 +212,14 @@ export class BenefitsService {
 
   public async findAllCompanies(companyId: CompanyEntity['id']): Promise<BenefitCompanyEntity[]> {
     return this._companyRepository.find({company: {id: companyId}});
+  }
+
+  public async deleteCompany(id: string, companyId: CompanyEntity['id']): Promise<void> {
+    const company = await this._companyRepository.findOne({id, company: {id: companyId}});
+
+    if (!company) throw new NotFoundException('COMPANY_NOT_FOUND');
+
+    await this._commonService.removeEntity(company);
   }
 
   private async _checkIfCategoryExistByName(name: string, companyId: string) {

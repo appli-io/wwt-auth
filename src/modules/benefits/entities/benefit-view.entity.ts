@@ -8,7 +8,7 @@ export class BenefitViewEntity {
   public id: string = v4();
 
   @Property({type: 'timestamptz'})
-  public timestamp: number;
+  public timestamp: Date;
 
   @ManyToOne({entity: () => BenefitEntity, inversedBy: 'views'})
   public benefit!: BenefitEntity;

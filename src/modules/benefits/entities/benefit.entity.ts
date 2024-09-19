@@ -1,4 +1,4 @@
-import { Collection, Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 
 import { BenefitCategoryEntity } from '@modules/benefits/entities/benefit-category.entity';
 import { BenefitCompanyEntity }  from '@modules/benefits/entities/benefit-company.entity';
@@ -36,14 +36,14 @@ export class BenefitEntity {
   @Enum({items: () => BenefitTypeEnum})
   type!: BenefitTypeEnum;
 
-  @OneToOne({entity: () => FileEntity, nullable: true})
-  public image?: FileEntity;
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
+  image?: FileEntity;
+
+  @ManyToOne(() => BenefitCategoryEntity, {cascade: [ Cascade.PERSIST ]})
+  category!: BenefitCategoryEntity;
 
   @ManyToOne(() => BenefitCompanyEntity)
   benefitCompany!: BenefitCompanyEntity;
-
-  @ManyToOne(() => BenefitCategoryEntity)
-  category!: BenefitCategoryEntity;
 
   @ManyToOne(() => CompanyEntity)
   company!: CompanyEntity;
@@ -58,8 +58,8 @@ export class BenefitEntity {
   views = new Collection<BenefitViewEntity>(this);
 
   @Property({onCreate: () => new Date()})
-  public createdAt: Date = new Date();
+  createdAt: Date = new Date();
 
   @Property({onUpdate: () => new Date(), nullable: true})
-  public updatedAt: Date = new Date();
+  updatedAt: Date = new Date();
 }

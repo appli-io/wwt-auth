@@ -1,11 +1,11 @@
-import { Collection, Entity, EntityRepositoryType, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { v4 }                                                                                             from 'uuid';
-import { BenefitEntity }                                                                                  from '@modules/benefits/entities/benefit.entity';
-import { FileEntity }                                                                                     from '@modules/firebase/entities/file.entity';
-import { CompanyEntity }                                                                                  from '@modules/company/entities/company.entity';
-import { CompanyUserEntity }                                                                              from '@modules/company-user/entities/company-user.entity';
-import { BenefitCategoryViewEntity }                                                                      from '@modules/benefits/entities/benefit-category-view.entity';
-import { BenefitCategoryRepository }                                                                      from '@modules/benefits/entities/repositories/benefit-category.repository';
+import { Cascade, Collection, Entity, EntityRepositoryType, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { v4 }                                                                                                      from 'uuid';
+import { BenefitEntity }                                                                                           from '@modules/benefits/entities/benefit.entity';
+import { FileEntity }                                                                                              from '@modules/firebase/entities/file.entity';
+import { CompanyEntity }                                                                                           from '@modules/company/entities/company.entity';
+import { CompanyUserEntity }                                                                                       from '@modules/company-user/entities/company-user.entity';
+import { BenefitCategoryViewEntity }                                                                               from '@modules/benefits/entities/benefit-category-view.entity';
+import { BenefitCategoryRepository }                                                                               from '@modules/benefits/entities/repositories/benefit-category.repository';
 
 @Entity({tableName: 'benefit_categories', repository: () => BenefitCategoryRepository})
 export class BenefitCategoryEntity {
@@ -27,10 +27,10 @@ export class BenefitCategoryEntity {
   @Property()
   order: number = 0;
 
-  @OneToOne({entity: () => FileEntity, nullable: true})
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
   icon?: FileEntity;
 
-  @OneToOne({entity: () => FileEntity, nullable: true})
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
   image?: FileEntity;
 
   @Property({type: 'json', nullable: true})
@@ -48,7 +48,7 @@ export class BenefitCategoryEntity {
   @OneToMany(() => BenefitCategoryEntity, category => category.parent)
   subCategories = new Collection<BenefitCategoryEntity>(this);
 
-  @OneToMany(() => BenefitEntity, benefit => benefit.category)
+  @OneToMany(() => BenefitEntity, benefit => benefit.category, {cascade: [ Cascade.REMOVE ]})
   benefits = new Collection<BenefitEntity>(this);
 
   @OneToMany(() => BenefitCategoryViewEntity, view => view.benefitCategory)
