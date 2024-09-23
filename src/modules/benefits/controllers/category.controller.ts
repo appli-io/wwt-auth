@@ -82,6 +82,14 @@ export class BenefitCategoryController {
     return this.benefitsService.createCategory(dto, member);
   }
 
+  @Get('most-viewed')
+  public async findMostViewed(
+    @CurrentCompanyId() companyId: string,
+    @Query('limit') limit: number = 3
+  ) {
+    return this.benefitsService.findMostViewedCategories(companyId, limit);
+  }
+
   @Get(':id')
   public async findOneCategory(
     @CurrentCompanyId() companyId: string,

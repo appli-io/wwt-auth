@@ -1,16 +1,18 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
-import { BenefitsService }                                                                             from '@modules/benefits/benefits.service';
-import { MemberGuard }                                                                                 from '@modules/auth/guards/member.guard';
-import { RolesGuard }                                                                                  from '@modules/auth/guards/roles.guard';
-import { CurrentCompanyId }                                                                            from '@modules/company/decorators/company-id.decorator';
-import { RequiredRole }                                                                                from '@modules/auth/decorators/requierd-role.decorator';
-import { RoleEnum }                                                                                    from '@modules/company-user/enums/role.enum';
-import { CurrentMember }                                                                               from '@modules/auth/decorators/current-member.decorator';
-import { CompanyUserEntity }                                                                           from '@modules/company-user/entities/company-user.entity';
-import { CreateBenefitDto }                                                                            from '@modules/benefits/dtos/create-benefit.dto';
-import { CreateBenefitCompanyDto }                                                                     from '@modules/benefits/dtos/create-benefit-company.dto';
-import { LayoutEnum }                                                                                  from '@common/enums/layout.enum';
-import { FileInterceptor }                                                                             from '@nest-lab/fastify-multer';
+
+import { FileInterceptor } from '@nest-lab/fastify-multer';
+
+import { LayoutEnum }              from '@common/enums/layout.enum';
+import { CurrentMember }           from '@modules/auth/decorators/current-member.decorator';
+import { RequiredRole }            from '@modules/auth/decorators/requierd-role.decorator';
+import { MemberGuard }             from '@modules/auth/guards/member.guard';
+import { RolesGuard }              from '@modules/auth/guards/roles.guard';
+import { BenefitsService }         from '@modules/benefits/benefits.service';
+import { CreateBenefitCompanyDto } from '@modules/benefits/dtos/create-benefit-company.dto';
+import { CreateBenefitDto }        from '@modules/benefits/dtos/create-benefit.dto';
+import { CurrentCompanyId }        from '@modules/company/decorators/company-id.decorator';
+import { RoleEnum }                from '@modules/company-user/enums/role.enum';
+import { CompanyUserEntity }       from '@modules/company-user/entities/company-user.entity';
 
 @UseGuards(MemberGuard, RolesGuard)
 @Controller('benefits')
@@ -24,6 +26,14 @@ export class BenefitsController {
     @Query('layout') layout: LayoutEnum = LayoutEnum.FULL
   ) {
     return this.benefitsService.findAllBenefits(companyId);
+  }
+
+  @Get('benefit/most-viewed')
+  public async findMostViewed(
+    @CurrentCompanyId() companyId: string,
+    @Query('limit') limit: number
+  ) {
+    return this.benefitsService.findMostViewedBenefits(companyId, limit);
   }
 
   @Get('benefit/:id')

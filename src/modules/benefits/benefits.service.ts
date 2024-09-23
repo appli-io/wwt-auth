@@ -17,6 +17,7 @@ import { BenefitCategoryRepository }  from '@modules/benefits/entities/repositor
 import { StorageService }             from '@modules/firebase/services/storage.service';
 import { FileType }                   from '@modules/firebase/enums/file-type.enum';
 import { BenefitCompanyRepository }   from '@modules/benefits/entities/repositories/benefit-company.repository';
+import { QueryOrder }                 from '@mikro-orm/core';
 
 @Injectable()
 export class BenefitsService {
@@ -88,7 +89,7 @@ export class BenefitsService {
     const category = await this._categoryRepository.findOne({
       id,
       company: {id: companyId}
-    }, {populate: [ 'benefits', 'benefits.category', 'benefits.benefitCompany', 'subCategories.benefits.category', 'subCategories.benefits.benefitCompany' ]});
+    }, {populate: [ 'benefits', 'subCategories.benefits' ], refresh: true});
 
     if (!category) throw new NotFoundException('CATEGORY_NOT_FOUND');
 
@@ -105,6 +106,19 @@ export class BenefitsService {
 
   public async findAllCategories(companyId: CompanyEntity['id']): Promise<BenefitCategoryEntity[]> {
     return this._categoryRepository.find({company: {id: companyId}}, {populate: [ 'subCategories', 'parent', 'icon', 'image' ]});
+  }
+
+  public async findMostViewedCategories(companyId: CompanyEntity['id'], limit = 3) {
+    return await this._categoryRepository.createQueryBuilder('c')
+      .select('*')
+      .leftJoinAndSelect('c.icon', 'icon')
+      .leftJoinAndSelect('c.image', 'image')
+      .leftJoin('c.views', 'views')
+      .where({company: companyId})
+      .groupBy([ 'id', 'icon.id', 'image.id' ])
+      .orderBy({'views.count': QueryOrder.DESC})
+      .limit(limit)
+      .getResult();
   }
 
   public async deleteCategory(id: string, companyId: CompanyEntity['id']): Promise<void> {
@@ -164,20 +178,18 @@ export class BenefitsService {
     return await this._benefitRepository.find(filter, {populate: [ 'category', 'benefitCompany' ]});
   }
 
-  public async findMostViewedBenefits(companyId: CompanyEntity['id']): Promise<BenefitEntity[]> {
-    const qb = this._benefitRepository.createQueryBuilder('b');
-
-    // count views
-    const benefits = await qb.select([ 'b.*', 'COUNT(bv.id) as views_count' ])
-      .leftJoin('b.views', 'bv')
-      .where({company: {id: companyId}})
-      .andWhere('bv.timestamp > NOW() - INTERVAL \'1 month\'') // TODO: make it dynamic
-      .groupBy('b.id')
-      .orderBy({views_count: 'DESC'})
-      .limit(5)
-      .getResultList();
-
-    return benefits;
+  public async findMostViewedBenefits(companyId: CompanyEntity['id'], limit: number = 3) {
+    return await this._benefitRepository.createQueryBuilder('b')
+      .select('*')
+      .leftJoinAndSelect('b.image', 'image')
+      .leftJoinAndSelect('b.category', 'category')
+      .leftJoinAndSelect('b.benefitCompany', 'benefitCompany')
+      .leftJoin('b.views', 'views')
+      .where({'company': companyId})
+      .groupBy([ 'id', 'image.id', 'benefitCompany.id', 'category.id' ])
+      .orderBy({'views.count': QueryOrder.DESC})
+      .limit(limit)
+      .getResult();
   }
 
   public async deleteBenefit(id: string, companyId: CompanyEntity['id']): Promise<void> {

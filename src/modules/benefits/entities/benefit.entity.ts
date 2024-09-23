@@ -39,10 +39,10 @@ export class BenefitEntity {
   @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
   image?: FileEntity;
 
-  @ManyToOne(() => BenefitCategoryEntity, {cascade: [ Cascade.PERSIST ]})
+  @ManyToOne(() => BenefitCategoryEntity, {cascade: [ Cascade.PERSIST ], eager: true})
   category!: BenefitCategoryEntity;
 
-  @ManyToOne(() => BenefitCompanyEntity)
+  @ManyToOne(() => BenefitCompanyEntity, {eager: true})
   benefitCompany!: BenefitCompanyEntity;
 
   @ManyToOne(() => CompanyEntity)
