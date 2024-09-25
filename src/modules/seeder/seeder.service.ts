@@ -29,14 +29,16 @@ export class SeederService {
       {
         provider: OAuthProvidersEnum.LOCAL,
         email: 'david.misa97@gmail.com',
-        name: 'David Misael Villegas Sandoval',
+        firstname: 'David Misael',
+        lastname: 'Villegas Sandoval',
         password,
         confirmed: true
       },
       {
         provider: OAuthProvidersEnum.LOCAL,
         email: 'david.misa001@gmail.com',
-        name: 'David Misael Villegas Sandoval',
+        firstname: 'David Misael',
+        lastname: 'Villegas Sandoval',
         password,
         confirmed: true
       }
@@ -52,7 +54,7 @@ export class SeederService {
           this.logger.debug(`User ${ user.email } already exists`);
           return;
         }
-        await this._userService.create(user.provider, user.email, user.name, user.password, user.confirmed);
+        await this._userService.create(user.provider, user.email, user.firstname, user.lastname, user.password, user.confirmed);
 
         this.logger.debug(`User ${ user.email } created`);
       } catch (e) {

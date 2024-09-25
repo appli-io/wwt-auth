@@ -3,9 +3,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ContactDto } from '@modules/users/dtos/contact.dto';
 import { UserEntity } from '@modules/users/entities/user.entity';
 
-import { IUser }                   from '../interfaces/user.interface';
-import { ResponsePositionsMapper } from '@modules/auth/mappers/response-positions.mapper';
-import { IImage }                  from '@modules/news/interfaces/news.interface';
+import { IUser }             from '../interfaces/user.interface';
+import { IImage }            from '@modules/news/interfaces/news.interface';
+import { CompanyUserMapper } from '@modules/auth/mappers/company-user.mapper';
 
 export class ResponseFullUserMapper implements Partial<IUser> {
   @ApiProperty({
@@ -26,6 +26,24 @@ export class ResponseFullUserMapper implements Partial<IUser> {
   public name: string;
 
   @ApiProperty({
+    description: 'User firstname',
+    example: 'John',
+    minLength: 3,
+    maxLength: 100,
+    type: String,
+  })
+  public firstname: string;
+
+  @ApiProperty({
+    description: 'User lastname',
+    example: 'Doe',
+    minLength: 3,
+    maxLength: 100,
+    type: String,
+  })
+  public lastname: string;
+
+  @ApiProperty({
     description: 'User username',
     example: 'john.doe1',
     minLength: 3,
@@ -44,6 +62,21 @@ export class ResponseFullUserMapper implements Partial<IUser> {
   public email: string;
 
   @ApiProperty({
+    description: 'User gender',
+    example: 'https://www.example.com/image.jpg',
+    type: String
+  })
+  public gender: string;
+
+  @ApiProperty({
+    description: 'User birth date',
+    example: '2024-01-01',
+    type: String
+  })
+  public birthdate: string;
+
+
+  @ApiProperty({
     description: 'User avatar',
     example: 'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50',
     minLength: 3,
@@ -60,12 +93,12 @@ export class ResponseFullUserMapper implements Partial<IUser> {
   public portrait: string;
 
   @ApiProperty({
-    description: 'User positions by company',
+    description: 'User\'s assigned company',
     minLength: 3,
     maxLength: 255,
     type: Object,
   })
-  public positions: ResponsePositionsMapper[];
+  public companies: CompanyUserMapper[];
 
   @ApiProperty({
     description: 'User location',
@@ -74,7 +107,7 @@ export class ResponseFullUserMapper implements Partial<IUser> {
     maxLength: 255,
     type: String,
   })
-  public location: string;
+  public city: string;
 
   @ApiProperty({
     description: 'User contacts',
@@ -89,13 +122,17 @@ export class ResponseFullUserMapper implements Partial<IUser> {
     return new ResponseFullUserMapper({
       id: user.id,
       name: user.name,
+      firstname: user.firstname,
+      lastname: user.lastname,
       username: user.username,
       email: user.email,
+      gender: user.gender,
+      birthdate: user.birthdate,
       avatar: user.avatar,
       portrait: user.portrait,
-      positions: user.companyUsers.map(ResponsePositionsMapper.map),
-      location: user.location,
-      contacts: user.companyUsers.map(cu => cu.contacts.map(c => ContactDto.fromEntity(c))).flat(),
+      companies: user.companyUsers.isInitialized() && user.companyUsers.map(CompanyUserMapper.map),
+      city: user.city,
+      contacts: user.companyUsers.isInitialized() && user.companyUsers.map(cu => cu.contacts.isInitialized() && cu.contacts.map(c => ContactDto.fromEntity(c))).flat(),
     });
   }
 }

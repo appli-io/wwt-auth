@@ -42,7 +42,7 @@ export class AuthService {
   }
 
   public async signUp(dto: SignUpDto, domain?: string): Promise<IMessage> {
-    const {name, email, password1, password2} = dto;
+    const {firstname, lastname, email, password1, password2} = dto;
     this.comparePasswords(password1, password2);
 
     if (dto.token) await this.companyUserService.validateTokenAndUsersEmail(dto.token, email);
@@ -51,7 +51,8 @@ export class AuthService {
     const user = await this.usersService.create(
       OAuthProvidersEnum.LOCAL,
       email,
-      name,
+      firstname,
+      lastname,
       password1,
     );
 

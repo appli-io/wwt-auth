@@ -78,7 +78,7 @@ export class ResponseUserMapper implements Partial<IUser> {
       email: user.email,
       avatar: user.avatar,
       position: undefined,
-      location: user.location
+      location: user.city
     });
   }
 }

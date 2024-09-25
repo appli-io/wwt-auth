@@ -42,7 +42,6 @@ import { ResetPasswordDto }             from './dtos/reset-password.dto';
 import { SignInDto }                    from './dtos/sign-in.dto';
 import { SignUpDto }                    from './dtos/sign-up.dto';
 import { FastifyThrottlerGuard }        from './guards/fastify-throttler.guard';
-import { IAuthResponseUser }            from './interfaces/auth-response-user.interface';
 import { IOAuthProvidersResponse }      from './interfaces/oauth-provider-response.interface';
 import { AuthResponseUserMapper }       from './mappers/auth-response-user.mapper';
 import { AuthResponseMapper }           from './mappers/auth-response.mapper';
@@ -50,6 +49,7 @@ import { OAuthProvidersResponseMapper } from './mappers/oauth-provider-response.
 import { ResponsePositionsMapper }      from '@modules/auth/mappers/response-positions.mapper';
 import { StorageService }               from '@modules/firebase/services/storage.service';
 import { IConfig }                      from '@config/interfaces/config.interface';
+import { ResponseFullUserMapper }       from '@modules/users/mappers/response-full-user.mapper';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -288,9 +288,9 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'The user is not logged in.',
   })
-  public async getMe(@CurrentUser() id: string): Promise<IAuthResponseUser> {
-    const user = await this._usersService.findOneById(id, [ 'assignedCompanies', 'companyUsers' ]);
-    return AuthResponseUserMapper.map(user);
+  public async getMe(@CurrentUser() id: string): Promise<ResponseFullUserMapper> {
+    const user = await this._usersService.findOneById(id, [ 'companyUsers.company' ]);
+    return ResponseFullUserMapper.map(user);
   }
 
   @Post('/active-company')

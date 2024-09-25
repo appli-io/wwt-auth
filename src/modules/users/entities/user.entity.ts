@@ -20,9 +20,18 @@ export class UserEntity implements IUser {
   @IsString()
   @Length(3, 100)
   @Matches(NAME_REGEX, {
-    message: 'Name must not have special characters',
+    message: 'Firstname must not have special characters',
   })
-  public name: string;
+  public firstname: string;
+
+  @Property({columnType: 'varchar', length: 100, nullable: true})
+  @IsString()
+  @Length(3, 100)
+  @IsOptional()
+  @Matches(NAME_REGEX, {
+    message: 'Lastname must not have special characters',
+  })
+  public lastname?: string;
 
   @Property({columnType: 'varchar', length: 106})
   @IsString()
@@ -66,10 +75,19 @@ export class UserEntity implements IUser {
   @Property({columnType: 'varchar', length: 255, nullable: true})
   @IsString()
   @IsOptional()
-  public location: string;
+  public city?: string;
+
+  @Property({columnType: 'varchar', length: 255, nullable: true})
+  @IsString()
+  @IsOptional()
+  public country?: string;
 
   @Property({columnType: 'date', nullable: true})
-  public birthday?: Date;
+  public birthdate?: string;
+
+  @Property({columnType: 'varchar', length: 10, nullable: true})
+  @IsString()
+  public gender?: string;
 
   // JSON of user's settings
   @Property({columnType: 'json', nullable: true})
@@ -95,4 +113,13 @@ export class UserEntity implements IUser {
 
   @ManyToMany({entity: () => CompanyEntity, mappedBy: c => c.users})
   public assignedCompanies = new Collection<CompanyEntity>(this);
+
+  get name() {
+    let name = '';
+
+    if (this.firstname) name += this.firstname;
+    if (this.lastname) name += ' ' + this.lastname;
+
+    return name;
+  }
 }

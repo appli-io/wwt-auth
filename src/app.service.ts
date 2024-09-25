@@ -6,7 +6,8 @@ import { OAuthProvidersEnum } from '@modules/users/enums/oauth-providers.enum';
 export interface CreateUserDto {
   provider: OAuthProvidersEnum;
   email: string;
-  name: string;
+  firstname: string;
+  lastname: string;
   password: string;
   confirmed: boolean;
 }

@@ -10,8 +10,10 @@ export interface IUser {
   confirmed: boolean;
   avatar?: IImage;
   portrait?: string;
-  location: string;
-  birthday?: Date;
+  city?: string;
+  country?: string;
+  gender?: string;
+  birthdate?: string;
   settings: Record<string, any>;
   credentials: ICredentials;
   createdAt: Date;

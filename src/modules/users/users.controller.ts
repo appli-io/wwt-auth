@@ -32,7 +32,6 @@ import { AuthResponseUserMapper } from '../auth/mappers/auth-response-user.mappe
 import { ChangeEmailDto }         from './dtos/change-email.dto';
 import { GetUserParams }          from './dtos/get-user.params';
 import { PasswordDto }            from './dtos/password.dto';
-import { UpdateUsernameDto }      from './dtos/update-username.dto';
 import { ResponseUserMapper }     from './mappers/response-user.mapper';
 import { UsersService }           from './users.service';
 import { FileInterceptor }        from '@nest-lab/fastify-multer';
@@ -98,25 +97,6 @@ export class UsersController {
   ): Promise<ResponseFullUserMapper> {
     const user = await this._usersService.updateUserInfo(id, dto);
     return ResponseFullUserMapper.map(user);
-  }
-
-  @Patch('/username')
-  @ApiOkResponse({
-    type: ResponseUserMapper,
-    description: 'The username is updated.',
-  })
-  @ApiBadRequestResponse({
-    description: 'Something is invalid on the request body.',
-  })
-  @ApiUnauthorizedResponse({
-    description: 'The user is not logged in.',
-  })
-  public async updateUsername(
-    @CurrentUser() id: string,
-    @Body() dto: UpdateUsernameDto,
-  ): Promise<ResponseUserMapper> {
-    const user = await this._usersService.updateUsername(id, dto);
-    return ResponseUserMapper.map(user);
   }
 
   @Patch('/email')

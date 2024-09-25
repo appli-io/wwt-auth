@@ -17,7 +17,6 @@ import { ContactDto }          from '@modules/users/dtos/contact.dto';
 
 import { ChangeEmailDto }        from './dtos/change-email.dto';
 import { PasswordDto }           from './dtos/password.dto';
-import { UpdateUsernameDto }     from './dtos/update-username.dto';
 import { CredentialsEmbeddable } from './embeddables/credentials.embeddable';
 import { OAuthProviderEntity }   from './entities/oauth-provider.entity';
 import { UserEntity }            from './entities/user.entity';
@@ -41,15 +40,17 @@ export class UsersService {
   ) {
   }
 
-  public async create(provider: OAuthProvidersEnum, email: string, name: string, password?: string, confirmed: boolean = false): Promise<UserEntity> {
+  public async create(provider: OAuthProvidersEnum, email: string, firstname: string, lastname: string, password?: string, confirmed: boolean = false): Promise<UserEntity> {
     const isConfirmed = provider !== OAuthProvidersEnum.LOCAL || confirmed;
     const formattedEmail = email.toLowerCase();
     await this.checkEmailUniqueness(formattedEmail);
-    const formattedName = this.commonService.formatName(name);
+    const formattedFirstname = this.commonService.formatName(firstname);
+    const formattedLastname = this.commonService.formatName(lastname);
     const user = this._usersRepository.create({
       email: formattedEmail,
-      name: formattedName,
-      username: await this.generateUsername(formattedName),
+      firstname: formattedFirstname,
+      lastname: formattedLastname,
+      username: await this.generateUsername(formattedFirstname + ' ' + formattedLastname),
       password: isUndefined(password) ? 'UNSET' : await hash(password, 10),
       confirmed: isConfirmed,
       credentials: new CredentialsEmbeddable(isConfirmed),
@@ -80,7 +81,7 @@ export class UsersService {
   }
 
   public async findOneById(id: string, populateJoin: any[] = []): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({id}, {populate: [ ...populateJoin, 'avatar' ]});
+    const user = await this._usersRepository.findOne({id}, {populate: [ ...populateJoin, 'avatar' ], refresh: true});
     this.commonService.checkEntityExistence(user, 'User');
 
     return user;
@@ -134,46 +135,14 @@ export class UsersService {
     return user;
   }
 
-  public async updateUsername(userId: string, dto: UpdateUsernameDto): Promise<UserEntity> {
-    const user = await this.findOneById(userId);
-    const {name, username} = dto;
-
-    if (!isUndefined(name) && !isNull(name)) {
-      if (name === user.name) {
-        throw new BadRequestException('Name must be different');
-      }
-
-      user.name = this.commonService.formatName(name);
-    }
-    if (!isUndefined(username) && !isNull(username)) {
-      const formattedUsername = dto.username.toLowerCase();
-
-      if (user.username === formattedUsername) {
-        throw new BadRequestException('Username should be different');
-      }
-
-      await this.checkUsernameUniqueness(formattedUsername);
-      user.username = formattedUsername;
-    }
-
-    await this.commonService.saveEntity(user);
-
-    return user;
-  }
-
   public async updateUserInfo(userId: string, dto: UpdateUserInfoDto): Promise<UserEntity> {
-    const {location} = dto;
     const user = await this.findOneById(userId);
 
-    if (!isUndefined(location) && !isNull(location) && location !== user.location)
-      user.location = location;
-
-    if (!isUndefined(dto.contacts) && !isNull(dto.contacts))
-      await this.validateAndUpdateContactInfo(user, dto.contacts);
+    Object.assign(user, dto);
 
     await this.commonService.saveEntity(user);
 
-    return this.findOneById(userId, [ 'assignedCompanies', 'companyUsers.contacts' ]);
+    return this.findOneById(userId, [ 'companyUsers.company', 'companyUsers.contacts' ]);
   }
 
   public async updatePassword(userId: string, newPassword: string, password?: string,): Promise<UserEntity> {
@@ -244,7 +213,7 @@ export class UsersService {
     );
 
     if (isUndefined(user) || isNull(user)) {
-      return this.create(provider, email, name);
+      return this.create(provider, email, name, undefined);
     }
     if (
       isUndefined(
@@ -321,7 +290,7 @@ export class UsersService {
     }
   }
 
-  private throwUnauthorizedException(user: undefined | null | UserEntity,): void {
+  private throwUnauthorizedException(user: undefined | null | UserEntity): void {
     if (isUndefined(user) || isNull(user)) {
       throw new UnauthorizedException('Invalid credentials');
     }

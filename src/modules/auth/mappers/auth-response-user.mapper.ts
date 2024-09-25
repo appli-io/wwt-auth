@@ -94,14 +94,14 @@ export class AuthResponseUserMapper implements IAuthResponseUser {
       avatar: user.avatar,
       email: user.email,
       positions: user.companyUsers.map(ResponsePositionsMapper.map),
-      assignedCompanies: user.assignedCompanies.map((company) => ({
+      assignedCompanies: user.assignedCompanies.isInitialized() && user.assignedCompanies.map((company) => ({
         id: company.id,
         name: company.name,
         username: company.username,
         logo: company.logo
       } as Partial<CompanyEntity>)),
       settings: user.settings,
-      location: user.location,
+      location: user.city,
     });
   }
 }
