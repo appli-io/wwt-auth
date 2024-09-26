@@ -151,7 +151,7 @@ export class UsersController {
   @ApiUnauthorizedResponse({
     description: 'The user is not logged in.',
   })
-  @UseInterceptors(FileInterceptor('file', {
+  @UseInterceptors(FileInterceptor('avatar', {
     fileFilter: (req, file, cb) => {
       if (!VALID_IMAGE_TYPES.includes(file.mimetype)) {
         return cb(new BadRequestException('INVALID_IMAGE_TYPE'), false);
@@ -162,9 +162,9 @@ export class UsersController {
   }))
   public async updateAvatar(
     @CurrentUser() id: string,
-    @UploadedFile() file: Express.Multer.File
+    @UploadedFile() avatar: Express.Multer.File
   ): Promise<ResponseUserMapper> {
-    const user = await this._usersService.updateAvatar(id, file);
+    const user = await this._usersService.updateAvatar(id, avatar);
     return ResponseUserMapper.map(user);
   }
 }

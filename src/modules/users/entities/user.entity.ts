@@ -86,6 +86,7 @@ export class UserEntity implements IUser {
   public birthdate?: string;
 
   @Property({columnType: 'varchar', length: 10, nullable: true})
+  @IsOptional()
   @IsString()
   public gender?: string;
 

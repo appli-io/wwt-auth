@@ -242,9 +242,9 @@ export class UsersService {
 
     // if file type it is HEIC, use heic-converter to convert it to JPEG
     if (file.mimetype === 'image/heic')
-      fileBuffer = await heicToFormat(file.buffer, 'JPEG', 1);
+      fileBuffer = await heicToFormat(file.buffer, 'PNG', 1);
     else if (file.mimetype !== 'image/jpeg') {
-      const tempFile = sharp(file.buffer).jpeg();
+      const tempFile = sharp(file.buffer);
       const metadata = await tempFile.metadata();
 
       if (metadata.orientation) fileBuffer = await tempFile.rotate().toBuffer();
@@ -254,7 +254,7 @@ export class UsersService {
     }
 
     // compress the image and make it smaller
-    fileBuffer = await sharp(fileBuffer).resize(500).toBuffer();
+    fileBuffer = await sharp(fileBuffer).resize(500).webp().toBuffer();
 
     user.avatar = await this._storageService.upload(undefined, FileType.IMAGE, path, {
       ...file,
