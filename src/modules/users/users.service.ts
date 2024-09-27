@@ -26,7 +26,7 @@ import { IUser }                 from './interfaces/user.interface';
 import { CompanyEntity }         from '@modules/company/entities/company.entity';
 import { FileType }              from '@modules/firebase/enums/file-type.enum';
 import sharp                     from 'sharp';
-import { heicToFormat }          from '@lib/heic-converter';
+import { FileEntity }            from '@modules/firebase/entities/file.entity';
 
 @Injectable()
 export class UsersService {
@@ -238,30 +238,18 @@ export class UsersService {
   public async updateAvatar(id: string, file: Express.Multer.File): Promise<IUser> {
     const user = await this.findOneById(id);
     const path = `users/${ id }/avatar`;
-    let fileBuffer: Buffer;
 
-    // if file type it is HEIC, use heic-converter to convert it to JPEG
-    if (file.mimetype === 'image/heic')
-      fileBuffer = await heicToFormat(file.buffer, 'PNG', 1);
-    else if (file.mimetype !== 'image/jpeg') {
-      const tempFile = sharp(file.buffer);
-      const metadata = await tempFile.metadata();
+    const fileBuffer = await sharp(file.buffer).resize(500).rotate().webp().toBuffer();
 
-      if (metadata.orientation) fileBuffer = await tempFile.rotate().toBuffer();
-      else fileBuffer = await tempFile.toBuffer();
-    } else {
-      fileBuffer = file.buffer;
+    if (user.avatar instanceof FileEntity) {
+      await this._storageService.removeFile(user.avatar);
     }
-
-    // compress the image and make it smaller
-    fileBuffer = await sharp(fileBuffer).resize(500).webp().toBuffer();
-
     user.avatar = await this._storageService.upload(undefined, FileType.IMAGE, path, {
       ...file,
       buffer: fileBuffer,
       size: fileBuffer.length,
-      originalname: 'avatar.jpg',
-      mimetype: 'image/jpeg',
+      originalname: 'avatar.webp',
+      mimetype: 'image/webp',
     });
     await this.commonService.saveEntity(user);
 
