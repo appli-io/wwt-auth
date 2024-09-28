@@ -37,6 +37,7 @@ import { UsersService }           from './users.service';
 import { FileInterceptor }        from '@nest-lab/fastify-multer';
 import { StorageService }         from '@modules/firebase/services/storage.service';
 import { VALID_IMAGE_TYPES }      from '@common/constant';
+import { ContactDto }             from '@modules/users/dtos/contact.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -138,6 +139,17 @@ export class UsersController {
       .clearCookie(this.cookieName, {path: this.cookiePath})
       .status(HttpStatus.NO_CONTENT)
       .send();
+  }
+
+  @Patch('/contacts')
+  public async updateContacts(
+    @CurrentUser() userId: string,
+    @Body() contacts: ContactDto[]
+  ) {
+    console.log(contacts);
+    const user = await this._usersService.updateContacts(userId, contacts);
+
+    return ResponseFullUserMapper.map(user);
   }
 
   @Patch('/avatar')

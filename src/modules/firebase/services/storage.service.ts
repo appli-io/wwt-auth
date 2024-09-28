@@ -119,7 +119,6 @@ export class StorageService {
 
       await file.delete();
       await this._em.removeAndFlush(fileEntity);
-
     } catch (error) {
       if (error.code === 404) return;
       if (error.code === 403) throw new Error('Unauthorized to remove file');

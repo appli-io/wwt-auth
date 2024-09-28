@@ -70,6 +70,13 @@ export class ResponseContactUserMapper implements Partial<IUser> {
   public location: string;
 
   @ApiProperty({
+    description: 'Bio detail of the user',
+    example: 'Software Engineer with x years of experience working at ACME Corp.',
+    type: String,
+  })
+  public bio: string;
+
+  @ApiProperty({
     description: 'User contacts',
   })
   public contacts: ContactDto[];
@@ -86,7 +93,8 @@ export class ResponseContactUserMapper implements Partial<IUser> {
       email: user.email,
       avatar: user.avatar,
       position: companyPosition,
-      location: user.city,
+      location: user.location,
+      bio: user.bio,
       contacts: []
     });
   }

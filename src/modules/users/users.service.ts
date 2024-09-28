@@ -263,6 +263,14 @@ export class UsersService {
     await this.commonService.saveEntity(user);
   }
 
+  public async updateContacts(userId: string, contacts: ContactDto[]) {
+    const user = await this.findOneById(userId, [ 'companyUsers.contacts' ]);
+
+    await this.validateAndUpdateContactInfo(user, contacts);
+    return user;
+  }
+
+
   private async changePassword(user: UserEntity, password: string,): Promise<UserEntity> {
     user.credentials.updatePassword(user.password);
     user.password = await hash(password, 10);
@@ -322,8 +330,8 @@ export class UsersService {
     return oauthProvider;
   }
 
-  private async validateAndUpdateContactInfo(user: UserEntity, contactInfoDtos: ContactDto[]) {
-    const uniqueCompaniesIds = new Set(contactInfoDtos.map(dto => dto.companyId));
+  private async validateAndUpdateContactInfo(user: UserEntity, contactsDto: ContactDto[]) {
+    const uniqueCompaniesIds = new Set(contactsDto.map(dto => dto.companyId));
 
     if (!await this._companyUserService.isActiveUserInCompanies(user.id, Array.from(uniqueCompaniesIds)))
       throw new UnauthorizedException('You not belong to one of the companies you are trying to add contacts to or you are not active in one of them');
@@ -337,27 +345,30 @@ export class UsersService {
       .getResultList();
 
     const contactsToAdd: ContactDto[] = [];
+    const updatedContacts: UsersContactEntity[] = [];
     const contactsToRemove = existingContacts.filter(contact =>
-      !contactInfoDtos.find(dto =>
+      !contactsDto.find(dto =>
         dto.value === contact.value &&
         dto.type === contact.type &&
         dto.companyId === contact.companyUser.company.id
       )
     );
 
-    for (const dto of contactInfoDtos) {
-      const existingContact = existingContacts.find(contact =>
-        dto.value === contact.value &&
-        dto.type === contact.type &&
-        dto.companyId === contact.companyUser.company.id
-      );
-      if (!existingContact && !this.isDuplicate(dto, contactsToAdd)) {
+    for (const dto of contactsDto) {
+      if (dto.id) {
+        const contact = existingContacts.find(c => c.id === dto.id);
+
+        Object.assign(contact, dto);
+        updatedContacts.push(contact);
+      } else {
         contactsToAdd.push(dto);
       }
     }
 
     await this.addContacts(contactsToAdd, user);
     await this.removeContacts(contactsToRemove);
+
+    await this.commonService.saveAllEntities(updatedContacts, true);
   }
 
   private isDuplicate(newContactDto: ContactDto, contactsToAdd: ContactDto[]): boolean {

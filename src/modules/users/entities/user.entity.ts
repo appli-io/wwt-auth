@@ -90,6 +90,11 @@ export class UserEntity implements IUser {
   @IsString()
   public gender?: string;
 
+  @Property({columnType: 'text', nullable: true})
+  @IsOptional()
+  @IsString()
+  public bio?: string;
+
   // JSON of user's settings
   @Property({columnType: 'json', nullable: true})
   public settings: Record<string, any>;
@@ -122,5 +127,14 @@ export class UserEntity implements IUser {
     if (this.lastname) name += ' ' + this.lastname;
 
     return name;
+  }
+
+  get location() {
+    let location = '';
+
+    if (this.city) location += this.location;
+    if (this.country) location += this.country;
+
+    return location;
   }
 }

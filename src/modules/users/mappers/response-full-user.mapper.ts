@@ -110,6 +110,22 @@ export class ResponseFullUserMapper implements Partial<IUser> {
   public city: string;
 
   @ApiProperty({
+    description: 'User country',
+    example: 'US',
+    minLength: 2,
+    maxLength: 255,
+    type: String,
+  })
+  public country: string;
+
+  @ApiProperty({
+    description: 'Bio detail of the user',
+    example: 'Software Engineer with x years of experience working at ACME Corp.',
+    type: String,
+  })
+  public bio: string;
+
+  @ApiProperty({
     description: 'User contacts',
   })
   public contacts: ContactDto[];
@@ -132,6 +148,8 @@ export class ResponseFullUserMapper implements Partial<IUser> {
       portrait: user.portrait,
       companies: user.companyUsers.isInitialized() && user.companyUsers.map(CompanyUserMapper.map),
       city: user.city,
+      country: user.country,
+      bio: user.bio,
       contacts: user.companyUsers.isInitialized() && user.companyUsers.map(cu => cu.contacts.isInitialized() && cu.contacts.map(c => ContactDto.fromEntity(c))).flat(),
     });
   }

@@ -289,7 +289,7 @@ export class AuthController {
     description: 'The user is not logged in.',
   })
   public async getMe(@CurrentUser() id: string): Promise<ResponseFullUserMapper> {
-    const user = await this._usersService.findOneById(id, [ 'companyUsers.company' ]);
+    const user = await this._usersService.findOneById(id, [ 'companyUsers.company', 'companyUsers.contacts' ]);
     return ResponseFullUserMapper.map(user);
   }
 
