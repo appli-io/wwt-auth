@@ -3,7 +3,7 @@ import { RoleEnum }          from '@modules/company-user/enums/role.enum';
 import { UserEntity }        from '@modules/users/entities/user.entity';
 import { FileEntity }        from '@modules/firebase/entities/file.entity';
 
-export class ResponseCompanyMemberMapper implements Partial<CompanyUserEntity>, Partial<UserEntity> {
+export class MemberFullMapper implements Partial<CompanyUserEntity>, Partial<UserEntity> {
   public id: string;
   public name: string;
   public username: string;
@@ -14,12 +14,12 @@ export class ResponseCompanyMemberMapper implements Partial<CompanyUserEntity>, 
   public isActive: boolean;
   public createdAt: Date;
 
-  constructor(values: ResponseCompanyMemberMapper) {
+  constructor(values: MemberFullMapper) {
     Object.assign(this, values);
   }
 
-  public static map(member: CompanyUserEntity): ResponseCompanyMemberMapper {
-    return new ResponseCompanyMemberMapper({
+  public static map(member: CompanyUserEntity): MemberFullMapper {
+    return new MemberFullMapper({
       id: member.user.id,
       name: member.user.name,
       username: member.user.username,

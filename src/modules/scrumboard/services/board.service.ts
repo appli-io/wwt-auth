@@ -24,6 +24,7 @@ export class BoardService {
       ...createBoardDto,
       company: companyId,
       lastActivity: new Date(),
+      members: createBoardDto.members.map((memberId) => this._em.getReference('CompanyUserEntity', {user: memberId, company: companyId})),
       lists: [
         {title: 'To Do', position: SCRUMBOARD_STEPS},
         {title: 'In Progress', position: SCRUMBOARD_STEPS * 2},
@@ -35,8 +36,7 @@ export class BoardService {
 
     await this._em.persistAndFlush(board);
 
-    console.log('board', board);
-    return await this._em.refresh(board);
+    return await this.findOne(board.id);
   }
 
   findAll(userId: UserEntity['id'], companyId: CompanyEntity['id']) {

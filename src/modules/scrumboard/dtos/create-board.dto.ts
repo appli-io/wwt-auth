@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsString } from 'class-validator';
-import { Transform }            from 'class-transformer';
+import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { Transform }                     from 'class-transformer';
 
 export class CreateBoardDto {
 
@@ -15,4 +15,8 @@ export class CreateBoardDto {
   @IsString()
   @Transform(({value}) => value.trim())
   readonly icon?: string;
+
+  @IsArray()
+  @IsString({each: true})
+  readonly members?: string[];
 }
