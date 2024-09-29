@@ -39,6 +39,7 @@ import { RoleEnum }                        from '@modules/company-user/enums/rol
 import { CompanyUserService }              from '@modules/company-user/company-user.service';
 import { FileInterceptor }                 from '@nest-lab/fastify-multer';
 import { VALID_IMAGE_TYPES }               from '@common/constant';
+import { UserContactFullMapper }           from '@modules/company-user/mappers/user-contact-full.mapper';
 
 @ApiTags('Company')
 @Controller('company')
@@ -119,13 +120,28 @@ export class CompanyController {
   public async getMembers(
     @CurrentCompanyId() companyId: string,
     @PageableDefault({unpaged: true}) pageable: Pageable,
-    @Query() query: MembersQueryDto
+    @Query('layout') layout: 'contact' | 'member' = 'member',
+    @Query() query: MembersQueryDto,
   ) {
     const members = await this._companyUserService.getMembers(companyId, query, pageable);
 
+    let content: any[];
+
+    switch (layout) {
+      case 'contact':
+        content = members.content.map(UserContactFullMapper.map);
+        break;
+      case 'member':
+        content = members.content.map(ResponseCompanyMemberMapper.map);
+        break;
+      default:
+        content = members.content.map(ResponseCompanyMemberMapper.map);
+    }
+
+
     return {
       ...members,
-      content: members.content.map(ResponseCompanyMemberMapper.map)
+      content
     };
   }
 

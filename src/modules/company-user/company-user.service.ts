@@ -51,6 +51,11 @@ export class CompanyUserService {
             property: 'user.avatar',
             andSelect: true,
             type: 'leftJoin'
+          },
+          {
+            property: 'contacts',
+            andSelect: true,
+            type: 'leftJoin'
           }
         ]
       }
@@ -157,4 +162,10 @@ export class CompanyUserService {
     const userCompany = await this._userCompanyRepository.count({ user: id, company: { $in: companiesIds }, isActive: true });
     return companiesIds.length === userCompany;
   }
+
+  // public async getMembersContacts(query: MembersQueryDto, companyId: string, pageable: Pageable) {
+  //   const whereClause: QBFilterQuery<CompanyUserEntity> = { company: { id: { $eq: companyId } } };
+  //
+  //   if (query.name) whereClause['name'] = { $regex: query.name, $options: 'i' };
+  // }
 }

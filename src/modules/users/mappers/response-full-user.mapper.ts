@@ -3,9 +3,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ContactDto } from '@modules/users/dtos/contact.dto';
 import { UserEntity } from '@modules/users/entities/user.entity';
 
-import { IUser }             from '../interfaces/user.interface';
-import { IImage }            from '@modules/news/interfaces/news.interface';
-import { CompanyUserMapper } from '@modules/auth/mappers/company-user.mapper';
+import { IUser }              from '../interfaces/user.interface';
+import { CompanyUserMapper }  from '@modules/auth/mappers/company-user.mapper';
+import { ResponseFileMapper } from '@modules/firebase/mappers/response-file.mapper';
 
 export class ResponseFullUserMapper implements Partial<IUser> {
   @ApiProperty({
@@ -83,14 +83,14 @@ export class ResponseFullUserMapper implements Partial<IUser> {
     maxLength: 255,
     type: String,
   })
-  public avatar: IImage;
+  public avatar: ResponseFileMapper;
 
   @ApiProperty({
     description: 'User portrait image',
     example: 'https://www.example.com/image.jpg',
     type: String
   })
-  public portrait: string;
+  public portrait: ResponseFileMapper;
 
   @ApiProperty({
     description: 'User\'s assigned company',
@@ -144,8 +144,8 @@ export class ResponseFullUserMapper implements Partial<IUser> {
       email: user.email,
       gender: user.gender,
       birthdate: user.birthdate,
-      avatar: user.avatar,
-      portrait: user.portrait,
+      avatar: ResponseFileMapper.map(user.avatar),
+      portrait: ResponseFileMapper.map(user.portrait),
       companies: user.companyUsers.isInitialized() && user.companyUsers.map(CompanyUserMapper.map),
       city: user.city,
       country: user.country,

@@ -9,7 +9,7 @@ export interface IUser {
   password: string;
   confirmed: boolean;
   avatar?: IImage;
-  portrait?: string;
+  portrait?: IImage;
   city?: string;
   country?: string;
   gender?: string;

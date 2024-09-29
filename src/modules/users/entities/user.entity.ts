@@ -66,10 +66,9 @@ export class UserEntity implements IUser {
   public avatar?: FileEntity;
 
   // User portrait picture
-  @Property({columnType: 'varchar', length: 255, nullable: true})
-  @IsString()
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
   @IsOptional()
-  public portrait?: string;
+  public portrait?: FileEntity;
 
   // User's location
   @Property({columnType: 'varchar', length: 255, nullable: true})
@@ -132,8 +131,8 @@ export class UserEntity implements IUser {
   get location() {
     let location = '';
 
-    if (this.city) location += this.location;
-    if (this.country) location += this.country;
+    if (this.city) location += this.city;
+    if (this.country) location += ', ' + this.country;
 
     return location;
   }

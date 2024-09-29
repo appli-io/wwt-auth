@@ -10,6 +10,7 @@ export class ResponseCompanyMemberMapper implements Partial<CompanyUserEntity>, 
   public email: string;
   public avatar: FileEntity;
   public role: RoleEnum;
+  public position: string;
   public isActive: boolean;
   public createdAt: Date;
 
@@ -25,6 +26,7 @@ export class ResponseCompanyMemberMapper implements Partial<CompanyUserEntity>, 
       email: member.user.email,
       avatar: member.user.avatar,
       role: member.role,
+      position: member.position,
       isActive: member.isActive,
       createdAt: member.createdAt,
     });

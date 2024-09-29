@@ -1,6 +1,8 @@
-import { IsString, Length, Matches } from 'class-validator';
-import { ApiProperty }               from '@nestjs/swagger';
-import { NAME_REGEX }                from '@common/consts/regex.const';
+import { ApiProperty }                           from '@nestjs/swagger';
+import { Transform }                             from 'class-transformer';
+import { IsOptional, IsString, Length, Matches } from 'class-validator';
+
+import { NAME_REGEX } from '@common/consts/regex.const';
 
 export class UpdateUserInfoDto {
   @ApiProperty({
@@ -43,6 +45,11 @@ export class UpdateUserInfoDto {
 
   @IsString()
   public gender: string;
+
+  @IsString()
+  @IsOptional()
+  @Transform(({value}) => value && value.trim() !== '' ? value.trim() : undefined)
+  public bio?: string;
 
   // @IsOptional()
   // @ValidateNested({each: true})

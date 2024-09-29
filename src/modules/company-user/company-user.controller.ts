@@ -1,14 +1,19 @@
-import { Body, Controller, Get, Param, Post, UseGuards }  from '@nestjs/common';
-import { CreateCompanyUserInviteDto }                     from './dtos/create-company-user-invite.dto';
-import { CompanyUserService }                             from '@modules/company-user/company-user.service';
-import { CompanyUserInviteService }                       from './company-user-invite.service';
-import { CurrentCompanyId }                               from '@modules/company/decorators/company-id.decorator';
-import { CurrentUser }                                    from '@modules/auth/decorators/current-user.decorator';
-import { RequiredRole }                                   from '@modules/auth/decorators/requierd-role.decorator';
-import { RolesGuard }                                     from '@modules/auth/guards/roles.guard';
-import { RoleEnum }                                       from './enums/role.enum';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 
-@UseGuards(RolesGuard)
+import { Pageable, PageableDefault }  from '@lib/pageable';
+import { CurrentUser }                from '@modules/auth/decorators/current-user.decorator';
+import { RequiredRole }               from '@modules/auth/decorators/requierd-role.decorator';
+import { MemberGuard }                from '@modules/auth/guards/member.guard';
+import { RolesGuard }                 from '@modules/auth/guards/roles.guard';
+import { CurrentCompanyId }           from '@modules/company/decorators/company-id.decorator';
+import { MembersQueryDto }            from '@modules/company/dtos/members-query.dto';
+import { CreateCompanyUserInviteDto } from './dtos/create-company-user-invite.dto';
+import { CompanyUserInviteService }   from './company-user-invite.service';
+import { CompanyUserService }         from './company-user.service';
+import { RoleEnum }                   from './enums/role.enum';
+import { MemberInviteFullMapper }     from '@modules/company-user/mappers/member-invite-full.mapper';
+
+@UseGuards(MemberGuard, RolesGuard)
 @Controller('company-user')
 export class CompanyUserController {
   constructor(
@@ -28,7 +33,9 @@ export class CompanyUserController {
   public async getAllInvites(
     @CurrentCompanyId() companyId: string,
   ) {
-    return await this._companyUserInviteService.getAll(companyId);
+    const results = await this._companyUserInviteService.getAll(companyId);
+
+    return MemberInviteFullMapper.mapAll(results);
   }
 
   @Post('/invite')
@@ -38,6 +45,25 @@ export class CompanyUserController {
     @CurrentUser() user: string,
     @Body() createInviteDto: CreateCompanyUserInviteDto
   ) {
-    return await this._companyUserInviteService.create(createInviteDto, companyId, user);
+    const result = await this._companyUserInviteService.create(createInviteDto, companyId, user);
+
+    return MemberInviteFullMapper.map(result);
+  }
+
+  @Get('contacts')
+  public async getMembersContacts(
+    @CurrentCompanyId() companyId: string,
+    @PageableDefault({unpaged: true}) pageable: Pageable,
+    @Query() query: MembersQueryDto,
+  ) {
+    // return await this._companyUserService.getMembersContacts(query, companyId, pageable);
+  }
+
+  @Get('contacts/:id')
+  public async getContactDetail(
+    @CurrentCompanyId() companyId: string,
+    @Param('id') id: string,
+  ) {
+    // return await this._companyUserService.getContactDetail(id, companyId);
   }
 }
