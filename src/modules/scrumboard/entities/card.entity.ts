@@ -27,7 +27,7 @@ export class CardEntity {
   @Property({nullable: true})
   description?: string;
 
-  @ManyToMany(() => LabelEntity, 'cards')
+  @ManyToMany(() => LabelEntity, 'cards', {owner: true})
   labels = new Collection<LabelEntity>(this);
 
   @Property({nullable: true})

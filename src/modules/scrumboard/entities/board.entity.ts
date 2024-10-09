@@ -6,6 +6,7 @@ import { CompanyEntity }     from '@modules/company/entities/company.entity';
 import { CompanyUserEntity } from '@modules/company-user/entities/company-user.entity';
 import { LabelEntity }       from './label.entity';
 import { ListEntity }        from './list.entity';
+import { UserEntity }        from '@modules/users/entities/user.entity';
 
 @Entity({tableName: 'scrumboard_board'})
 export class BoardEntity {
@@ -26,6 +27,9 @@ export class BoardEntity {
 
   @Property({nullable: true, onCreate: () => new Date()})
   createdAt: Date;
+
+  @ManyToOne(() => CompanyUserEntity, {nullable: true, eager: true})
+  owner: UserEntity;
 
   @ManyToOne(() => CompanyEntity)
   company!: CompanyEntity;

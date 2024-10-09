@@ -11,6 +11,7 @@ import { CompanyEntity }      from '@modules/company/entities/company.entity';
 import { MemberService }      from '@modules/scrumboard/services/member.service';
 import { ResponseCardMapper } from '@modules/scrumboard/mappers/response-card.mapper';
 import { BoardGateway }       from '@modules/scrumboard/gateways/board.gateway';
+import { LabelService }       from '@modules/scrumboard/services/label.service';
 
 @Controller('scrumboard/card')
 @UseGuards(MemberGuard)
@@ -18,6 +19,7 @@ export class CardController {
   constructor(
     private readonly cardService: CardService,
     private readonly memberService: MemberService,
+    private readonly labelService: LabelService,
     private readonly boardGateway: BoardGateway
   ) {}
 

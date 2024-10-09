@@ -106,7 +106,6 @@ export class AuthController {
   public async validateSignUpEmail(
     @Body('email') encryptedEmail: string,
   ): Promise<{ isValid: boolean }> {
-    console.log(this.cryptoKey);
     // decrypt AES encrypted email
     const email = AES.decrypt(encryptedEmail, this.cryptoKey).toString(CryptoJS.enc.Utf8);
     const user = await this._usersService.findOneByEmail(email);

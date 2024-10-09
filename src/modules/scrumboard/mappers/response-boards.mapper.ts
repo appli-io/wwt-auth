@@ -8,6 +8,7 @@ export class ResponseBoardsMapper {
   public icon: string;
   public lastActivity: Date;
   public members: ResponseMemberMapper[];
+  public ownerId: string;
 
   constructor(values: ResponseBoardsMapper) {
     Object.assign(this, values);
@@ -20,7 +21,8 @@ export class ResponseBoardsMapper {
       description: board.description,
       icon: board.icon,
       lastActivity: board.lastActivity,
-      members: board.members.getItems().map(ResponseMemberMapper.map)
+      members: board.members.getItems().map(ResponseMemberMapper.map),
+      ownerId: board.owner?.id,
     });
   }
 }

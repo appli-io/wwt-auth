@@ -28,7 +28,6 @@ export class MarketplaceController {
     @CurrentCompanyId() companyId: string,
     @Body() dto: CreateCategoryDto
   ) {
-    console.log('dto', dto);
     return this._marketplaceService.postCategory(dto, companyId);
   }
 

@@ -1,7 +1,7 @@
 import { ResponseMemberMapper } from '@modules/scrumboard/mappers/response-member.mapper';
-import { LabelEntity }          from '@modules/scrumboard/entities/label.entity';
 import { BoardEntity }          from '@modules/scrumboard/entities/board.entity';
 import { ResponseListsMapper }  from '@modules/scrumboard/mappers/response-lists.mapper';
+import { ResponseLabelMapper }  from '@modules/scrumboard/mappers/response-label.mapper';
 
 export class ResponseBoardMapper {
   public id: string | null;
@@ -10,7 +10,7 @@ export class ResponseBoardMapper {
   public icon?: string;
   public lastActivity: Date;
   public lists?: ResponseListsMapper[];
-  public labels: LabelEntity[];
+  public labels: ResponseLabelMapper[];
   public members: ResponseMemberMapper[];
 
   constructor(board: ResponseBoardMapper) {
@@ -24,8 +24,8 @@ export class ResponseBoardMapper {
       description: board.description || null,
       icon: board.icon || null,
       lastActivity: board.lastActivity,
-      lists: board.lists.getItems().map(ResponseListsMapper.map),
-      labels: board.labels.getItems(),
+      lists: board.lists && board.lists.getItems().map(ResponseListsMapper.map),
+      labels: board.labels && ResponseLabelMapper.mapAll(board.labels.getItems()),
       members: board.members.getItems().map(ResponseMemberMapper.map),
     });
   }

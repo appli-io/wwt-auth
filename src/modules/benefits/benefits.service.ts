@@ -135,7 +135,6 @@ export class BenefitsService {
 
     if (!category) throw new NotFoundException('CATEGORY_NOT_FOUND');
 
-    console.log('dto: ', dto);
     if (dto.image) {
       const result = await this._storageService.uploadFile(dto.image, {type: FileType.IMAGE, mustOptimize: true}, member.company.id);
       dto.image = result['image'];

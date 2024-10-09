@@ -9,13 +9,14 @@ import { CompanyEntity }     from '@modules/company/entities/company.entity';
 import { CompanyUserEntity } from '@modules/company-user/entities/company-user.entity';
 import { BoardEntity }       from '@modules/scrumboard/entities/board.entity';
 import { CreateBoardDto }    from '@modules/scrumboard/dtos/create-board.dto';
-import { UpdateBoardDto }    from '@modules/scrumboard/dtos/update-board.dto';
 import { UserEntity }        from '@modules/users/entities/user.entity';
+import { CommonService }     from '@common/common.service';
 
 @Injectable()
 export class BoardService {
   constructor(
     @InjectRepository(BoardEntity) private readonly _boardRepository: EntityRepository<BoardEntity>,
+    private readonly _commonService: CommonService,
     private readonly _em: EntityManager,
   ) {}
 
@@ -25,6 +26,7 @@ export class BoardService {
       company: companyId,
       lastActivity: new Date(),
       members: createBoardDto.members.map((memberId) => this._em.getReference('CompanyUserEntity', {user: memberId, company: companyId})),
+      owner: companyUser.user.id,
       lists: [
         {title: 'To Do', position: SCRUMBOARD_STEPS},
         {title: 'In Progress', position: SCRUMBOARD_STEPS * 2},
@@ -51,7 +53,7 @@ export class BoardService {
     return this._boardRepository.findOne(
       id,
       {
-        populate: [ 'members', 'members.user', 'lists', 'lists.cards', 'labels' ],
+        populate: [ 'members', 'members.user', 'lists', 'lists.cards.labels', 'labels' ],
         orderBy: {
           lists: {
             position: 'asc',
@@ -64,8 +66,10 @@ export class BoardService {
     );
   }
 
-  update(id: string, updateBoardDto: UpdateBoardDto) {
-    return this._boardRepository.nativeUpdate({id}, updateBoardDto);
+  async update(board: BoardEntity) {
+    await this._em.persistAndFlush(board);
+
+    return board;
   }
 
   remove(id: string) {

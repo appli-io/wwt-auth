@@ -16,6 +16,6 @@ export class LabelEntity {
   @Property()
   title!: string;
 
-  @ManyToMany({entity: () => CardEntity, mappedBy: 'labels', owner: true})
+  @ManyToMany({entity: () => CardEntity, mappedBy: 'labels'})
   public cards = new Collection<CardEntity>(this);
 }

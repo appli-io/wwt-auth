@@ -76,9 +76,6 @@ export class BenefitCategoryController {
     dto.icon = files.find((file) => file.fieldname === 'icon');
     dto.image = files.find((file) => file.fieldname === 'image');
 
-    console.log('files: ', files);
-    console.log('dto: ', dto);
-
     return this.benefitsService.createCategory(dto, member);
   }
 

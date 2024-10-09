@@ -17,6 +17,7 @@ import { BoardService }    from './services/board.service';
 import { CardService }     from './services/card.service';
 import { ListService }     from './services/list.service';
 import { MemberService }   from './services/member.service';
+import { LabelService }    from '@modules/scrumboard/services/label.service';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MemberService }   from './services/member.service';
     CardService,
     ListService,
     MemberService,
+    LabelService,
     BoardGateway
   ],
 })

@@ -146,7 +146,6 @@ export class UsersController {
     @CurrentUser() userId: string,
     @Body() contacts: ContactDto[]
   ) {
-    console.log(contacts);
     const user = await this._usersService.updateContacts(userId, contacts);
 
     return ResponseFullUserMapper.map(user);

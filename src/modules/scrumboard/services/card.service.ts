@@ -8,6 +8,7 @@ import { CompanyUserEntity } from '@modules/company-user/entities/company-user.e
 import { CardEntity }        from '../entities/card.entity';
 import { CreateCardDto }     from '../dtos/create-card.dto';
 import { UpdateCardDto }     from '../dtos/update-card.dto';
+import { LabelEntity }       from '@modules/scrumboard/entities/label.entity';
 
 @Injectable()
 export class CardService {
@@ -40,18 +41,28 @@ export class CardService {
   }
 
   async update(id: string, updateCardDto: UpdateCardDto) {
-    const card = await this.cardRepository.findOne(id, {populate: [ 'board' ]});
-    if (!card) {
+    const card = await this.cardRepository.findOne(id, {populate: [ 'board', 'labels' ]});
+    if (!card)
       throw new NotFoundException('Card not found');
+
+    // omit undefined and null fields
+    updateCardDto = Object.keys(updateCardDto).reduce((acc, key) => {
+      if (updateCardDto[key] !== undefined && updateCardDto[key] !== null)
+        acc[key] = updateCardDto[key];
+      return acc;
+    }, {});
+
+    const {labels, ...updateFields} = updateCardDto;
+
+    Object.assign(card, updateFields);
+
+    if (labels) {
+      const labelsToAdd = updateCardDto.labels.filter(label => !card.labels.find(({id}) => id === label));
+      const labelsToRemove = card.labels.filter(label => !updateCardDto.labels.includes(label.id));
+
+      card.labels.add(await this._em.findAll('LabelEntity', {where: {id: {$in: labelsToAdd}}}) as LabelEntity[]);
+      card.labels.remove(labelsToRemove);
     }
-
-    const updatedCardDto = Object.fromEntries(
-      Object.entries(updateCardDto).filter(([ , value ]) => value !== null && value !== undefined)
-    );
-
-    Object.assign(card, updatedCardDto, {
-      list: updateCardDto.listId ? updateCardDto.listId : card.list.id,
-    });
 
     card.board.lastActivity = new Date();
 

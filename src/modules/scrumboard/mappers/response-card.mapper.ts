@@ -1,5 +1,6 @@
 import { CardEntity }           from '@modules/scrumboard/entities/card.entity';
 import { ResponseMemberMapper } from '@modules/scrumboard/mappers/response-member.mapper';
+import { ResponseLabelMapper }  from '@modules/scrumboard/mappers/response-label.mapper';
 
 export class ResponseCardMapper {
   public id: string;
@@ -8,7 +9,7 @@ export class ResponseCardMapper {
   public position: number;
   public title: string;
   public description?: string | null;
-  public labels?: string[];
+  public labels?: ResponseLabelMapper[];
   public dueDate?: Date;
   public owner: ResponseMemberMapper;
 
@@ -24,7 +25,7 @@ export class ResponseCardMapper {
       position: card.position,
       title: card.title,
       description: card.description,
-      labels: card.labels.getItems().map(label => label.id),
+      labels: card.labels.isInitialized() && ResponseLabelMapper.mapAll(card.labels.getItems()),
       dueDate: card.dueDate,
       owner: ResponseMemberMapper.map(card.owner)
     });
