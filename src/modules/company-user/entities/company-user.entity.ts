@@ -41,9 +41,9 @@ export class CompanyUserEntity {
   @OneToMany(() => CardEntity, (card) => card.owner)
   public ownedCards = new Collection<CardEntity>(this);
 
-  @OneToMany(() => CardEntity, (card) => card.assignee)
-  public assignedCards = new Collection<CardEntity>(this);
-
   @ManyToMany(() => BoardEntity, (board) => board.members)
   public boards = new Collection<BoardEntity>(this);
+
+  @ManyToMany({entity: () => CardEntity, mappedBy: 'assignees'})
+  public assignedCards = new Collection<CardEntity>(this);
 }

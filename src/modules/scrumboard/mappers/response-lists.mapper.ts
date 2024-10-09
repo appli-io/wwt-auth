@@ -1,12 +1,12 @@
-import { CardEntity } from '@modules/scrumboard/entities/card.entity';
-import { ListEntity } from '@modules/scrumboard/entities/list.entity';
+import { ListEntity }         from '@modules/scrumboard/entities/list.entity';
+import { ResponseCardMapper } from '@modules/scrumboard/mappers/response-card.mapper';
 
 export class ResponseListsMapper {
   public id: string;
   public boardId: string;
   public position: number;
   public title: string;
-  public cards: CardEntity[];
+  public cards: ResponseCardMapper[];
 
   constructor(values: ResponseListsMapper) {
     Object.assign(this, values);
@@ -18,7 +18,7 @@ export class ResponseListsMapper {
       boardId: list.board.id,
       position: list.position,
       title: list.title,
-      cards: list.cards.getItems(),
+      cards: list.cards.isInitialized() && list.cards.getItems().map(ResponseCardMapper.map),
     });
   }
 }

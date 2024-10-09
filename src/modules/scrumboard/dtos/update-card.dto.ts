@@ -24,6 +24,10 @@ export class UpdateCardDto {
   @IsOptional()
   readonly labels?: string[];
 
+  @IsUUID(4, {each: true})
+  @IsOptional()
+  readonly assignees?: string[];
+
   @IsDate()
   @IsOptional()
   @Type(() => Date)

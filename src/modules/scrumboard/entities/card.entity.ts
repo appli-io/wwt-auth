@@ -30,12 +30,14 @@ export class CardEntity {
   @ManyToMany(() => LabelEntity, 'cards', {owner: true})
   labels = new Collection<LabelEntity>(this);
 
+  // One or more responsible users
+  @ManyToMany(() => CompanyUserEntity, 'assignedCards', {owner: true})
+  assignees = new Collection<CompanyUserEntity>(this);
+
   @Property({nullable: true})
   dueDate?: Date;
 
-  @ManyToOne({entity: () => CompanyUserEntity, inversedBy: c => c.assignedCards, nullable: true})
-  assignee?: CompanyUserEntity;
-
   @ManyToOne({entity: () => CompanyUserEntity, inversedBy: c => c.ownedCards})
   owner!: CompanyUserEntity;
+
 }

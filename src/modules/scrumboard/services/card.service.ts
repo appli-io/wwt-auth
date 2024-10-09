@@ -41,7 +41,7 @@ export class CardService {
   }
 
   async update(id: string, updateCardDto: UpdateCardDto) {
-    const card = await this.cardRepository.findOne(id, {populate: [ 'board', 'labels' ]});
+    const card = await this.cardRepository.findOne(id, {populate: [ 'board', 'labels', 'assignees.user' ]});
     if (!card)
       throw new NotFoundException('Card not found');
 
@@ -52,7 +52,7 @@ export class CardService {
       return acc;
     }, {});
 
-    const {labels, ...updateFields} = updateCardDto;
+    const {labels, assignees, ...updateFields} = updateCardDto;
 
     Object.assign(card, updateFields);
 
@@ -62,6 +62,14 @@ export class CardService {
 
       card.labels.add(await this._em.findAll('LabelEntity', {where: {id: {$in: labelsToAdd}}}) as LabelEntity[]);
       card.labels.remove(labelsToRemove);
+    }
+
+    if (assignees) {
+      const assigneesToAdd = updateCardDto.assignees.filter(assignee => !card.assignees.find(({user}) => user.id === assignee));
+      const assigneesToRemove = card.assignees.filter(assignee => !updateCardDto.assignees.includes(assignee.user.id));
+
+      card.assignees.add(await this._em.findAll('CompanyUserEntity', {where: {user: {$in: assigneesToAdd}}}) as CompanyUserEntity[]);
+      card.assignees.remove(assigneesToRemove);
     }
 
     card.board.lastActivity = new Date();
