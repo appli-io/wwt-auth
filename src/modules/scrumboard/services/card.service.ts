@@ -54,7 +54,9 @@ export class CardService {
 
     const {labels, assignees, ...updateFields} = updateCardDto;
 
-    Object.assign(card, updateFields);
+    Object.assign(card, updateFields, {
+      list: updateCardDto.listId ? updateCardDto.listId : card.list.id,
+    });
 
     if (labels) {
       const labelsToAdd = updateCardDto.labels.filter(label => !card.labels.find(({id}) => id === label));
