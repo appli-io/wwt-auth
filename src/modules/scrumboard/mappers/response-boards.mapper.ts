@@ -22,7 +22,7 @@ export class ResponseBoardsMapper {
       icon: board.icon,
       lastActivity: board.lastActivity,
       members: board.members.getItems().map(ResponseMemberMapper.map),
-      ownerId: board.owner?.id,
+      ownerId: board.owner?.user.id,
     });
   }
 }

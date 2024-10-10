@@ -30,6 +30,7 @@ export class BoardController {
     @CurrentCompanyId() companyId: CompanyEntity['id'],
     @Body() createBoardDto: CreateBoardDto
   ) {
+
     const member = await this.memberService.findOne(userId, companyId);
     const result = await this.boardService.create(createBoardDto, member, companyId);
 
