@@ -3,17 +3,18 @@ export interface INews {
   headline?: string;
   slug?: string;
   abstract?: string;
-  body?: string;
-  images?: IImage[];
-  portraitImage?: IImage;
+  body?: Record<string, unknown>;
   isDeleted?: boolean;
   publishedAt?: Date;
   updatedAt?: Date;
+  deletedAt?: Date;
 }
 
 export interface IImage {
-  name: string,
-  filepath: string,
-  contentType: string,
-  fileUrl?: string;
+  id: string;
+  name: string;
+  filepath: string;
+  fileUrl: string;
+  contentType: string;
+  size: number;
 }

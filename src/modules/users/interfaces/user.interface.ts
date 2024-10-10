@@ -9,8 +9,11 @@ export interface IUser {
   password: string;
   confirmed: boolean;
   avatar?: IImage;
-  portrait?: string;
-  location: string;
+  portrait?: IImage;
+  city?: string;
+  country?: string;
+  gender?: string;
+  birthdate?: string;
   settings: Record<string, any>;
   credentials: ICredentials;
   createdAt: Date;

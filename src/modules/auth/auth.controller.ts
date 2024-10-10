@@ -1,5 +1,18 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, Res, UnauthorizedException, UseGuards, } from '@nestjs/common';
-import { ConfigService }                                                                                         from '@nestjs/config';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UnprocessableEntityException,
+  UseGuards,
+}                                       from '@nestjs/common';
+import { ConfigService }                from '@nestjs/config';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -7,8 +20,11 @@ import {
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
-}                                                                                                                from '@nestjs/swagger';
-import { FastifyReply, FastifyRequest }                                                                          from 'fastify';
+}                                       from '@nestjs/swagger';
+import { FastifyReply, FastifyRequest } from 'fastify';
+
+import AES      from 'crypto-js/aes';
+import CryptoJS from 'crypto-js';
 
 import { isNull, isUndefined } from '@common/utils/validation.util';
 import { IMessage }            from '@common/interfaces/message.interface';
@@ -26,13 +42,14 @@ import { ResetPasswordDto }             from './dtos/reset-password.dto';
 import { SignInDto }                    from './dtos/sign-in.dto';
 import { SignUpDto }                    from './dtos/sign-up.dto';
 import { FastifyThrottlerGuard }        from './guards/fastify-throttler.guard';
-import { IAuthResponseUser }            from './interfaces/auth-response-user.interface';
 import { IOAuthProvidersResponse }      from './interfaces/oauth-provider-response.interface';
 import { AuthResponseUserMapper }       from './mappers/auth-response-user.mapper';
 import { AuthResponseMapper }           from './mappers/auth-response.mapper';
 import { OAuthProvidersResponseMapper } from './mappers/oauth-provider-response.mapper';
 import { ResponsePositionsMapper }      from '@modules/auth/mappers/response-positions.mapper';
 import { StorageService }               from '@modules/firebase/services/storage.service';
+import { IConfig }                      from '@config/interfaces/config.interface';
+import { ResponseFullUserMapper }       from '@modules/users/mappers/response-full-user.mapper';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -41,16 +58,18 @@ export class AuthController {
   private readonly cookiePath = '/api/auth';
   private readonly cookieName: string;
   private readonly refreshTime: number;
+  private readonly cryptoKey: string;
   private readonly testing: boolean;
 
   constructor(
     private readonly _authService: AuthService,
     private readonly _usersService: UsersService,
     private readonly _storageService: StorageService,
-    private readonly _configService: ConfigService,
+    private readonly _configService: ConfigService<IConfig>,
   ) {
-    this.cookieName = this._configService.get<string>('REFRESH_COOKIE');
-    this.refreshTime = this._configService.get<number>('jwt.refresh.time');
+    this.cookieName = this._configService.get<string>('REFRESH_COOKIE', {infer: true});
+    this.refreshTime = this._configService.get<number>('jwt.refresh.time', {infer: true});
+    this.cryptoKey = this._configService.get('crypto.key', {infer: true});
     this.testing = this._configService.get<boolean>('testing');
   }
 
@@ -70,7 +89,30 @@ export class AuthController {
     @Origin() origin: string | undefined,
     @Body() signUpDto: SignUpDto,
   ): Promise<IMessage> {
+    if (!signUpDto.token && !signUpDto.company) throw new UnprocessableEntityException('TOKEN_OR_COMPANY_REQUIRED');
+
     return await this._authService.signUp(signUpDto, origin);
+  }
+
+  @Public()
+  @Post('/sign-up/validate-email')
+  @ApiOkResponse({
+    type: MessageMapper,
+    description: 'Validates the user email existence',
+  })
+  @ApiBadRequestResponse({
+    description: 'Something is invalid on the request body',
+  })
+  public async validateSignUpEmail(
+    @Body('email') encryptedEmail: string,
+  ): Promise<{ isValid: boolean }> {
+    // decrypt AES encrypted email
+    const email = AES.decrypt(encryptedEmail, this.cryptoKey).toString(CryptoJS.enc.Utf8);
+    const user = await this._usersService.findOneByEmail(email);
+
+    if (user) return {isValid: false};
+
+    return {isValid: true};
   }
 
   @Public()
@@ -113,14 +155,24 @@ export class AuthController {
     @Req() req: FastifyRequest,
     @Res() res: FastifyReply,
   ): Promise<void> {
-    const token = this.refreshTokenFromReq(req);
-    const result = await this._authService.refreshTokenAccess(
-      token,
-      req.headers.host,
-    );
-    this.saveRefreshCookie(res, result.refreshToken)
-      .status(HttpStatus.OK)
-      .send(AuthResponseMapper.map(result));
+    try {
+      const token = this.refreshTokenFromReq(req);
+      const result = await this._authService.refreshTokenAccess(
+        token,
+        req.headers.host,
+      );
+      this.saveRefreshCookie(res, result.refreshToken)
+        .status(HttpStatus.OK)
+        .send(AuthResponseMapper.map(result));
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        res
+          .clearCookie(this.cookieName, {path: this.cookiePath})
+          .header('Content-Type', 'application/json')
+          .status(HttpStatus.UNAUTHORIZED)
+          .send(new MessageMapper('Invalid token'));
+      }
+    }
   }
 
   @Post('/sign-out')
@@ -235,9 +287,9 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'The user is not logged in.',
   })
-  public async getMe(@CurrentUser() id: string): Promise<IAuthResponseUser> {
-    const user = await this._usersService.findOneById(id, [ 'assignedCompanies', 'companyUsers' ]);
-    return AuthResponseUserMapper.map(user);
+  public async getMe(@CurrentUser() id: string): Promise<ResponseFullUserMapper> {
+    const user = await this._usersService.findOneById(id, [ 'companyUsers.company', 'companyUsers.contacts' ]);
+    return ResponseFullUserMapper.map(user);
   }
 
   @Post('/active-company')

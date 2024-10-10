@@ -16,7 +16,7 @@ export const PageableDefault = createParamDecorator((data: PageableQuery, ctx: E
   const request: unknown = ctx.switchToHttp().getRequest();
 
   const pageable: ExtendedPageable = {
-    ...defaultPageable,
+    ...JSON.parse(JSON.stringify(defaultPageable)),
     ...defaultData
   };
 

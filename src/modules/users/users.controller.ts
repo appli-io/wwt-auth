@@ -1,5 +1,17 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Res, UploadedFile, UseInterceptors, } from '@nestjs/common';
-import { ConfigService }                                                                                from '@nestjs/config';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Patch,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+}                        from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   ApiBadRequestResponse,
   ApiNoContentResponse,
@@ -7,7 +19,7 @@ import {
   ApiOkResponse,
   ApiTags,
   ApiUnauthorizedResponse,
-}                                                                                                       from '@nestjs/swagger';
+}                        from '@nestjs/swagger';
 
 import { FastifyReply } from 'fastify';
 
@@ -20,11 +32,12 @@ import { AuthResponseUserMapper } from '../auth/mappers/auth-response-user.mappe
 import { ChangeEmailDto }         from './dtos/change-email.dto';
 import { GetUserParams }          from './dtos/get-user.params';
 import { PasswordDto }            from './dtos/password.dto';
-import { UpdateUsernameDto }      from './dtos/update-username.dto';
 import { ResponseUserMapper }     from './mappers/response-user.mapper';
 import { UsersService }           from './users.service';
 import { FileInterceptor }        from '@nest-lab/fastify-multer';
 import { StorageService }         from '@modules/firebase/services/storage.service';
+import { VALID_IMAGE_TYPES }      from '@common/constant';
+import { ContactDto }             from '@modules/users/dtos/contact.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -87,25 +100,6 @@ export class UsersController {
     return ResponseFullUserMapper.map(user);
   }
 
-  @Patch('/username')
-  @ApiOkResponse({
-    type: ResponseUserMapper,
-    description: 'The username is updated.',
-  })
-  @ApiBadRequestResponse({
-    description: 'Something is invalid on the request body.',
-  })
-  @ApiUnauthorizedResponse({
-    description: 'The user is not logged in.',
-  })
-  public async updateUsername(
-    @CurrentUser() id: string,
-    @Body() dto: UpdateUsernameDto,
-  ): Promise<ResponseUserMapper> {
-    const user = await this._usersService.updateUsername(id, dto);
-    return ResponseUserMapper.map(user);
-  }
-
   @Patch('/email')
   @ApiOkResponse({
     type: AuthResponseUserMapper,
@@ -147,6 +141,16 @@ export class UsersController {
       .send();
   }
 
+  @Patch('/contacts')
+  public async updateContacts(
+    @CurrentUser() userId: string,
+    @Body() contacts: ContactDto[]
+  ) {
+    const user = await this._usersService.updateContacts(userId, contacts);
+
+    return ResponseFullUserMapper.map(user);
+  }
+
   @Patch('/avatar')
   @ApiOkResponse({
     type: ResponseUserMapper,
@@ -158,12 +162,20 @@ export class UsersController {
   @ApiUnauthorizedResponse({
     description: 'The user is not logged in.',
   })
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('avatar', {
+    fileFilter: (req, file, cb) => {
+      if (!VALID_IMAGE_TYPES.includes(file.mimetype)) {
+        return cb(new BadRequestException('INVALID_IMAGE_TYPE'), false);
+      }
+
+      cb(null, true);
+    }
+  }))
   public async updateAvatar(
     @CurrentUser() id: string,
-    @UploadedFile() file: Express.Multer.File
+    @UploadedFile() avatar: Express.Multer.File
   ): Promise<ResponseUserMapper> {
-    const user = await this._usersService.updateAvatar(id, file);
+    const user = await this._usersService.updateAvatar(id, avatar);
     return ResponseUserMapper.map(user);
   }
 }

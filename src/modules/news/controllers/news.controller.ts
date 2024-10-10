@@ -1,10 +1,12 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   NotFoundException,
   Param,
   ParseUUIDPipe,
@@ -31,6 +33,8 @@ import { ContentType }                     from '@modules/shared/enums/content-t
 import { ResponseFullNewsMapper }          from '@modules/news/mappers/response-full-news.mapper';
 import { NewsQueryDto }                    from '@modules/news/dtos/news-query.dto';
 import { AnyFilesInterceptor }             from '@nest-lab/fastify-multer';
+import { VALID_IMAGE_TYPES }               from '@common/constant';
+import { MessageMapper }                   from '@common/mappers/message.mapper';
 
 const MAX_HIGHLIGHTED_NEWS = 5;
 
@@ -38,6 +42,8 @@ const MAX_HIGHLIGHTED_NEWS = 5;
 @Controller('news')
 @UseGuards(MemberGuard) // 👈 Validate user is an active member of the company
 export class NewsController {
+  private readonly _logger = new Logger(NewsController.name);
+
   constructor(
     private readonly _newsService: NewsService,
     private readonly _companyUserService: CompanyUserService,
@@ -52,6 +58,8 @@ export class NewsController {
     @Query() query: NewsQueryDto,
   ) {
     const pageableNews = await this._newsService.findAll(query, pageable, companyId);
+
+    this._logger.log(`Found ${ pageableNews.content.length } news`);
 
     return {
       ...pageableNews,
@@ -81,18 +89,26 @@ export class NewsController {
   }
 
   @Post()
-  @UseInterceptors(AnyFilesInterceptor())
+  @UseInterceptors(AnyFilesInterceptor({
+    fileFilter: (req, file, cb) => {
+      if (!VALID_IMAGE_TYPES.includes(file.mimetype)) {
+        return cb(new BadRequestException('INVALID_IMAGE_TYPE'), false);
+      }
+
+      cb(null, true);
+    }
+  }))
   public async create(
     @CurrentUser() userId: string,
     @CurrentCompanyId() companyId: string,
-    @UploadedFiles() files: Express.Multer.File[],
     @Body() news: CreateNewsDto,
+    @UploadedFiles() files?: Express.Multer.File[]
   ) {
-    const images = files.filter(file => file.fieldname === 'images');
-    const portraitImage = files.find(file => file.fieldname === 'portraitImage');
+    const images = files?.filter(file => file.fieldname === 'images');
+    const portraitImage = files?.find(file => file.fieldname === 'portraitImage');
     const createdNews = await this._newsService.create(news, images, portraitImage, userId, companyId);
 
-    return createdNews.id;
+    return ResponseFullNewsMapper.map(createdNews);
   }
 
   @Delete(':id')
@@ -106,7 +122,7 @@ export class NewsController {
 
     await this._newsService.delete(id, userId, companyId, isAdmin);
 
-    return 'News deleted';
+    return new MessageMapper('News deleted');
   }
 
   @Get('social/:id/count')

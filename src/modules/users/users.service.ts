@@ -17,16 +17,16 @@ import { ContactDto }          from '@modules/users/dtos/contact.dto';
 
 import { ChangeEmailDto }        from './dtos/change-email.dto';
 import { PasswordDto }           from './dtos/password.dto';
-import { UpdateUsernameDto }     from './dtos/update-username.dto';
 import { CredentialsEmbeddable } from './embeddables/credentials.embeddable';
 import { OAuthProviderEntity }   from './entities/oauth-provider.entity';
 import { UserEntity }            from './entities/user.entity';
 import { OAuthProvidersEnum }    from './enums/oauth-providers.enum';
-import { CompanyService }        from '@modules/company/company.service';
 import { StorageService }        from '@modules/firebase/services/storage.service';
 import { IUser }                 from './interfaces/user.interface';
 import { CompanyEntity }         from '@modules/company/entities/company.entity';
-import { IImage }                from '@modules/news/interfaces/news.interface';
+import { FileType }              from '@modules/firebase/enums/file-type.enum';
+import sharp                     from 'sharp';
+import { FileEntity }            from '@modules/firebase/entities/file.entity';
 
 @Injectable()
 export class UsersService {
@@ -35,21 +35,22 @@ export class UsersService {
     @InjectRepository(UsersContactEntity) private readonly _usersContactRepository: EntityRepository<UsersContactEntity>,
     @InjectRepository(OAuthProviderEntity) private readonly _oauthProvidersRepository: EntityRepository<OAuthProviderEntity>,
     private readonly _companyUserService: CompanyUserService,
-    private readonly _companyService: CompanyService,
     private readonly _storageService: StorageService,
     private readonly commonService: CommonService,
   ) {
   }
 
-  public async create(provider: OAuthProvidersEnum, email: string, name: string, password?: string,): Promise<UserEntity> {
-    const isConfirmed = provider !== OAuthProvidersEnum.LOCAL;
+  public async create(provider: OAuthProvidersEnum, email: string, firstname: string, lastname: string, password?: string, confirmed: boolean = false): Promise<UserEntity> {
+    const isConfirmed = provider !== OAuthProvidersEnum.LOCAL || confirmed;
     const formattedEmail = email.toLowerCase();
     await this.checkEmailUniqueness(formattedEmail);
-    const formattedName = this.commonService.formatName(name);
+    const formattedFirstname = this.commonService.formatName(firstname);
+    const formattedLastname = this.commonService.formatName(lastname);
     const user = this._usersRepository.create({
       email: formattedEmail,
-      name: formattedName,
-      username: await this.generateUsername(formattedName),
+      firstname: formattedFirstname,
+      lastname: formattedLastname,
+      username: await this.generateUsername(formattedFirstname + ' ' + formattedLastname),
       password: isUndefined(password) ? 'UNSET' : await hash(password, 10),
       confirmed: isConfirmed,
       credentials: new CredentialsEmbeddable(isConfirmed),
@@ -60,7 +61,7 @@ export class UsersService {
   }
 
   public async findAll(): Promise<UserEntity[]> {
-    return this._usersRepository.findAll();
+    return this._usersRepository.findAll({populate: [ 'avatar' ]});
   }
 
   public async findOneByIdOrUsername(idOrUsername: string,): Promise<UserEntity> {
@@ -79,15 +80,15 @@ export class UsersService {
     return this.findOneByUsername(idOrUsername);
   }
 
-  public async findOneById(id: string, populateJoin?: any): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({id}, {populate: populateJoin});
+  public async findOneById(id: string, populateJoin: any[] = []): Promise<UserEntity> {
+    const user = await this._usersRepository.findOne({id}, {populate: [ ...populateJoin, 'avatar' ], refresh: true});
     this.commonService.checkEntityExistence(user, 'User');
 
     return user;
   }
 
   public async findOneByUsername(username: string, forAuth = false,): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({username: username.toLowerCase()}, {populate: [ 'assignedCompanies', 'activeCompany', 'companyUsers' ]});
+    const user = await this._usersRepository.findOne({username: username.toLowerCase()}, {populate: [ 'assignedCompanies', 'activeCompany', 'companyUsers', 'avatar' ]});
 
     if (forAuth)
       this.throwUnauthorizedException(user);
@@ -97,13 +98,10 @@ export class UsersService {
     return user;
   }
 
-  public async findOneByEmail(email: string, populate?: any[]): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({
+  public async findOneByEmail(email: string, populate: any[] = []): Promise<UserEntity> {
+    return await this._usersRepository.findOne({
       email: email.toLowerCase(),
-    }, {populate});
-    this.throwUnauthorizedException(user);
-
-    return user;
+    }, {populate: [ ...populate, 'avatar' ]});
   }
 
   // necessary for password reset
@@ -114,7 +112,7 @@ export class UsersService {
   }
 
   public async findOneByCredentials(id: string, version: number,): Promise<UserEntity> {
-    const user = await this._usersRepository.findOne({id}, {populate: [ 'assignedCompanies', 'companyUsers', 'activeCompany' ]});
+    const user = await this._usersRepository.findOne({id}, {populate: [ 'assignedCompanies', 'companyUsers', 'activeCompany', 'avatar' ]});
     this.throwUnauthorizedException(user);
 
     if (user.credentials.version !== version)
@@ -137,46 +135,14 @@ export class UsersService {
     return user;
   }
 
-  public async updateUsername(userId: string, dto: UpdateUsernameDto): Promise<UserEntity> {
-    const user = await this.findOneById(userId);
-    const {name, username} = dto;
-
-    if (!isUndefined(name) && !isNull(name)) {
-      if (name === user.name) {
-        throw new BadRequestException('Name must be different');
-      }
-
-      user.name = this.commonService.formatName(name);
-    }
-    if (!isUndefined(username) && !isNull(username)) {
-      const formattedUsername = dto.username.toLowerCase();
-
-      if (user.username === formattedUsername) {
-        throw new BadRequestException('Username should be different');
-      }
-
-      await this.checkUsernameUniqueness(formattedUsername);
-      user.username = formattedUsername;
-    }
-
-    await this.commonService.saveEntity(user);
-
-    return user;
-  }
-
   public async updateUserInfo(userId: string, dto: UpdateUserInfoDto): Promise<UserEntity> {
-    const {location} = dto;
     const user = await this.findOneById(userId);
 
-    if (!isUndefined(location) && !isNull(location) && location !== user.location)
-      user.location = location;
-
-    if (!isUndefined(dto.contacts) && !isNull(dto.contacts))
-      await this.validateAndUpdateContactInfo(user, dto.contacts);
+    Object.assign(user, dto);
 
     await this.commonService.saveEntity(user);
 
-    return this.findOneById(userId, [ 'assignedCompanies', 'companyUsers.contacts' ]);
+    return this.findOneById(userId, [ 'companyUsers.company', 'companyUsers.contacts' ]);
   }
 
   public async updatePassword(userId: string, newPassword: string, password?: string,): Promise<UserEntity> {
@@ -247,7 +213,7 @@ export class UsersService {
     );
 
     if (isUndefined(user) || isNull(user)) {
-      return this.create(provider, email, name);
+      return this.create(provider, email, name, undefined);
     }
     if (
       isUndefined(
@@ -272,13 +238,19 @@ export class UsersService {
   public async updateAvatar(id: string, file: Express.Multer.File): Promise<IUser> {
     const user = await this.findOneById(id);
     const path = `users/${ id }/avatar`;
-    const {filepath, fileUrl} = await this._storageService.uploadImage(path, file);
-    user.avatar = {
-      name: file.originalname,
-      filepath,
-      contentType: file.mimetype,
-      fileUrl,
-    } as IImage;
+
+    const fileBuffer = await sharp(file.buffer).resize(500).rotate().webp().toBuffer();
+
+    if (user.avatar instanceof FileEntity) {
+      await this._storageService.removeFile(user.avatar);
+    }
+    user.avatar = await this._storageService.upload(undefined, FileType.IMAGE, path, {
+      ...file,
+      buffer: fileBuffer,
+      size: fileBuffer.length,
+      originalname: 'avatar.webp',
+      mimetype: 'image/webp',
+    });
     await this.commonService.saveEntity(user);
 
     return user;
@@ -290,6 +262,14 @@ export class UsersService {
 
     await this.commonService.saveEntity(user);
   }
+
+  public async updateContacts(userId: string, contacts: ContactDto[]) {
+    const user = await this.findOneById(userId, [ 'companyUsers.contacts' ]);
+
+    await this.validateAndUpdateContactInfo(user, contacts);
+    return user;
+  }
+
 
   private async changePassword(user: UserEntity, password: string,): Promise<UserEntity> {
     user.credentials.updatePassword(user.password);
@@ -306,7 +286,7 @@ export class UsersService {
     }
   }
 
-  private throwUnauthorizedException(user: undefined | null | UserEntity,): void {
+  private throwUnauthorizedException(user: undefined | null | UserEntity): void {
     if (isUndefined(user) || isNull(user)) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -350,8 +330,8 @@ export class UsersService {
     return oauthProvider;
   }
 
-  private async validateAndUpdateContactInfo(user: UserEntity, contactInfoDtos: ContactDto[]) {
-    const uniqueCompaniesIds = new Set(contactInfoDtos.map(dto => dto.companyId));
+  private async validateAndUpdateContactInfo(user: UserEntity, contactsDto: ContactDto[]) {
+    const uniqueCompaniesIds = new Set(contactsDto.map(dto => dto.companyId));
 
     if (!await this._companyUserService.isActiveUserInCompanies(user.id, Array.from(uniqueCompaniesIds)))
       throw new UnauthorizedException('You not belong to one of the companies you are trying to add contacts to or you are not active in one of them');
@@ -365,27 +345,30 @@ export class UsersService {
       .getResultList();
 
     const contactsToAdd: ContactDto[] = [];
+    const updatedContacts: UsersContactEntity[] = [];
     const contactsToRemove = existingContacts.filter(contact =>
-      !contactInfoDtos.find(dto =>
+      !contactsDto.find(dto =>
         dto.value === contact.value &&
         dto.type === contact.type &&
         dto.companyId === contact.companyUser.company.id
       )
     );
 
-    for (const dto of contactInfoDtos) {
-      const existingContact = existingContacts.find(contact =>
-        dto.value === contact.value &&
-        dto.type === contact.type &&
-        dto.companyId === contact.companyUser.company.id
-      );
-      if (!existingContact && !this.isDuplicate(dto, contactsToAdd)) {
+    for (const dto of contactsDto) {
+      if (dto.id) {
+        const contact = existingContacts.find(c => c.id === dto.id);
+
+        Object.assign(contact, dto);
+        updatedContacts.push(contact);
+      } else {
         contactsToAdd.push(dto);
       }
     }
 
     await this.addContacts(contactsToAdd, user);
     await this.removeContacts(contactsToRemove);
+
+    await this.commonService.saveAllEntities(updatedContacts, true);
   }
 
   private isDuplicate(newContactDto: ContactDto, contactsToAdd: ContactDto[]): boolean {

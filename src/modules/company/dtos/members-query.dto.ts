@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsDate, IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { IsDate, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform, Type }                      from 'class-transformer';
 
 import { RoleEnum } from '@modules/company-user/enums/role.enum';
@@ -14,6 +14,24 @@ export class MembersQueryDto {
   @IsNumber()
   @IsOptional()
   public memberId?: number;
+
+  @ApiProperty({
+    description: 'name',
+    example: 'nombre',
+    type: String,
+  })
+  @IsString()
+  @IsOptional()
+  public name?: string;
+
+  @ApiProperty({
+    description: 'email',
+    example : 'example@example.com',
+    type: String,
+  })
+  @IsString()
+  @IsOptional()
+  public email?: string;
 
   @ApiProperty({
     description: 'Role',

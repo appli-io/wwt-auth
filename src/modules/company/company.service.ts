@@ -13,7 +13,8 @@ import { CompanyUserService }          from '@modules/company-user/company-user.
 import { RoleEnum }                    from '@modules/company-user/enums/role.enum';
 import { StorageService }              from '@modules/firebase/services/storage.service';
 import { UsersService }                from '@modules/users/users.service';
-import { IImage }                      from '@modules/news/interfaces/news.interface';
+import * as path                       from 'node:path';
+import { FileType }                    from '@modules/firebase/enums/file-type.enum';
 
 @Injectable()
 export class CompanyService {
@@ -27,23 +28,19 @@ export class CompanyService {
 
   public async create(createCompanyDto: CreateCompanyDto, logo: Express.Multer.File, userId: string) {
     await this.checkIfCompanyExists(createCompanyDto.nationalId, createCompanyDto.country);
-    await this.checkUsernameUniqueness(createCompanyDto.username);
+    // await this.checkUsernameUniqueness(createCompanyDto.username);
     await this.checkEmailUniqueness(createCompanyDto.email);
 
     const company: CompanyEntity = this._companyRepository.create({
       ...createCompanyDto,
       owner: userId,
+      username: await this.generateUsername(createCompanyDto.name),
     });
 
     if (logo) {
       const basePath = `companies/${ company.id }`;
-      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, logo, 'logo');
-      company.logo = {
-        name: 'logo',
-        contentType: logo.mimetype,
-        filepath,
-        fileUrl
-      } as IImage;
+      logo.originalname = 'logo' + path.extname(logo.originalname);
+      company.logo = await this._storageService.upload(company.id, FileType.IMAGE, basePath, logo, true);
     }
 
     await this._commonService.saveEntity(company, true);
@@ -51,6 +48,13 @@ export class CompanyService {
     await this._userService.setActiveCompany(userId, company.id);
 
     return this.findById(company.id);
+  }
+
+  public async validateCompany(dto: CreateCompanyDto) {
+    await this.checkIfCompanyExists(dto.nationalId, dto.country);
+    await this.checkEmailUniqueness(dto.email);
+
+    return true;
   }
 
   public async findAll(query: CompanyQueryDto, pageable: Pageable): Promise<Page<CompanyEntity>> {
@@ -78,6 +82,10 @@ export class CompanyService {
           {
             property: 'users',
             andSelect: true
+          },
+          {
+            property: 'logo',
+            andSelect: true
           }
         ]
       }
@@ -85,7 +93,7 @@ export class CompanyService {
 
     if (results.content.length > 0 && results.content.some(company => !company.logo?.fileUrl)) {
       await Promise.all(results.content.map(async company => {
-        if (company.logo && !company.logo.fileUrl) company.logo.fileUrl = await this._storageService.getSignedUrl(company.logo.filepath);
+        if (company.logo && !company.logo.fileUrl) company.logo.fileUrl = await this._storageService.getDownloadUrl(company.logo.filepath);
 
         this._commonService.saveEntity(company, true).then();
       }));
@@ -95,7 +103,7 @@ export class CompanyService {
   }
 
   public async findById(id: string): Promise<CompanyEntity> {
-    const result = await this._companyRepository.findOne({id}, {populate: [ 'owner', 'users' ]});
+    const result = await this._companyRepository.findOne({id}, {populate: [ 'owner', 'users', 'logo' ]});
 
     if (!result) throw new NotFoundException('NOT_FOUND');
 
@@ -121,5 +129,14 @@ export class CompanyService {
 
     if (company > 0)
       throw new ConflictException('CONFLICT_EMAIL');
+  }
+
+  private async generateUsername(name: string): Promise<string> {
+    const pointSlug = this._commonService.generatePointSlug(name);
+    const count = await this._companyRepository.count({username: {$like: `${ pointSlug }%`}});
+
+    if (count > 0) return `${ pointSlug }${ count }`;
+
+    return pointSlug;
   }
 }

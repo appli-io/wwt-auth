@@ -7,6 +7,7 @@ end_of_line = crlf
 indent_size = 2
 indent_style = space
 insert_final_newline = true
+single_quote = true
 max_line_length = 260
 tab_width = 2
 ij_formatter_off_tag = @formatter:off

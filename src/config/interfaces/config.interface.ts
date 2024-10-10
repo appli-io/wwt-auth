@@ -6,10 +6,13 @@ import { IOAuth2 }               from './oauth2.interface';
 import { ThrottlerOptions }      from '@nestjs/throttler/dist/throttler-module-options.interface';
 
 export interface IConfig {
+  readonly env: string;
   readonly id: string;
   readonly url: string;
   readonly port: number;
   readonly domain: string;
+  readonly prefilledUserPassword: string;
+  readonly crypto: { key: string };
   readonly db: MikroOrmModuleOptions;
   readonly redis: RedisOptions;
   readonly jwt: IJwt;

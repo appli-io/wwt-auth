@@ -6,17 +6,34 @@ export const loadImagesFromStorage = async (storageService: StorageService, obje
     for (const item of object) {
       if (item[field]) {
         if (item[field] instanceof Object && (item[field] as IImage).filepath)
-          item[field].file = (await storageService.getSignedUrl((item[field] as IImage).filepath));
+          item[field].file = (await storageService.getDownloadUrl((item[field] as IImage).filepath));
         else
-          item[field] = (await storageService.getSignedUrl(item[field]));
+          item[field] = (await storageService.getDownloadUrl(item[field]));
       }
     }
   } else {
     if (object[field]) {
       if (object[field] instanceof Object && (object[field] as IImage).filepath)
-        object[field].file = (await storageService.getSignedUrl((object[field] as IImage).filepath));
+        object[field].file = (await storageService.getDownloadUrl((object[field] as IImage).filepath));
       else
-        object[field] = (await storageService.getSignedUrl(object[field]));
+        object[field] = (await storageService.getDownloadUrl(object[field]));
+    }
+  }
+};
+
+
+export const removeUndefinedFields = (data: any): void => {
+  for (const key in data) {
+    if (data[key] === undefined) {
+      delete data[key];
+    }
+  }
+};
+
+export const updateOnlyChangedFields = (entity: any, data: any, exceptionFields: string[] = []): void => {
+  for (const key in data) {
+    if (data[key] !== undefined && !exceptionFields.includes(key)) {
+      entity[key] = data[key];
     }
   }
 };

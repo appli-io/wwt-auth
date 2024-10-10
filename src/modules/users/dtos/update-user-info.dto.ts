@@ -1,28 +1,58 @@
-import { IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
-import { Type }                                        from 'class-transformer';
+import { ApiProperty }                           from '@nestjs/swagger';
+import { Transform }                             from 'class-transformer';
+import { IsOptional, IsString, Length, Matches } from 'class-validator';
 
-import { ContactDto } from '@modules/users/dtos/contact.dto';
+import { NAME_REGEX } from '@common/consts/regex.const';
 
 export class UpdateUserInfoDto {
-  // Optional avatar field
+  @ApiProperty({
+    description: 'The new lastname',
+    example: 'John Doe',
+    type: String,
+  })
   @IsString()
-  @IsUrl()
-  @IsOptional()
-  public avatar?: string;
+  @Length(3, 100)
+  @Matches(NAME_REGEX, {
+    message: 'Firstname must not have special characters',
+  })
+  public firstname: string;
 
-  // Optional position field
+  @ApiProperty({
+    description: 'The new lastname',
+    example: 'John Doe',
+    type: String,
+  })
+  @IsString()
+  @Length(3, 100)
+  @Matches(NAME_REGEX, {
+    message: 'Firstname must not have special characters',
+  })
+  public lastname: string;
+
+  @ApiProperty({
+    description: 'Birth date',
+    example: '1990-01-01',
+    type: String,
+  })
+  @IsString()
+  public birthdate: string;
+
+  @IsString()
+  public city: string;
+
+  @IsString()
+  public country: string;
+
+  @IsString()
+  public gender: string;
+
   @IsString()
   @IsOptional()
-  public position?: string;
+  @Transform(({value}) => value && value.trim() !== '' ? value.trim() : undefined)
+  public bio?: string;
 
-  // Optional location field
-  @IsString()
-  @IsOptional()
-  public location?: string;
-
-  // Optional bio contact info field array
-  @IsOptional()
-  @ValidateNested({each: true})
-  @Type(() => ContactDto)
-  public contacts?: ContactDto[];
+  // @IsOptional()
+  // @ValidateNested({each: true})
+  // @Type(() => ContactDto)
+  // public contacts?: ContactDto[];
 }

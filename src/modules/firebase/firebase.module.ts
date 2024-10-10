@@ -1,11 +1,15 @@
-import { Global, Module } from '@nestjs/common';
-import { ConfigService }  from '@nestjs/config';
+import { Global, Module, Provider } from '@nestjs/common';
+import { ConfigService }            from '@nestjs/config';
+
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import * as admin         from 'firebase-admin';
-import { StorageService } from '@modules/firebase/services/storage.service';
+
+import { StorageService } from './services/storage.service';
+import { FileEntity }     from './entities/file.entity';
 
 const FIREBASE_PROVIDER_KEY = 'FIREBASE_APP';
 
-const firebaseProvider = {
+const firebaseProvider: Provider = {
   provide: FIREBASE_PROVIDER_KEY,
   inject: [ ConfigService ],
   useFactory: (configService: ConfigService) => {
@@ -19,7 +23,9 @@ const firebaseProvider = {
 
 @Global()
 @Module({
-  imports: [],
+  imports: [
+    MikroOrmModule.forFeature([ FileEntity ])
+  ],
   providers: [
     firebaseProvider,
     StorageService

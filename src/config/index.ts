@@ -25,14 +25,17 @@ export function config(): IConfig {
     loadStrategy: LoadStrategy.JOINED,
     allowGlobalContext: true,
     forceUtcTimezone: true,
-    ignoreUndefinedInQuery: true
+    debug: false
   };
 
   return {
+    env: process.env.NODE_ENV,
     id: process.env.APP_ID,
     url: process.env.URL,
     port: parseInt(process.env.PORT, 10),
     domain: process.env.DOMAIN,
+    prefilledUserPassword: process.env.PREFILLED_USER_PASSWORD,
+    crypto: {key: process.env.CRYPTO_SECRET},
     jwt: {
       access: {
         privateKey,

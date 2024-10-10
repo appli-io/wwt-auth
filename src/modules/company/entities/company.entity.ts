@@ -1,12 +1,13 @@
-import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { IsEmail, IsOptional, IsString, IsUrl, Length, Matches }           from 'class-validator';
-import { v4 }                                                              from 'uuid';
+import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { IsEmail, IsOptional, IsString, IsUrl, Length, Matches }                                from 'class-validator';
+import { v4 }                                                                                   from 'uuid';
 
 import { NAME_REGEX, SLUG_REGEX } from '@common/consts/regex.const';
 import { ICompany }               from '@modules/company/interfaces/company.interface';
 import { CompanyUserEntity }      from '@modules/company-user/entities/company-user.entity';
 import { UserEntity }             from '@modules/users/entities/user.entity';
-import { IImage }                 from '@modules/news/interfaces/news.interface';
+import { BoardEntity }            from '@modules/scrumboard/entities/board.entity';
+import { FileEntity }             from '@modules/firebase/entities/file.entity';
 
 @Entity({tableName: 'companies'})
 export class CompanyEntity implements ICompany {
@@ -41,22 +42,18 @@ export class CompanyEntity implements ICompany {
   @Length(3, 255)
   public nationalId: string;
 
-  @Property({columnType: 'json', nullable: true})
-  @IsOptional()
-  public logo?: IImage;
-
   @Property({columnType: 'varchar', length: 255})
   @IsString()
   @IsEmail()
   @Length(5, 255)
   public email: string;
 
-  @Property({columnType: 'varchar', length: 255})
+  @Property({columnType: 'varchar', length: 255, nullable: true})
   @IsString()
   @IsUrl()
   @IsOptional()
   @Length(5, 255)
-  public website: string;
+  public website?: string;
 
   @Property({columnType: 'boolean', default: false})
   public isVerified: boolean;
@@ -69,11 +66,18 @@ export class CompanyEntity implements ICompany {
   @Length(2, 255)
   public country: string;
 
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
+  @IsOptional()
+  public logo?: FileEntity;
+
   @ManyToOne(() => UserEntity, {nullable: false})
   public owner: UserEntity;
 
   @ManyToMany({entity: () => UserEntity, pivotEntity: () => CompanyUserEntity})
   public users = new Collection<UserEntity>(this);
+
+  @OneToMany(() => BoardEntity, board => board.company)
+  public boards = new Collection<BoardEntity>(this);
 
   @Property({onCreate: () => new Date()})
   public createdAt: Date = new Date();

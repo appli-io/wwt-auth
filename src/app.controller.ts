@@ -1,18 +1,23 @@
-import { Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
-
-import { FileInterceptor } from '@nest-lab/fastify-multer';
-
-import { StorageService } from '@modules/firebase/services/storage.service';
-import { Public }         from '@modules/auth/decorators/public.decorator';
+import { Controller, Get } from '@nestjs/common';
+import { SeederService }   from '@modules/seeder/seeder.service';
+import { CurrentUser }     from '@modules/auth/decorators/current-user.decorator';
+import { Public }          from '@modules/auth/decorators/public.decorator';
 
 @Controller()
 export class AppController {
-  constructor(private readonly storageService: StorageService) {}
+
+  constructor(
+    private readonly _seederService: SeederService
+  ) {}
 
   @Public()
-  @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return await this.storageService.uploadImage('uploads', file);
+  @Get('seed/users')
+  async seed() {
+    await this._seederService.seedUsers();
+  }
+
+  @Get('seed/companies')
+  async seedCompanies(@CurrentUser() userId: string) {
+    await this._seederService.seedCompanies(userId);
   }
 }

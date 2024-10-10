@@ -1,10 +1,11 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { Observable, throwError }                                     from 'rxjs';
-import { catchError, tap }                                            from 'rxjs/operators';
-import { Reflector }                                                  from '@nestjs/core';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
+import { Observable, throwError }                                             from 'rxjs';
+import { catchError, tap }                                                    from 'rxjs/operators';
+import { Reflector }                                                          from '@nestjs/core';
 
 @Injectable()
 export class HttpLoggingInterceptor implements NestInterceptor {
+  private readonly _logger = new Logger('ExecutionTime');
   constructor(private readonly reflector: Reflector) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -17,7 +18,7 @@ export class HttpLoggingInterceptor implements NestInterceptor {
       tap(() => {
         const response = context.switchToHttp().getResponse();
         const delay = Date.now() - now;
-        console.log(`${ response.statusCode } | [${ method }] ${ url } - ${ context.getClass().name }.${ context.getHandler().name } executed in ${ delay }ms`);
+        this._logger.log(`${ response.statusCode } | [${ method }] ${ url } - ${ context.getClass().name }.${ context.getHandler().name } executed in ${ delay }ms`);
       }),
       catchError((error) => {
         const response = context.switchToHttp().getResponse();

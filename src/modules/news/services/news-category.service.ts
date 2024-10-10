@@ -53,7 +53,7 @@ export class NewsCategoryService {
 
     const count: number = await this.countBySlug(createNewsCategoriesDto.slug, companyId);
 
-    if (count > 0) throw new ConflictException('Slug already exists');
+    if (count > 0) throw new ConflictException('SLUG_ALREADY_EXISTS');
 
     const newNewsCategory: NewsCategoryEntity = this._newsCategoryRepository.create({
       ...createNewsCategoriesDto,

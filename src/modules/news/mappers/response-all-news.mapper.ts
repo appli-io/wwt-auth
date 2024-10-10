@@ -63,6 +63,13 @@ export class ResponseAllNewsMapper implements Partial<INews> {
   })
   public publishedAt: Date;
 
+  @ApiProperty({
+    description: 'Deleted date',
+    example: new Date(),
+    type: Date,
+  })
+  public deletedAt: Date;
+
   constructor(values: ResponseAllNewsMapper) {
     Object.assign(this, values);
   }
@@ -77,6 +84,7 @@ export class ResponseAllNewsMapper implements Partial<INews> {
       category: ResponseAllNewsCategoriesMapper.map(news.category),
       createdBy: ResponseSimpleUserMapper.map(news.createdBy),
       publishedAt: news.publishedAt,
+      deletedAt: news.deletedAt,
     });
   }
 }

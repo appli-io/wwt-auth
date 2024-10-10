@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 
-import { QBFilterQuery }    from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository } from '@mikro-orm/postgresql';
-import { isUUID }           from 'class-validator';
+import { QBFilterQuery, wrap }             from '@mikro-orm/core';
+import { InjectRepository }                from '@mikro-orm/nestjs';
+import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
+import { isUUID }                          from 'class-validator';
 
 import { CommonService }               from '@common/common.service';
 import { Page, Pageable, PageFactory } from '@lib/pageable';
@@ -12,19 +12,25 @@ import { CreateNewsDto }               from '@modules/news/dtos/create-news.dto'
 import { NewsQueryDto }                from '@modules/news/dtos/news-query.dto';
 import { NewsCategoryService }         from '@modules/news/services/news-category.service';
 import { StorageService }              from '@modules/firebase/services/storage.service';
+import { FileType }                    from '@modules/firebase/enums/file-type.enum';
+import { optimizeImage }               from '@common/utils/file.utils';
 
 @Injectable()
 export class NewsService {
 
   constructor(
     @InjectRepository(NewsEntity) private readonly _newsRepository: EntityRepository<NewsEntity>,
+    private readonly _em: EntityManager,
     private readonly _newsCategoryService: NewsCategoryService,
     private readonly _commonService: CommonService,
     private readonly _storageService: StorageService
   ) {}
 
   public async findAll(query: NewsQueryDto, pageable: Pageable, companyId: string): Promise<Page<NewsEntity>> {
-    const whereClause: QBFilterQuery<NewsEntity> = {company: companyId};
+    const whereClause: QBFilterQuery<NewsEntity> = {
+      company: companyId,
+      deletedAt: null
+    };
 
     if (query.id) whereClause['id'] = {$eq: query.id};
     if (query.headline) whereClause['headline'] = {$ilike: `%${ query.headline }%`};
@@ -39,7 +45,7 @@ export class NewsService {
       nullsFirst: false
     });
 
-    const result = await new PageFactory(
+    return await new PageFactory(
       pageable,
       this._newsRepository,
       {
@@ -47,51 +53,38 @@ export class NewsService {
         relations: [
           {
             property: 'createdBy', // join author
-            andSelect: true
+            andSelect: true,
+          },
+          {
+            property: 'createdBy.avatar', // join author
+            andSelect: true,
+            type: 'leftJoin'
           },
           {
             property: 'category', // join category
+            andSelect: true
+          },
+          {
+            property: 'images', // join images
+            type: 'leftJoin',
+            andSelect: true
+          },
+          {
+            property: 'portraitImage', // join portraitImage
+            type: 'leftJoin',
             andSelect: true
           }
         ]
       }
     ).create();
-
-    const mappedContent = await Promise.all(result.content.map(async news => {
-      if (!news.portraitImage?.fileUrl) {
-        news.portraitImage.fileUrl = await this._storageService.getSignedUrl(news.portraitImage.filepath as string);
-        this._commonService.saveEntity(news, true).then();
-      }
-      return news;
-    }));
-
-    return {
-      ...result,
-      content: mappedContent
-    };
   }
 
   public async findOneBySlugOrId(slugOrId: string): Promise<NewsEntity> {
     let response: NewsEntity;
-    if (isUUID(slugOrId)) response = await this._newsRepository.findOne({id: slugOrId}, {populate: [ 'createdBy', 'company' ]});
-    else response = await this._newsRepository.findOne({slug: slugOrId}, {populate: [ 'createdBy', 'company' ]}) as NewsEntity;
+    if (isUUID(slugOrId)) response = await this._newsRepository.findOne({id: slugOrId}, {populate: [ 'createdBy', 'company', 'portraitImage', 'images' ]});
+    else response = await this._newsRepository.findOne({slug: slugOrId}, {populate: [ 'createdBy', 'company', 'portraitImage', 'images' ]}) as NewsEntity;
 
     if (!response) throw new NotFoundException('NEWS_NOT_FOUND');
-
-    if (response.portraitImage && !response.portraitImage.fileUrl) {
-      response.portraitImage.fileUrl = await this._storageService.getSignedUrl(response.portraitImage.filepath);
-      this._commonService.saveEntity(response, true).then();
-    }
-    if (response.images?.length && response.images.some(image => !image.fileUrl)) {
-      response.images = await Promise.all(response.images.map(async image => {
-        if (!image.fileUrl) {
-          image.fileUrl = await this._storageService.getSignedUrl(image.filepath);
-        }
-        return image;
-      }));
-
-      this._commonService.saveEntity(response, true).then();
-    }
 
     return response;
   }
@@ -104,7 +97,7 @@ export class NewsService {
       if (count > 0) throw new ConflictException('Slug already exists');
     }
 
-    const category = await this._newsCategoryService.findOneBySlugOrId(newsDto.categorySlug, companyId);
+    const category = await this._newsCategoryService.findOneBySlugOrId(newsDto.category, companyId);
 
     if (!category) throw new BadRequestException('Category not found');
 
@@ -118,16 +111,13 @@ export class NewsService {
     const basePath = this.buildNewsImageFilepath(companyId, news.id);
 
     if (images?.length > 0)
-      news.images = await Promise.all(images.map(async (image) => {
-        const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, image);
-
-        return {name: image.originalname, filepath, contentType: image.mimetype, fileUrl};
-      }));
+      news.images.add(await Promise.all(images.map(async (image) => {
+        image = await optimizeImage(image);
+        return await this._storageService.upload(companyId, FileType.IMAGE, basePath, image);
+      })));
 
     if (portraitImage) {
-      const {filepath, fileUrl} = await this._storageService.uploadImage(basePath, portraitImage);
-
-      news.portraitImage = {name: portraitImage.originalname, filepath, contentType: portraitImage.mimetype, fileUrl};
+      news.portraitImage = await this._storageService.upload(companyId, FileType.IMAGE, basePath, portraitImage);
     }
 
     await this._commonService.saveEntity(news, true);
@@ -135,7 +125,10 @@ export class NewsService {
   }
 
   public async delete(id: string, userId: string, companyId: string, isAdmin: boolean): Promise<void> {
-    const news: NewsEntity = await this._newsRepository.findOne({id, company: companyId}, {populate: [ 'createdBy' ]});
+    const news: NewsEntity = await this._newsRepository.findOne({
+      id,
+      company: companyId
+    }, {populate: [ 'createdBy', 'images', 'portraitImage' ]});
 
     if (!news)
       throw new NotFoundException('News not found. (id: ' + id + ')');
@@ -143,8 +136,21 @@ export class NewsService {
     if (!isAdmin && news.createdBy.id !== userId)
       throw new UnauthorizedException('You are not allowed to delete this news');
 
-    news.isDeleted = true;
-    await this._commonService.saveEntity(news);
+    const deletePromises = news.images.map(image => this._storageService.removeFile(image));
+    if (news.portraitImage) deletePromises.push(this._storageService.removeFile(news.portraitImage));
+
+    await Promise.all(deletePromises);
+
+    await this._em
+      .persistAndFlush(
+        wrap(news)
+          .assign({
+            body: undefined,
+            deletedBy: userId,
+            deletedAt: new Date()
+          }));
+
+    // await this._commonService.saveEntity(news);
   }
 
   private async generateSlug(name: string, companyId: string): Promise<string> {

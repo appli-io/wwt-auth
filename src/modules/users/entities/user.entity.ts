@@ -1,6 +1,6 @@
-import { Collection, Embedded, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, } from '@mikro-orm/core';
-import { IsBoolean, IsEmail, IsOptional, IsString, Length, Matches }                             from 'class-validator';
-import { v4 }                                                                                    from 'uuid';
+import { Collection, Embedded, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, } from '@mikro-orm/core';
+import { IsBoolean, IsEmail, IsOptional, IsString, Length, Matches }                                       from 'class-validator';
+import { v4 }                                                                                              from 'uuid';
 
 import { BCRYPT_HASH_OR_UNSET, NAME_REGEX, SLUG_REGEX, } from '@common/consts/regex.const';
 import { CompanyEntity }                                 from '@modules/company/entities/company.entity';
@@ -9,7 +9,7 @@ import { CompanyUserEntity }                             from '@modules/company-
 import { CredentialsEmbeddable } from '../embeddables/credentials.embeddable';
 import { IUser }                 from '../interfaces/user.interface';
 import { OAuthProviderEntity }   from './oauth-provider.entity';
-import { IImage }                from '@modules/news/interfaces/news.interface';
+import { FileEntity }            from '@modules/firebase/entities/file.entity';
 
 @Entity({tableName: 'users'})
 export class UserEntity implements IUser {
@@ -20,9 +20,18 @@ export class UserEntity implements IUser {
   @IsString()
   @Length(3, 100)
   @Matches(NAME_REGEX, {
-    message: 'Name must not have special characters',
+    message: 'Firstname must not have special characters',
   })
-  public name: string;
+  public firstname: string;
+
+  @Property({columnType: 'varchar', length: 100, nullable: true})
+  @IsString()
+  @Length(3, 100)
+  @IsOptional()
+  @Matches(NAME_REGEX, {
+    message: 'Lastname must not have special characters',
+  })
+  public lastname?: string;
 
   @Property({columnType: 'varchar', length: 106})
   @IsString()
@@ -52,21 +61,38 @@ export class UserEntity implements IUser {
   public credentials: CredentialsEmbeddable = new CredentialsEmbeddable();
 
   // User profile picture
-  @Property({columnType: 'json', length: 255, nullable: true})
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
   @IsOptional()
-  public avatar?: IImage;
+  public avatar?: FileEntity;
 
   // User portrait picture
-  @Property({columnType: 'varchar', length: 255, nullable: true})
-  @IsString()
+  @OneToOne({entity: () => FileEntity, nullable: true, eager: true})
   @IsOptional()
-  public portrait?: string;
+  public portrait?: FileEntity;
 
   // User's location
   @Property({columnType: 'varchar', length: 255, nullable: true})
   @IsString()
   @IsOptional()
-  public location: string;
+  public city?: string;
+
+  @Property({columnType: 'varchar', length: 255, nullable: true})
+  @IsString()
+  @IsOptional()
+  public country?: string;
+
+  @Property({columnType: 'date', nullable: true})
+  public birthdate?: string;
+
+  @Property({columnType: 'varchar', length: 10, nullable: true})
+  @IsOptional()
+  @IsString()
+  public gender?: string;
+
+  @Property({columnType: 'text', nullable: true})
+  @IsOptional()
+  @IsString()
+  public bio?: string;
 
   // JSON of user's settings
   @Property({columnType: 'json', nullable: true})
@@ -78,9 +104,6 @@ export class UserEntity implements IUser {
   @Property({onUpdate: () => new Date()})
   public updatedAt: Date = new Date();
 
-  @ManyToOne(() => CompanyEntity, {nullable: true})
-  public activeCompany: CompanyEntity;
-
   @OneToMany(() => OAuthProviderEntity, (oauth) => oauth.user)
   public oauthProviders = new Collection<OAuthProviderEntity, UserEntity>(this);
 
@@ -90,6 +113,27 @@ export class UserEntity implements IUser {
   @OneToMany(() => CompanyUserEntity, companyUser => companyUser.user)
   public companyUsers = new Collection<CompanyUserEntity>(this);
 
+  @ManyToOne(() => CompanyEntity, {nullable: true})
+  public activeCompany: CompanyEntity;
+
   @ManyToMany({entity: () => CompanyEntity, mappedBy: c => c.users})
   public assignedCompanies = new Collection<CompanyEntity>(this);
+
+  get name() {
+    let name = '';
+
+    if (this.firstname) name += this.firstname;
+    if (this.lastname) name += ' ' + this.lastname;
+
+    return name;
+  }
+
+  get location() {
+    let location = '';
+
+    if (this.city) location += this.city;
+    if (this.country) location += ', ' + this.country;
+
+    return location;
+  }
 }

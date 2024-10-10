@@ -1,11 +1,12 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { Reflector }                                 from '@nestjs/core';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import { Reflector }                                                     from '@nestjs/core';
 
 import { Observable } from 'rxjs';
 
 import { requiredRolesKey }   from '@modules/auth/decorators/requierd-role.decorator';
 import { CompanyUserService } from '@modules/company-user/company-user.service';
 import { RoleEnum }           from '@modules/company-user/enums/role.enum';
+import { FastifyRequest }     from 'fastify';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -23,9 +24,9 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-    const userId = request.user as string;
-    const companyId = request.headers['x-company-id'] as string;
+    const request: FastifyRequest = context.switchToHttp().getRequest<FastifyRequest>();
+    const userId = request.user;
+    const companyId = request.companyId;
 
     if (!userId || !companyId) {
       return false;
@@ -33,6 +34,8 @@ export class RolesGuard implements CanActivate {
 
     return this._companyUserService.getUserRole(companyId, userId, requiredRoles).then(roles => {
       return roles.some(role => requiredRoles.includes(role));
-    }).catch(() => false);
+    }).catch(() => {
+      throw new ForbiddenException('USER_NOT_ACTIVE');
+    });
   }
 }

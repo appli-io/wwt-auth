@@ -7,6 +7,8 @@ import { UsersContactEntity } from '@modules/company-user/entities/users-contact
 import { ContactTypeEnum }    from '@modules/users/enums/contact-type.enum';
 
 export class ContactDto {
+  public id: string;
+
   @ApiProperty({
     description: 'Value for the contact info',
     example: '+56 9 1234 5678 | email@email.com | social.account',
@@ -44,6 +46,7 @@ export class ContactDto {
 
   public static fromEntity(entity: UsersContactEntity): ContactDto {
     return {
+      id: entity.id,
       value: entity.value,
       label: entity.label,
       type: entity.type,
