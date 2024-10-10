@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { EntityManager }    from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -14,6 +14,8 @@ import { CommonService }     from '@common/common.service';
 
 @Injectable()
 export class BoardService {
+  private _logger = new Logger(BoardService.name);
+
   constructor(
     @InjectRepository(BoardEntity) private readonly _boardRepository: EntityRepository<BoardEntity>,
     private readonly _commonService: CommonService,
@@ -26,7 +28,7 @@ export class BoardService {
       company: companyId,
       lastActivity: new Date(),
       members: createBoardDto.members.map((memberId) => this._em.getReference('CompanyUserEntity', {user: memberId, company: companyId})),
-      owner: companyUser.user.id,
+      owner: companyUser,
       lists: [
         {title: 'To Do', position: SCRUMBOARD_STEPS},
         {title: 'In Progress', position: SCRUMBOARD_STEPS * 2},
@@ -34,6 +36,9 @@ export class BoardService {
         {title: 'Blocked', position: SCRUMBOARD_STEPS * 4}
       ]
     });
+
+    this._logger.log('board', JSON.stringify(board));
+
     board.members.add(companyUser);
 
     await this._em.persistAndFlush(board);
