@@ -52,7 +52,7 @@
     "@sentry/nestjs" : "^8.24.0",
     "@sentry/profiling-node" : "^8.24.0",
     "@socket.io/redis-adapter" : "^8.3.0",
-    "axios": "^1.6.8",
+    "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "cache-manager": "^5.4.0",
     "cache-manager-ioredis-yet": "^2.0.1",
