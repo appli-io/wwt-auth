@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { EntityManager }    from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -14,7 +14,6 @@ import { CommonService }     from '@common/common.service';
 
 @Injectable()
 export class BoardService {
-  private _logger = new Logger(BoardService.name);
 
   constructor(
     @InjectRepository(BoardEntity) private readonly _boardRepository: EntityRepository<BoardEntity>,
@@ -36,8 +35,6 @@ export class BoardService {
         {title: 'Blocked', position: SCRUMBOARD_STEPS * 4}
       ]
     });
-
-    this._logger.log('board', JSON.stringify(board));
 
     board.members.add(companyUser);
 

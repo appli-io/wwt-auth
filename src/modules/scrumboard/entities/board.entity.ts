@@ -1,11 +1,11 @@
-import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from "@mikro-orm/core";
+import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 
-import { v4 } from "uuid";
+import { v4 } from 'uuid';
 
-import { CompanyEntity } from "@modules/company/entities/company.entity";
-import { CompanyUserEntity } from "@modules/company-user/entities/company-user.entity";
-import { LabelEntity } from "./label.entity";
-import { ListEntity } from "./list.entity";
+import { CompanyEntity }     from '@modules/company/entities/company.entity';
+import { CompanyUserEntity } from '@modules/company-user/entities/company-user.entity';
+import { LabelEntity }       from './label.entity';
+import { ListEntity }        from './list.entity';
 
 @Entity({tableName: 'scrumboard_board'})
 export class BoardEntity {
