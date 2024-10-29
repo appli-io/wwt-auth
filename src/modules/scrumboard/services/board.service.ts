@@ -55,7 +55,17 @@ export class BoardService {
     return this._boardRepository.findOne(
       id,
       {
-        populate: [ 'members', 'members.user', 'lists', 'lists.cards.labels', 'labels' ],
+        populate: [
+          // Board config
+          'members',
+          'members.user',
+          'labels',
+          // Lists
+          'lists',
+          'lists.cards.labels',
+          // Cards
+          'lists.cards.assignees',
+        ],
         orderBy: {
           lists: {
             position: 'asc',

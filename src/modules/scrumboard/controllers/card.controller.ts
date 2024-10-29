@@ -50,10 +50,11 @@ export class CardController {
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
     const card = await this.cardService.update(id, updateCardDto);
+    const parsedResponse = ResponseCardMapper.map(card);
 
-    this.boardGateway.server.to('board_' + card.board.id).emit('cardUpdated', card);
+    this.boardGateway.server.to('board_' + card.board.id).emit('cardUpdated', parsedResponse);
 
-    return ResponseCardMapper.map(card);
+    return parsedResponse;
   }
 
   @Delete(':id')

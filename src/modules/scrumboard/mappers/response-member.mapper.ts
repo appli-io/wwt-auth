@@ -20,4 +20,8 @@ export class ResponseMemberMapper extends ResponseSimpleUserMapper {
       position: companyUserEntity.position
     });
   }
+
+  static mapAll(companyUserEntities: CompanyUserEntity[]): ResponseMemberMapper[] {
+    return companyUserEntities.map(ResponseMemberMapper.map);
+  }
 }

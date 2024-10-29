@@ -1,12 +1,12 @@
 import { Entity, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
-import { IsString, IsUrl, Length, Matches } from 'class-validator';
+import { IsOptional, IsString, IsUrl, Length, Matches } from 'class-validator';
 
 import { SLUG_REGEX }    from '@common/consts/regex.const';
 import { CompanyEntity } from '@modules/company/entities/company.entity';
 import { INewsCategory } from '@modules/news/interfaces/news-category.interface';
 import { UserEntity }    from '@modules/users/entities/user.entity';
-import { v4 } from 'uuid';
+import { v4 }            from 'uuid';
 
 @Entity({tableName: 'news_category'})
 @Unique({properties: [ 'slug', 'company' ]})
@@ -23,10 +23,12 @@ export class NewsCategoryEntity implements INewsCategory {
   public description?: string;
 
   @Property({columnType: 'text', nullable: true})
+  @IsOptional()
   @IsUrl()
   public image?: string;
 
   @Property({columnType: 'text', nullable: true})
+  @IsOptional()
   @IsString()
   public color?: string;
 

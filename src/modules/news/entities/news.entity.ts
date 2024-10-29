@@ -46,7 +46,7 @@ export class NewsEntity implements INews {
   @OneToOne({entity: () => FileEntity, nullable: true})
   public portraitImage?: FileEntity;
 
-  @ManyToOne(() => NewsCategoryEntity, {nullable: false})
+  @ManyToOne(() => NewsCategoryEntity, {nullable: true})
   public category: NewsCategoryEntity;
 
   @ManyToOne(() => CompanyEntity, {nullable: false})

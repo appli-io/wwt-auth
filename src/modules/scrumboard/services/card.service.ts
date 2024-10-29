@@ -37,7 +37,7 @@ export class CardService {
   }
 
   findOne(id: string) {
-    return this.cardRepository.findOne(id);
+    return this.cardRepository.findOne(id, {populate: [ 'board', 'labels', 'assignees.user' ]});
   }
 
   async update(id: string, updateCardDto: UpdateCardDto) {
@@ -78,7 +78,7 @@ export class CardService {
 
     await this._em.persistAndFlush(card);
 
-    return card;
+    return this.findOne(id);
   }
 
   async remove(id: string) {

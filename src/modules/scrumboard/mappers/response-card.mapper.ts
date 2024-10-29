@@ -10,6 +10,7 @@ export class ResponseCardMapper {
   public title: string;
   public description?: string | null;
   public labels?: ResponseLabelMapper[];
+  public assignees?: ResponseMemberMapper[];
   public dueDate?: Date;
   public owner: ResponseMemberMapper;
 
@@ -26,6 +27,7 @@ export class ResponseCardMapper {
       title: card.title,
       description: card.description,
       labels: card.labels.isInitialized() && ResponseLabelMapper.mapAll(card.labels.getItems()),
+      assignees: card.assignees.isInitialized() && ResponseMemberMapper.mapAll(card.assignees.getItems()),
       dueDate: card.dueDate,
       owner: ResponseMemberMapper.map(card.owner)
     });

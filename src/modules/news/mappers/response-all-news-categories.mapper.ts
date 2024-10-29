@@ -3,6 +3,13 @@ import { NewsCategoryEntity } from '@modules/news/entities/news-category.entity'
 
 export class ResponseAllNewsCategoriesMapper implements Partial<NewsCategoryEntity> {
   @ApiProperty({
+    description: 'Category ID',
+    example: '123e4567-e',
+    type: String,
+  })
+  public id: string;
+
+  @ApiProperty({
     description: 'Category name',
     example: 'Science And Technology',
     type: String,
@@ -43,6 +50,7 @@ export class ResponseAllNewsCategoriesMapper implements Partial<NewsCategoryEnti
 
   public static map(category: NewsCategoryEntity) {
     return new ResponseAllNewsCategoriesMapper({
+      id: category.id,
       name: category.name,
       slug: category.slug,
       color: category.color,
