@@ -61,7 +61,7 @@ export class MailerService {
     const domain = this.domain.includes('http') ? this.domain : `https://${ this.domain }`;
     const html = this.templates.resetPassword({
       name,
-      link: `${ domain }/reset-password/${ token }`,
+      link: `${ domain }/reset-password?token=${ token }`,
     });
     this.sendEmail(
       email,
