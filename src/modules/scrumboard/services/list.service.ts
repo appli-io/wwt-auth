@@ -38,7 +38,7 @@ export class ListService {
   async update(id: string, updateListDto: UpdateListDto) {
     const list = await this.listRepository
       .findOne(id, {
-        populate: [ 'cards' ],
+        populate: [ 'cards.assignees', 'cards.labels' ],
         orderBy: {
           cards: {
             position: 'asc'
@@ -62,10 +62,14 @@ export class ListService {
   }
 
   async remove(id: string) {
-    const list = await this.listRepository.findOne(id);
+    const list = await this.listRepository.findOne(id, {populate: [ 'cards' ]});
 
     if (!list)
       throw new NotFoundException('List not found');
+
+    if (list.cards.length > 0) {
+      this._em.remove(list.cards);
+    }
 
     await this._em.removeAndFlush(list);
 

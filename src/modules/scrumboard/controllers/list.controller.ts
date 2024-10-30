@@ -1,10 +1,11 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 
-import { MemberGuard }   from '@modules/auth/guards/member.guard';
-import { CreateListDto } from '../dtos/create-list.dto';
-import { UpdateListDto } from '../dtos/update-list.dto';
-import { ListService }   from '../services/list.service';
-import { BoardGateway }  from '@modules/scrumboard/gateways/board.gateway';
+import { MemberGuard }         from '@modules/auth/guards/member.guard';
+import { CreateListDto }       from '../dtos/create-list.dto';
+import { UpdateListDto }       from '../dtos/update-list.dto';
+import { ListService }         from '../services/list.service';
+import { BoardGateway }        from '@modules/scrumboard/gateways/board.gateway';
+import { ResponseListsMapper } from '@modules/scrumboard/mappers/response-lists.mapper';
 
 @Controller('scrumboard/list')
 @UseGuards(MemberGuard)
@@ -34,8 +35,10 @@ export class ListController {
   }
 
   @Patch(':id')
-  patch(@Param('id') id: string, @Body() updateListDto: UpdateListDto) {
-    return this.listService.update(id, updateListDto);
+  async patch(@Param('id') id: string, @Body() updateListDto: UpdateListDto) {
+    const result = await this.listService.update(id, updateListDto);
+
+    return ResponseListsMapper.map(result);
   }
 
   @Put(':id')
