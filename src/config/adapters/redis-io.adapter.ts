@@ -6,17 +6,30 @@ import { createClient }  from 'redis';
 export class RedisIoAdapter extends IoAdapter {
   private adapterConstructor: ReturnType<typeof createAdapter>;
 
-  async connectToRedis(): Promise<void> {
-    try {
-      const pubClient = createClient({url: process.env.REDIS_URL});
-      const subClient = pubClient.duplicate();
+  async connectToRedis(maxRetries: number = 5, delay: number = 2000): Promise<void> {
+    let attempts = 0;
 
-      await Promise.all([ pubClient.connect(), subClient.connect() ]);
+    while (attempts < maxRetries) {
+      try {
+        const pubClient = createClient({url: process.env.REDIS_URL});
+        const subClient = pubClient.duplicate();
 
-      this.adapterConstructor = createAdapter(pubClient, subClient);
-    } catch (error) {
-      console.error('Error connecting to Redis:', error);
-      throw new Error('Could not connect to Redis');
+        await Promise.all([ pubClient.connect(), subClient.connect() ]);
+
+        this.adapterConstructor = createAdapter(pubClient, subClient);
+        console.log('Connected to Redis successfully');
+        return; // Exit the function if connection is successful
+      } catch (error) {
+        attempts++;
+        console.error(`Error connecting to Redis (attempt ${ attempts }):`, error);
+
+        if (attempts < maxRetries) {
+          console.log(`Retrying in ${ delay }ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
+        } else {
+          console.error('Max retries reached. Could not connect to Redis.');
+        }
+      }
     }
   }
 
