@@ -109,6 +109,8 @@ export class StorageService {
   }
 
   async removeFile(fileEntity: FileEntity): Promise<void> {
+    if (!fileEntity) return;
+
     try {
       if (!this._storage)
         this._storage = getStorage().bucket(this._cs.get('firebase.storage.bucket'));
@@ -122,6 +124,7 @@ export class StorageService {
     } catch (error) {
       if (error.code === 404) return;
       if (error.code === 403) throw new Error('Unauthorized to remove file');
+      console.error(error);
       throw new Error('Failed to remove file', error.message);
     }
   }
