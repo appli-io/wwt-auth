@@ -92,7 +92,7 @@
     "@faker-js/faker": "^7.6.0",
     "@mikro-orm/cli": "^6.1.9",
     "@mikro-orm/sqlite": "^6.1.9",
-    "@nestjs/cli": "^10.3.2",
+    "@nestjs/cli": "^10.4.8",
     "@nestjs/schematics": "^10.1.1",
     "@nestjs/testing": "^10.3.3",
     "@types/bcrypt": "^5.0.0",
